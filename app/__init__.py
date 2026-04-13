@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from app.extensions.db import db
 from app.extensions.migrate import migrate
 from app.api.routes import register_blueprints
+from app import models
 
 load_dotenv()
 
