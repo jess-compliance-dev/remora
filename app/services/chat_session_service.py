@@ -1,4 +1,7 @@
 from app.database.chat_session_database import ChatSessionDatabase
+from app.services.chat_message_service import ChatMessageService
+from app.services.story_service import StoryService
+from app.services.story_ai_service import StoryAIService
 
 
 class ChatSessionService:
@@ -43,4 +46,65 @@ class ChatSessionService:
 
         self.session_db.delete(session)
         return True
-    
+
+    def generate_story_from_session(self, session_id: int):
+        """
+        Generate a life story from a chat session.
+        """
+
+        session = self.session_db.get_by_id(session_id)
+
+        if not session:
+            return None
+
+        message_service = ChatMessageService()
+        story_service = StoryService()
+        ai_service = StoryAIService()
+
+        messages = message_service.get_messages_by_session_id(session_id)
+
+        if not messages:
+            return None
+
+        # collect only user answers
+        user_answers = [
+            m.message_text
+            for m in messages
+            if m.role == "user" and m.message_text
+        ]
+
+        if not user_answers:
+            return None
+
+        story_text = "\n\n".join(user_answers)
+
+        # AI enrichment
+        title = ai_service.generate_title(story_text)
+        summary = ai_service.generate_summary(story_text)
+        emotion = ai_service.detect_emotion(story_text)
+        theme = ai_service.detect_theme(story_text)
+
+        story_data = {
+            "profile_id": session.profile_id,
+            "created_by": session.user_id,
+            "title": title,
+            "story_text": story_text,
+            "summary": summary,
+            "theme": theme,
+            "emotion_tag": emotion,
+            "life_period": session.category,
+            "source_type": "chat",
+            "is_featured": False
+        }
+
+        story = story_service.create_story(story_data)
+
+        # mark session completed
+        self.session_db.update(
+            session,
+            {
+                "status": "completed"
+            }
+        )
+
+        return story

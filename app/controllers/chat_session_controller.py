@@ -87,3 +87,20 @@ def get_sessions_by_profile(profile_id):
     """
     sessions = chat_session_service.get_sessions_by_profile_id(profile_id)
     return jsonify([serialize_session(session) for session in sessions]), 200
+
+
+@chat_session_bp.route("/<int:session_id>/generate-story", methods=["POST"])
+def generate_story(session_id):
+    """
+    Generate a life story from a chat session.
+    """
+    story = chat_session_service.generate_story_from_session(session_id)
+
+    if not story:
+        return jsonify({"error": "Unable to generate story"}), 400
+
+    return jsonify({
+        "message": "Story generated successfully",
+        "story_id": story.story_id
+    }), 201
+
