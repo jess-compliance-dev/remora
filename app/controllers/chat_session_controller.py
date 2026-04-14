@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.services.chat_session_service import ChatSessionService
 
@@ -44,16 +45,22 @@ def get_session(session_id):
 
 
 @chat_session_bp.route("", methods=["POST"])
+@jwt_required()
 def create_session():
     """
-    Create a new chat session.
+    Create a new guided chat session for the currently authenticated user.
     """
     data = request.get_json()
+    user_id = get_jwt_identity()
+
+    data["user_id"] = user_id
+
     session = chat_session_service.create_session(data)
     return jsonify(serialize_session(session)), 201
 
 
 @chat_session_bp.route("/<int:session_id>", methods=["PUT"])
+@jwt_required()
 def update_session(session_id):
     """
     Update a chat session.
@@ -68,6 +75,7 @@ def update_session(session_id):
 
 
 @chat_session_bp.route("/<int:session_id>", methods=["DELETE"])
+@jwt_required()
 def delete_session(session_id):
     """
     Delete a chat session.
@@ -90,6 +98,7 @@ def get_sessions_by_profile(profile_id):
 
 
 @chat_session_bp.route("/<int:session_id>/generate-story", methods=["POST"])
+@jwt_required()
 def generate_story(session_id):
     """
     Generate a life story from a chat session.
@@ -103,4 +112,3 @@ def generate_story(session_id):
         "message": "Story generated successfully",
         "story_id": story.story_id
     }), 201
-

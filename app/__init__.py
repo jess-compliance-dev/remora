@@ -1,13 +1,12 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
+from flask_jwt_extended import JWTManager
 
 from app.extensions.db import db
 from app.extensions.migrate import migrate
 from app.api.routes import register_blueprints
 from app import models
-
-from flask_jwt_extended import JWTManager
 
 load_dotenv()
 

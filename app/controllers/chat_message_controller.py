@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.services.chat_message_service import ChatMessageService
 
@@ -48,16 +49,22 @@ def get_message(message_id):
 
 
 @chat_message_bp.route("", methods=["POST"])
+@jwt_required()
 def create_message():
     """
-    Create a new chat message.
+    Create a new chat message for the currently authenticated user.
     """
     data = request.get_json()
+    user_id = get_jwt_identity()
+
+    data["user_id"] = user_id
+
     message = chat_message_service.create_message(data)
     return jsonify(serialize_message(message)), 201
 
 
 @chat_message_bp.route("/<int:message_id>", methods=["DELETE"])
+@jwt_required()
 def delete_message(message_id):
     """
     Delete a chat message.

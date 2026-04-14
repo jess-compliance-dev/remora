@@ -1,75 +1,92 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-# Definition of profile blueprint
+from app.services.profile_service import ProfileService
+
 profile_bp = Blueprint("profiles", __name__)
+profile_service = ProfileService()
+
+
+def serialize_profile(profile):
+    """
+    Convert a MemorialProfile object into a JSON-serializable dictionary.
+    """
+    return {
+        "profile_id": profile.profile_id,
+        "owner_id": profile.owner_id,
+        "full_name": profile.full_name,
+        "relationship": profile.relationship,
+        "birth_date": profile.birth_date.isoformat() if profile.birth_date else None,
+        "death_date": profile.death_date.isoformat() if profile.death_date else None,
+        "status": profile.status,
+        "short_description": profile.short_description,
+        "profile_image_url": profile.profile_image_url,
+        "created_at": profile.created_at.isoformat(),
+        "updated_at": profile.updated_at.isoformat(),
+    }
 
 
 @profile_bp.route("", methods=["GET"])
 def get_profiles():
     """
     Retrieve all memorial profiles.
-    Returns:
-        JSON: List of memorial profiles.
-        HTTP 200: Success.
     """
-    return jsonify([]), 200
+    profiles = profile_service.get_profiles()
+    return jsonify([serialize_profile(profile) for profile in profiles]), 200
 
 
 @profile_bp.route("/<int:profile_id>", methods=["GET"])
 def get_profile(profile_id):
     """
     Retrieve a single memorial profile by ID.
-    Returns:
-        JSON: Memorial profile object.
-        HTTP 200: Success.
-        HTTP 404: Profile not found.
     """
-    return jsonify({"profile_id": profile_id}), 200
+    profile = profile_service.get_profile_by_id(profile_id)
+
+    if not profile:
+        return jsonify({"error": "Profile not found"}), 404
+
+    return jsonify(serialize_profile(profile)), 200
 
 
 @profile_bp.route("", methods=["POST"])
+@jwt_required()
 def create_profile():
     """
-    Create a new memorial profile.
-    Request Body:
-        owner_id (int): ID of the user who owns the profile.
-        full_name (str): Full name of the person.
-        relationship (str): Relationship to the user.
-        birth_date (str): Birth date in YYYY-MM-DD format.
-        death_date (str): Death date in YYYY-MM-DD format.
-        status (str): Current status, e.g. living, dying, deceased.
-        short_description (str): Short description of the person.
-        profile_image_url (str): URL or path to profile image.
-    Returns:
-        JSON: Created memorial profile.
-        HTTP 201: Created.
+    Create a new memorial profile for the currently authenticated user.
     """
     data = request.get_json()
-    return jsonify(data), 201
+    user_id = get_jwt_identity()
+
+    data["owner_id"] = user_id
+
+    profile = profile_service.create_profile(data)
+    return jsonify(serialize_profile(profile)), 201
 
 
 @profile_bp.route("/<int:profile_id>", methods=["PUT"])
+@jwt_required()
 def update_profile(profile_id):
     """
     Update an existing memorial profile.
-    Request Body:
-        Any updatable memorial profile fields.
-    Returns:
-        JSON: Updated memorial profile data.
-        HTTP 200: Success.
-        HTTP 404: Profile not found.
     """
     data = request.get_json()
-    return jsonify({"profile_id": profile_id, "updated_data": data}), 200
+    profile = profile_service.update_profile(profile_id, data)
+
+    if not profile:
+        return jsonify({"error": "Profile not found"}), 404
+
+    return jsonify(serialize_profile(profile)), 200
 
 
 @profile_bp.route("/<int:profile_id>", methods=["DELETE"])
+@jwt_required()
 def delete_profile(profile_id):
     """
     Delete a memorial profile.
-    Returns:
-        JSON: Confirmation message.
-        HTTP 200: Success.
-        HTTP 404: Profile not found.
     """
-    return jsonify({"message": f"Profile {profile_id} deleted successfully."}), 200
+    deleted = profile_service.delete_profile(profile_id)
+
+    if not deleted:
+        return jsonify({"error": "Profile not found"}), 404
+
+    return jsonify({"message": "Profile deleted successfully"}), 200
