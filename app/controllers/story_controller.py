@@ -1,8 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app.services.story_service import StoryService
+from app.services.story_media_service import StoryMediaService
+
 
 story_bp = Blueprint("stories", __name__)
 story_service = StoryService()
+story_media_service = StoryMediaService()
 
 
 def serialize_story(story):
@@ -32,6 +35,20 @@ def serialize_story(story):
     }
 
 
+def serialize_story_media(media):
+    """
+    Convert a StoryMedia object into a JSON-serializable dictionary.
+    """
+    return {
+        "media_id": media.media_id,
+        "story_id": media.story_id,
+        "media_type": media.media_type,
+        "file_url": media.file_url,
+        "caption": media.caption,
+        "created_at": media.created_at.isoformat(),
+    }
+
+
 @story_bp.route("", methods=["GET"])
 def get_stories():
     """
@@ -47,9 +64,10 @@ def get_stories():
 @story_bp.route("/<int:story_id>", methods=["GET"])
 def get_story(story_id):
     """
-    Retrieve a single life story by ID.
+    Retrieve a single life story by ID including attached media.
+
     Returns:
-        JSON: Life story object.
+        JSON: Life story object with media.
         HTTP 200: Success.
         HTTP 404: Story not found.
     """
@@ -58,7 +76,14 @@ def get_story(story_id):
     if not story:
         return jsonify({"error": "Story not found"}), 404
 
-    return jsonify(serialize_story(story)), 200
+    media_entries = story_media_service.get_media_by_story_id(story_id)
+
+    story_data = serialize_story(story)
+    story_data["media"] = [
+        serialize_story_media(media) for media in media_entries
+    ]
+
+    return jsonify(story_data), 200
 
 
 @story_bp.route("", methods=["POST"])
