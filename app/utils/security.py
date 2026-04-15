@@ -13,7 +13,7 @@ def verify_password(password: str, password_hash: str) -> bool:
     """
     Verify a plain text password against a stored hash.
     """
-    return check_password_hash(password, password_hash)
+    return check_password_hash(password_hash, password)
 
 
 def is_strong_password(password: str) -> tuple[bool, str]:

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="screen">
+    <div class="phone-card chat-screen">
+        <div class="chat-header">
+            <div class="avatar"></div>
+            <div>
+                <h2>Mom</h2>
+                <p class="muted">Always with you</p>
+            </div>
+        </div>
+
+        <div class="progress-row">
+            <span class="pill">Interview</span>
+            <span class="muted">Memory 2 of 6</span>
+        </div>
+
+        <div class="chat-list">
+            {% for message in messages %}
+            <div class="chat-bubble {{ 'user' if message.role == 'user' else 'assistant' }}">
+                {{ message.text }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="reference-panel">
+            <h3>Memories referenced</h3>
+            {% for item in referenced %}
+            <div class="reference-item">
+                <strong>{{ item.type }}</strong>
+                <span>{{ item.title }}</span>
+                <small class="muted">{{ item.date }}</small>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="composer">
+            <input class="input" placeholder="Type your answer...">
+            <button class="btn btn-icon" type="button">🎤</button>
+            <button class="btn btn-primary small" type="button">Send</button>
+        </div>
+    </div>
+
+    {% include "components/mobile_nav.html" %}
+</div>
+{% endblock %}

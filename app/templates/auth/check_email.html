@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="screen center-screen">
+    <div class="phone-card auth-card">
+
+        <img src="{{ url_for('static', filename='img/logo.png') }}"
+             class="logo"
+             alt="Remora logo">
+
+        <h1>Check your email</h1>
+        <p class="muted">
+            We sent you a confirmation link. Please open it to activate your account before logging in.
+        </p>
+
+        <div class="stack" style="margin-top: 24px;">
+            <a href="/ui/login" class="btn btn-primary">Go to login</a>
+            <a href="/ui/register" class="btn btn-secondary">Back to register</a>
+        </div>
+
+        <p class="foot-link" style="margin-top: 20px;">
+            After confirming your email, you can return and sign in.
+        </p>
+
+    </div>
+</div>
+
+{% endblock %}

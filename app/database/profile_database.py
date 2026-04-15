@@ -2,7 +2,7 @@ from app.extensions.db import db
 from app.models.memorial_profile import MemorialProfile
 
 
-class ProfileRepository:
+class ProfileDatabase:
     """
     Repository layer for memorial profile database operations.
     """
@@ -50,3 +50,6 @@ class ProfileRepository:
         """
         db.session.delete(profile)
         db.session.commit()
+
+    def get_by_owner_id(self, owner_id: int):
+        return MemorialProfile.query.filter_by(owner_id=owner_id).all()

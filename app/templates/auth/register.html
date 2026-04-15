@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="screen center-screen">
+    <div class="phone-card auth-card">
+
+        <!-- Logo -->
+        <img src="{{ url_for('static', filename='img/logo.png') }}"
+             class="logo"
+             alt="Remora logo">
+
+        <!-- Titel -->
+        <h1>Create account</h1>
+        <p class="muted">Start building your memory space.</p>
+
+        <!-- Formular -->
+        <form id="register-form" class="stack">
+
+            <input
+                id="username"
+                class="input"
+                type="text"
+                placeholder="Username"
+                required
+            >
+
+            <input
+                id="email"
+                class="input"
+                type="email"
+                placeholder="Email address"
+                required
+            >
+
+            <input
+                id="password"
+                class="input"
+                type="password"
+                placeholder="Password"
+                required
+            >
+
+            <button class="btn btn-primary" type="submit">
+                Sign up
+            </button>
+
+        </form>
+
+        <!-- Fehleranzeige -->
+        <p id="error-message" style="color:red; margin-top:10px;"></p>
+
+        <!-- Divider -->
+        <div class="divider"><span>or</span></div>
+
+        <!-- Optional Social -->
+        <div class="stack">
+            <button class="btn btn-secondary" type="button">Continue with Google</button>
+            <button class="btn btn-secondary" type="button">Continue with Apple</button>
+        </div>
+
+        <!-- Login Link -->
+        <p class="foot-link">
+            Already have an account?
+            <a href="/ui/login">Log in</a>
+        </p>
+
+    </div>
+</div>
+{% endblock %}

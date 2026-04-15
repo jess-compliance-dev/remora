@@ -11,10 +11,6 @@ class AuthService:
         self.user_db = UserDatabase()
 
     def register_user(self, data: dict):
-        """
-        Register a new user.
-        """
-
         username = data.get("username")
         email = data.get("email")
         password = data.get("password")
@@ -39,16 +35,14 @@ class AuthService:
         user = self.user_db.create({
             "username": username,
             "email": email,
-            "password_hash": password_hash
+            "password_hash": password_hash,
+            "is_active": False
         })
 
         return user, None
 
+    # LOGIN
     def login_user(self, data: dict):
-        """
-        Login a user.
-        """
-
         email = data.get("email")
         password = data.get("password")
 
@@ -64,4 +58,13 @@ class AuthService:
         if not verify_password(password, user.password_hash):
             return None, "Invalid email or password."
 
+        # check email confirmation
+        if not user.is_active:
+            return None, "Please confirm your email before logging in."
+
         return user, None
+
+
+    # HELPER
+    def get_user_by_email(self, email):
+        return self.user_db.get_by_email(email)

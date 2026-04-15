@@ -27,23 +27,31 @@ def serialize_profile(profile):
 
 
 @profile_bp.route("", methods=["GET"])
+@jwt_required()
 def get_profiles():
     """
-    Retrieve all memorial profiles.
+    Retrieve all memorial profiles for the currently authenticated user.
     """
-    profiles = profile_service.get_profiles()
+    user_id = get_jwt_identity()
+    profiles = profile_service.get_profiles_by_owner_id(user_id)
+
     return jsonify([serialize_profile(profile) for profile in profiles]), 200
 
 
 @profile_bp.route("/<int:profile_id>", methods=["GET"])
+@jwt_required()
 def get_profile(profile_id):
     """
-    Retrieve a single memorial profile by ID.
+    Retrieve a single memorial profile by ID for the currently authenticated user.
     """
+    user_id = get_jwt_identity()
     profile = profile_service.get_profile_by_id(profile_id)
 
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
+
+    if profile.owner_id != user_id:
+        return jsonify({"error": "Access denied"}), 403
 
     return jsonify(serialize_profile(profile)), 200
 
@@ -69,13 +77,19 @@ def update_profile(profile_id):
     """
     Update an existing memorial profile.
     """
-    data = request.get_json()
-    profile = profile_service.update_profile(profile_id, data)
+    user_id = get_jwt_identity()
+    profile = profile_service.get_profile_by_id(profile_id)
 
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
 
-    return jsonify(serialize_profile(profile)), 200
+    if profile.owner_id != user_id:
+        return jsonify({"error": "Access denied"}), 403
+
+    data = request.get_json()
+    updated_profile = profile_service.update_profile(profile_id, data)
+
+    return jsonify(serialize_profile(updated_profile)), 200
 
 
 @profile_bp.route("/<int:profile_id>", methods=["DELETE"])
@@ -84,6 +98,15 @@ def delete_profile(profile_id):
     """
     Delete a memorial profile.
     """
+    user_id = get_jwt_identity()
+    profile = profile_service.get_profile_by_id(profile_id)
+
+    if not profile:
+        return jsonify({"error": "Profile not found"}), 404
+
+    if profile.owner_id != user_id:
+        return jsonify({"error": "Access denied"}), 403
+
     deleted = profile_service.delete_profile(profile_id)
 
     if not deleted:

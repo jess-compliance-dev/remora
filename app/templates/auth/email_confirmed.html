@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="screen center-screen">
+    <div class="phone-card auth-card">
+
+        <img src="{{ url_for('static', filename='img/logo.png') }}"
+             class="logo"
+             alt="Remora logo">
+
+        <h1>Email confirmed</h1>
+        <p class="muted">
+            Your account has been successfully activated. You can now log in and start creating memories.
+        </p>
+
+        <div class="stack" style="margin-top: 24px;">
+            <a href="/ui/login" class="btn btn-primary">Go to login</a>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

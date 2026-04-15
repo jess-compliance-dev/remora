@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="screen">
+    <div class="phone-card story-screen">
+        <div class="topbar simple">
+            <div>
+                <h1>{{ story.title }}</h1>
+                <p class="muted">{{ story.summary }}</p>
+            </div>
+        </div>
+
+        <div class="meta-row">
+            <span class="pill">{{ story.theme }}</span>
+            <span class="pill light">{{ story.emotion }}</span>
+        </div>
+
+        <div class="story-body">
+            <p>{{ story.text }}</p>
+        </div>
+
+        <div class="media-section">
+            <h3>Attached media</h3>
+            <div class="media-grid">
+                {% for item in media %}
+                <div class="media-card">
+                    {% if item.type == 'image' %}
+                    <img src="{{ item.url }}" alt="{{ item.caption }}">
+                    {% else %}
+                    <div class="audio-placeholder">▶ Audio</div>
+                    {% endif %}
+                    <small class="muted">{{ item.caption }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% include "components/mobile_nav.html" %}
+</div>
+{% endblock %}
