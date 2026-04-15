@@ -169,7 +169,7 @@ async function loadProfiles(containerId) {
         }
 
         container.innerHTML = data.map(profile => `
-            <a href="/ui/profiles" class="profile-row-card">
+            <a href="/ui/profiles/${profile.profile_id}" class="profile-row-card">
                 <div class="avatar large"></div>
                 <div class="profile-row-text">
                     <h3>${profile.full_name}</h3>

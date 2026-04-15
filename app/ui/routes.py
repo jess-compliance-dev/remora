@@ -46,3 +46,8 @@ def chat():
 @ui_bp.route("/ui/story")
 def story():
     return render_template("stories/detail.html")
+
+
+@ui_bp.route("/ui/profiles/<int:profile_id>")
+def profile_detail(profile_id):
+    return render_template("profiles/detail.html", profile_id=profile_id)
