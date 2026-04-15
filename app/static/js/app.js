@@ -1,8 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // =========================
-    // REGISTER
-    // =========================
     const registerForm = document.getElementById("register-form");
 
     if (registerForm) {
@@ -41,9 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =========================
-    // LOGIN
-    // =========================
     const loginForm = document.getElementById("login-form");
 
     if (loginForm) {
@@ -81,9 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =========================
-    // CREATE PROFILE
-    // =========================
     const createProfileForm = document.getElementById("create-profile-form");
 
     if (createProfileForm) {
@@ -100,9 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const payload = {
                 full_name: document.getElementById("full_name").value,
                 relationship: document.getElementById("relationship").value || null,
-                birth_date: document.getElementById("birth_date").value || null,
-                death_date: document.getElementById("death_date").value || null,
-                status: document.getElementById("status").value,
+                birth_date: document.getElementById("birth_date")?.value || null,
+                death_date: document.getElementById("death_date")?.value || null,
                 short_description: document.getElementById("short_description").value || null,
                 profile_image_url: document.getElementById("profile_image_url").value || null
             };
@@ -169,21 +159,22 @@ async function loadProfiles(containerId) {
 
         if (!Array.isArray(data) || data.length === 0) {
             container.innerHTML = `
-                <div class="phone-card">
-                    <p>No profiles yet.</p>
-                    <p class="muted">Create your first memorial profile to get started.</p>
+                <div class="empty-state-card">
+                    <h3>No memories yet</h3>
+                    <p class="muted">Create your first memorial profile to start preserving moments and life stories.</p>
+                    <a href="/ui/profiles/create" class="btn btn-primary small" style="margin-top: 12px;">Create profile</a>
                 </div>
             `;
             return;
         }
 
         container.innerHTML = data.map(profile => `
-            <a href="/ui/profiles" class="profile-card">
+            <a href="/ui/profiles" class="profile-row-card">
                 <div class="avatar large"></div>
-                <div class="profile-text">
+                <div class="profile-row-text">
                     <h3>${profile.full_name}</h3>
                     <p class="muted">${profile.relationship || ""}</p>
-                    <span class="pill">${profile.status}</span>
+                    <span class="pill">${buildLifeStatus(profile.birth_date, profile.death_date)}</span>
                 </div>
             </a>
         `).join("");
@@ -191,6 +182,12 @@ async function loadProfiles(containerId) {
     } catch (error) {
         container.innerHTML = `<p style="color:red;">Could not load profiles.</p>`;
     }
+}
+
+function buildLifeStatus(birthDate, deathDate) {
+    if (deathDate) return "Remembered";
+    if (birthDate) return "Living story";
+    return "Profile";
 }
 
 function logout() {

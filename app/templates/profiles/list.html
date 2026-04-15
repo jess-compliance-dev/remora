@@ -2,15 +2,19 @@
 {% block content %}
 
 <div class="screen">
-    <div class="topbar">
-        <div>
-            <h1>Profiles</h1>
-            <p class="muted">All memorial profiles connected to your account.</p>
-        </div>
-        <a href="/ui/profiles/create" class="btn btn-primary small">+ Add</a>
-    </div>
+    <div class="phone-card profiles-screen">
 
-    <div id="profiles-container" class="grid cards-grid"></div>
+        <div class="topbar">
+            <div>
+                <h1>Profiles</h1>
+                <p class="muted">Store memories, moments, and life stories for the people you want to remember.</p>
+            </div>
+            <a href="/ui/profiles/create" class="btn btn-primary small">＋ Add</a>
+        </div>
+
+        <div id="profiles-container" class="profiles-stack"></div>
+
+    </div>
 </div>
 
 <script>

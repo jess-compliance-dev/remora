@@ -281,3 +281,258 @@ select.input {
     outline: none;
     font: inherit;
 }
+
+
+.home-screen,
+.profile-create-screen,
+.profiles-screen {
+    display: grid;
+    gap: 20px;
+}
+
+.home-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.eyebrow {
+    margin: 0 0 6px;
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.icon-btn {
+    border: 0;
+    background: var(--soft);
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.home-actions {
+    display: grid;
+    gap: 14px;
+}
+
+.action-card {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 18px;
+    background: #fff;
+    border: 1px solid rgba(124, 132, 215, 0.08);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+}
+
+.primary-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f5f6fe 100%);
+}
+
+.action-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: var(--soft);
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    color: var(--primary-dark);
+}
+
+.section-block {
+    display: grid;
+    gap: 12px;
+}
+
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.text-link {
+    color: var(--primary-dark);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.profiles-stack {
+    display: grid;
+    gap: 14px;
+}
+
+.profile-row-card {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    background: #fff;
+    border-radius: 22px;
+    padding: 16px;
+    border: 1px solid rgba(124, 132, 215, 0.08);
+    box-shadow: var(--shadow);
+}
+
+.profile-row-text {
+    display: grid;
+    gap: 4px;
+}
+
+.empty-state-card {
+    background: var(--soft);
+    border-radius: 22px;
+    padding: 20px;
+    text-align: center;
+}
+
+.top-progress {
+    margin-bottom: 4px;
+}
+
+.progress-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #d7d9e8;
+}
+
+.progress-dot.active {
+    background: var(--primary-dark);
+}
+
+.progress-line {
+    width: 56px;
+    height: 3px;
+    border-radius: 999px;
+    background: #e7e8f2;
+}
+
+.profile-create-header {
+    text-align: center;
+    display: grid;
+    gap: 8px;
+}
+
+.image-upload-placeholder {
+    position: relative;
+    width: 140px;
+    margin: 0 auto 8px;
+}
+
+.avatar-upload-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 999px;
+    background: #d8dae6;
+    display: grid;
+    place-items: center;
+    color: #6f7490;
+    font-size: 34px;
+}
+
+.mini-add-btn {
+    position: absolute;
+    right: 0;
+    bottom: 6px;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--primary);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+}
+
+.dates-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.toggle-label {
+    font-size: 14px;
+    color: var(--text);
+    display: grid;
+    gap: 2px;
+}
+
+.small-text {
+    font-size: 12px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: #d7d9e8;
+    border-radius: 999px;
+    transition: 0.2s;
+}
+
+.slider:before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+.switch input:checked + .slider {
+    background: var(--primary);
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+.wide-btn {
+    width: 100%;
+}
+
+.error-text {
+    color: #c54848;
+    margin-top: 10px;
+    text-align: center;
+}
+
+

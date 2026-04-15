@@ -2,12 +2,29 @@
 {% block content %}
 
 <div class="screen center-screen">
-    <div class="phone-card auth-card">
+    <div class="phone-card profile-create-screen">
 
-        <h1>Create Profile</h1>
-        <p class="muted">Add a person whose life stories you want to preserve.</p>
+        <div class="progress-row top-progress">
+            <span class="progress-dot active"></span>
+            <span class="progress-line"></span>
+            <span class="progress-dot"></span>
+            <span class="progress-line"></span>
+            <span class="progress-dot"></span>
+        </div>
+
+        <div class="profile-create-header">
+            <h1>Create a memorial profile</h1>
+            <p class="muted">Who would you like to remember?</p>
+        </div>
 
         <form id="create-profile-form" class="stack">
+
+            <div class="image-upload-placeholder">
+                <div class="avatar-upload-circle">
+                    <span class="image-icon">🖼</span>
+                </div>
+                <button type="button" class="mini-add-btn">＋</button>
+            </div>
 
             <input
                 id="full_name"
@@ -21,33 +38,40 @@
                 id="relationship"
                 class="input"
                 type="text"
-                placeholder="Relationship (e.g. Mother, Grandmother)"
+                placeholder="Your relationship"
             >
 
-            <input
-                id="birth_date"
-                class="input"
-                type="date"
-            >
+            <div class="dates-toggle-row">
+                <label class="toggle-label" for="show-dates-toggle">
+                    Add birth and passing dates
+                    <span class="muted small-text">(optional)</span>
+                </label>
 
-            <input
-                id="death_date"
-                class="input"
-                type="date"
-            >
+                <label class="switch">
+                    <input type="checkbox" id="show-dates-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
 
-            <select id="status" class="input" required>
-                <option value="">Select status</option>
-                <option value="living">Living</option>
-                <option value="dying">Dying</option>
-                <option value="deceased">Deceased</option>
-            </select>
+            <div id="dates-fields" class="stack hidden">
+                <input
+                    id="birth_date"
+                    class="input"
+                    type="date"
+                >
+
+                <input
+                    id="death_date"
+                    class="input"
+                    type="date"
+                >
+            </div>
 
             <textarea
                 id="short_description"
                 class="input"
                 rows="4"
-                placeholder="Short description"
+                placeholder="A short description or a few words about this person"
             ></textarea>
 
             <input
@@ -57,19 +81,34 @@
                 placeholder="Profile image URL (optional)"
             >
 
-            <button class="btn btn-primary" type="submit">
-                Save Profile
+            <button class="btn btn-primary wide-btn" type="submit">
+                Continue
             </button>
 
         </form>
 
-        <p id="profile-error" style="color:red; margin-top:10px;"></p>
+        <p id="profile-error" class="error-text"></p>
 
         <p class="foot-link">
-            <a href="/ui/dashboard">Back to dashboard</a>
+            <a href="/ui/dashboard">Back</a>
         </p>
 
     </div>
 </div>
+
+<script>
+    const toggle = document.getElementById("show-dates-toggle");
+    const datesFields = document.getElementById("dates-fields");
+
+    if (toggle) {
+        toggle.addEventListener("change", () => {
+            if (toggle.checked) {
+                datesFields.classList.remove("hidden");
+            } else {
+                datesFields.classList.add("hidden");
+            }
+        });
+    }
+</script>
 
 {% endblock %}

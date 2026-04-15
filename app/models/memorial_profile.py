@@ -26,8 +26,7 @@ class MemorialProfile(db.Model):
 
     status = db.Column(
         db.String(50),
-        nullable=False,
-        default="deceased"
+        nullable=True,
     )
 
     short_description = db.Column(db.Text, nullable=True)

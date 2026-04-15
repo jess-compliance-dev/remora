@@ -2,23 +2,52 @@
 {% block content %}
 
 <div class="screen">
-    <div class="topbar">
-        <div>
-            <h1>Welcome back</h1>
-            <p class="muted">Continue preserving memories.</p>
+    <div class="phone-card home-screen">
+
+        <div class="home-header">
+            <div>
+                <p class="eyebrow">Remora</p>
+                <h1>Memories</h1>
+                <p class="muted">Capture moments, preserve life stories and keep meaningful memories close.</p>
+            </div>
+            <button onclick="logout()" class="icon-btn" aria-label="Logout">⎋</button>
         </div>
-        <button onclick="logout()" class="btn btn-secondary small">Logout</button>
-    </div>
 
-    <div class="stack">
-        <a href="/ui/profiles/create" class="btn btn-primary">+ Create Profile</a>
-    </div>
+        <div class="home-actions">
+            <a href="/ui/profiles/create" class="action-card primary-card">
+                <div class="action-icon">＋</div>
+                <div>
+                    <h3>Create a memorial profile</h3>
+                    <p class="muted">Start with one person and begin collecting memories.</p>
+                </div>
+            </a>
 
-    <div class="phone-card">
-        <h2>Your Profiles</h2>
-        <p class="muted">Select a person to continue.</p>
+            <a href="/ui/chat" class="action-card">
+                <div class="action-icon">💬</div>
+                <div>
+                    <h3>Continue memory interview</h3>
+                    <p class="muted">Capture a memory through guided questions.</p>
+                </div>
+            </a>
 
-        <div id="profiles-container" class="grid cards-grid" style="margin-top:16px;"></div>
+            <a href="/ui/profiles" class="action-card">
+                <div class="action-icon">♡</div>
+                <div>
+                    <h3>View profiles</h3>
+                    <p class="muted">Open existing profiles and continue their story.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="section-block">
+            <div class="section-head">
+                <h2>Your profiles</h2>
+                <a href="/ui/profiles" class="text-link">See all</a>
+            </div>
+
+            <div id="profiles-container" class="profiles-stack"></div>
+        </div>
+
     </div>
 </div>
 

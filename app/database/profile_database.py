@@ -53,3 +53,4 @@ class ProfileDatabase:
 
     def get_by_owner_id(self, owner_id: int):
         return MemorialProfile.query.filter_by(owner_id=owner_id).all()
+
