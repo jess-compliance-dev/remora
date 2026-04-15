@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="screen center-screen">
+    <div class="phone-card auth-card">
+
+        <h1>Create Profile</h1>
+        <p class="muted">Add a person whose life stories you want to preserve.</p>
+
+        <form id="create-profile-form" class="stack">
+
+            <input
+                id="full_name"
+                class="input"
+                type="text"
+                placeholder="Full name"
+                required
+            >
+
+            <input
+                id="relationship"
+                class="input"
+                type="text"
+                placeholder="Relationship (e.g. Mother, Grandmother)"
+            >
+
+            <input
+                id="birth_date"
+                class="input"
+                type="date"
+            >
+
+            <input
+                id="death_date"
+                class="input"
+                type="date"
+            >
+
+            <select id="status" class="input" required>
+                <option value="">Select status</option>
+                <option value="living">Living</option>
+                <option value="dying">Dying</option>
+                <option value="deceased">Deceased</option>
+            </select>
+
+            <textarea
+                id="short_description"
+                class="input"
+                rows="4"
+                placeholder="Short description"
+            ></textarea>
+
+            <input
+                id="profile_image_url"
+                class="input"
+                type="text"
+                placeholder="Profile image URL (optional)"
+            >
+
+            <button class="btn btn-primary" type="submit">
+                Save Profile
+            </button>
+
+        </form>
+
+        <p id="profile-error" style="color:red; margin-top:10px;"></p>
+
+        <p class="foot-link">
+            <a href="/ui/dashboard">Back to dashboard</a>
+        </p>
+
+    </div>
+</div>
+
+{% endblock %}

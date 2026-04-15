@@ -2,57 +2,19 @@
 {% block content %}
 
 <div class="screen">
-    <div class="phone-card">
-
-        <h1>Your Profiles</h1>
-
-        <button onclick="logout()" class="btn btn-secondary">Logout</button>
-
-        <div id="profiles-container"></div>
-
+    <div class="topbar">
+        <div>
+            <h1>Profiles</h1>
+            <p class="muted">All memorial profiles connected to your account.</p>
+        </div>
+        <a href="/ui/profiles/create" class="btn btn-primary small">+ Add</a>
     </div>
+
+    <div id="profiles-container" class="grid cards-grid"></div>
 </div>
 
 <script>
-    async function loadProfiles() {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            window.location.href = "/ui/login";
-            return;
-        }
-
-        const response = await fetch("/profiles", {
-            method: "GET",
-            headers: {
-                "Authorization": "Bearer " + token
-            }
-        });
-
-        if (response.status === 401) {
-            localStorage.removeItem("token");
-            window.location.href = "/ui/login";
-            return;
-        }
-
-        const data = await response.json();
-
-        const container = document.getElementById("profiles-container");
-
-        container.innerHTML = data.map(p => `
-            <div class="card">
-                <h3>${p.full_name}</h3>
-                <p>${p.relationship || ""}</p>
-            </div>
-        `).join("");
-    }
-
-    function logout() {
-        localStorage.removeItem("token");
-        window.location.href = "/ui/login";
-    }
-
-    loadProfiles();
+    loadProfiles("profiles-container");
 </script>
 
 {% endblock %}

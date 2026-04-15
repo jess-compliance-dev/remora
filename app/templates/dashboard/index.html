@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="screen">
+    <div class="topbar">
+        <div>
+            <h1>Welcome back</h1>
+            <p class="muted">Continue preserving memories.</p>
+        </div>
+        <button onclick="logout()" class="btn btn-secondary small">Logout</button>
+    </div>
+
+    <div class="stack">
+        <a href="/ui/profiles/create" class="btn btn-primary">+ Create Profile</a>
+    </div>
+
+    <div class="phone-card">
+        <h2>Your Profiles</h2>
+        <p class="muted">Select a person to continue.</p>
+
+        <div id="profiles-container" class="grid cards-grid" style="margin-top:16px;"></div>
+    </div>
+</div>
+
+<script>
+    loadProfiles("profiles-container");
+</script>
+
+{% endblock %}
