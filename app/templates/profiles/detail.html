@@ -4,7 +4,6 @@
 <div class="screen">
 
     <div class="profile-hero">
-
         <div class="hero-top">
             <a href="/ui/dashboard" class="back-link">← Back</a>
 
@@ -14,7 +13,6 @@
         </div>
 
         <div class="profile-hero-content">
-
             <div class="avatar xl" id="profile-avatar"></div>
 
             <h1 id="profile-name">Loading...</h1>
@@ -23,6 +21,7 @@
 
             <p id="profile-dates" class="muted small-text"></p>
 
+            <p id="profile-description" class="muted"></p>
         </div>
 
         <div class="profile-actions">
@@ -30,11 +29,10 @@
                 Add memory
             </button>
 
-            <button class="btn btn-secondary" onclick="goToChat()">
-                Start conversation
+            <button class="btn btn-secondary" onclick="goToLifeStoryChat()">
+                Create a life story
             </button>
         </div>
-
     </div>
 
     <div class="section-block">
@@ -50,27 +48,75 @@
 <script>
     const profileId = {{ profile_id }};
 
-    async function loadProfile() {
+    async function loadProfileDetail() {
         const token = localStorage.getItem("token");
 
+        if (!token) {
+            window.location.href = "/ui/login";
+            return;
+        }
+
         const res = await fetch(`/profiles/${profileId}`, {
-            headers: { "Authorization": "Bearer " + token }
+            headers: {
+                "Authorization": "Bearer " + token
+            }
         });
+
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "/ui/login";
+            return;
+        }
 
         const data = await res.json();
 
-        document.getElementById("profile-name").innerText = data.full_name;
-        document.getElementById("profile-relationship").innerText = data.relationship || "";
-
-        // Avatar
-        if (data.profile_image_url) {
-            document.getElementById("profile-avatar").innerHTML =
-                `<img src="${data.profile_image_url}" />`;
+        if (!res.ok) {
+            document.getElementById("profile-name").innerText = "Profile not found";
+            return;
         }
 
-        // Dates
-        document.getElementById("profile-dates").innerText =
-            formatDates(data.birth_date, data.death_date);
+        document.getElementById("profile-name").innerText = data.full_name;
+        document.getElementById("profile-relationship").innerText = data.relationship || "";
+        document.getElementById("profile-description").innerText = data.short_description || "";
+
+        if (data.profile_image_url) {
+            document.getElementById("profile-avatar").innerHTML = `<img src="${data.profile_image_url}" alt="${data.full_name}">`;
+        }
+
+        document.getElementById("profile-dates").innerText = formatDates(data.birth_date, data.death_date);
+    }
+
+    async function loadProfileStories() {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`/stories/profile/${profileId}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        const data = await res.json();
+        const container = document.getElementById("stories-container");
+
+        if (!res.ok || !Array.isArray(data) || data.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state-card">
+                    <h3>No memories yet</h3>
+                    <p class="muted">Start preserving moments and life stories for this person.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = data.map(story => `
+            <div class="profile-row-card">
+                <div>
+                    <h3>${story.title || "Untitled memory"}</h3>
+                    <p class="muted">${(story.story_text || "").slice(0, 140)}</p>
+                    <span class="pill">${story.theme || "memory"}</span>
+                </div>
+            </div>
+        `).join("");
     }
 
     function formatDates(birth, death) {
@@ -79,47 +125,16 @@
         return "";
     }
 
-    async function loadStories() {
-        const token = localStorage.getItem("token");
-
-        const res = await fetch(`/stories/profile/${profileId}`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-
-        const data = await res.json();
-
-        const container = document.getElementById("stories-container");
-
-        if (!data.length) {
-            container.innerHTML = `
-                <div class="empty-state-card">
-                    <h3>No memories yet</h3>
-                    <p class="muted">Start capturing meaningful moments.</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = data.map(s => `
-            <div class="profile-row-card">
-                <div>
-                    <h3>${s.title || "Untitled memory"}</h3>
-                    <p class="muted">${s.story_text?.slice(0, 120) || ""}</p>
-                </div>
-            </div>
-        `).join("");
-    }
-
-    function goToChat() {
-        window.location.href = `/ui/chat?profile_id=${profileId}`;
-    }
-
     function goToCreateMemory() {
         window.location.href = `/ui/memories/create?profile_id=${profileId}`;
     }
 
-    loadProfile();
-    loadStories();
+    function goToLifeStoryChat() {
+        window.location.href = `/ui/chat?profile_id=${profileId}&category=life_story`;
+    }
+
+    loadProfileDetail();
+    loadProfileStories();
 </script>
 
 {% endblock %}

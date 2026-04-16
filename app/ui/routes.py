@@ -56,3 +56,15 @@ def profile_detail(profile_id):
 @ui_bp.route("/ui/memories/create")
 def create_memory():
     return render_template("memories/create.html")
+
+
+@ui_bp.route("/ui/chat")
+def chat():
+    profile_id = request.args.get("profile_id", "")
+    category = request.args.get("category", "life_story")
+    return render_template("chat/session.html", profile_id=profile_id, category=category)
+
+
+@ui_bp.route("/ui/story")
+def story():
+    return render_template("stories/detail.html")

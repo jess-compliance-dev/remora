@@ -5,6 +5,7 @@ from app.controllers.story_media_controller import story_media_bp
 from app.controllers.chatbot_prompt_controller import chatbot_prompt_bp
 from app.controllers.chat_session_controller import chat_session_bp
 from app.controllers.chat_message_controller import chat_message_bp
+from app.controllers.chat_ai_controller import chat_ai_bp
 
 
 def register_blueprints(app):
@@ -15,3 +16,4 @@ def register_blueprints(app):
     app.register_blueprint(chatbot_prompt_bp, url_prefix="/prompts")
     app.register_blueprint(chat_session_bp, url_prefix="/chat/sessions")
     app.register_blueprint(chat_message_bp, url_prefix="/chat/messages")
+    app.register_blueprint(chat_ai_bp)

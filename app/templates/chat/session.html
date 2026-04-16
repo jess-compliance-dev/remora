@@ -1,46 +1,139 @@
 {% extends "base.html" %}
 {% block content %}
+
 <div class="screen">
-    <div class="phone-card chat-screen">
-        <div class="chat-header">
-            <div class="avatar"></div>
-            <div>
-                <h2>Mom</h2>
-                <p class="muted">Always with you</p>
-            </div>
+
+    <div class="memory-hero">
+        <div class="hero-top">
+            <a href="/ui/dashboard" class="back-link">← Back</a>
+
+            <button onclick="logout()" class="logout-btn">
+                Log out
+            </button>
         </div>
 
-        <div class="progress-row">
-            <span class="pill">Interview</span>
-            <span class="muted">Memory 2 of 6</span>
-        </div>
+        <h1 class="hero-title">Create a life story</h1>
 
-        <div class="chat-list">
-            {% for message in messages %}
-            <div class="chat-bubble {{ 'user' if message.role == 'user' else 'assistant' }}">
-                {{ message.text }}
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="reference-panel">
-            <h3>Memories referenced</h3>
-            {% for item in referenced %}
-            <div class="reference-item">
-                <strong>{{ item.type }}</strong>
-                <span>{{ item.title }}</span>
-                <small class="muted">{{ item.date }}</small>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="composer">
-            <input class="input" placeholder="Type your answer...">
-            <button class="btn btn-icon" type="button">🎤</button>
-            <button class="btn btn-primary small" type="button">Send</button>
-        </div>
+        <p class="hero-sub">
+            Answer naturally. The conversation will help preserve meaningful memories and life moments.
+        </p>
     </div>
 
-    {% include "components/mobile_nav.html" %}
+    <div class="phone-card chat-screen">
+
+        <div id="chat-status" class="muted small-text">Preparing conversation...</div>
+
+        <div id="chat-list" class="chat-list"></div>
+
+        <form id="life-story-chat-form" class="composer">
+            <input
+                id="chat-input"
+                class="input"
+                type="text"
+                placeholder="Write your answer..."
+                required
+            >
+            <button class="btn btn-primary small" type="submit">Send</button>
+        </form>
+
+        <p id="chat-error" class="error-text"></p>
+
+    </div>
+
 </div>
+
+<script>
+    const profileId = "{{ profile_id }}";
+    const category = "{{ category }}";
+    let activeSessionId = null;
+
+    async function startChatSession() {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            window.location.href = "/ui/login";
+            return;
+        }
+
+        const response = await fetch("/chat/sessions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                profile_id: parseInt(profileId),
+                category: category,
+                status: "active"
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            document.getElementById("chat-error").innerText = data.error || "Could not start chat session.";
+            return;
+        }
+
+        activeSessionId = data.session_id;
+        document.getElementById("chat-status").innerText = "Conversation started";
+
+        // erste AI-Nachricht holen
+        await sendMessageToAI("Let's begin the life story interview.");
+    }
+
+    async function sendMessageToAI(messageText) {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(`/chat/ai/${activeSessionId}/message`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                profile_id: parseInt(profileId),
+                message_text: messageText
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            document.getElementById("chat-error").innerText = data.error || "Could not send message.";
+            return;
+        }
+
+        renderChatMessages(data.messages || []);
+    }
+
+    function renderChatMessages(messages) {
+        const chatList = document.getElementById("chat-list");
+
+        chatList.innerHTML = messages.map(message => `
+            <div class="chat-bubble ${message.role === "user" ? "user" : "assistant"}">
+                ${message.message_text || ""}
+            </div>
+        `).join("");
+
+        chatList.scrollTop = chatList.scrollHeight;
+    }
+
+    const form = document.getElementById("life-story-chat-form");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const input = document.getElementById("chat-input");
+        const text = input.value.trim();
+
+        if (!text || !activeSessionId) return;
+
+        input.value = "";
+        await sendMessageToAI(text);
+    });
+
+    startChatSession();
+</script>
+
 {% endblock %}

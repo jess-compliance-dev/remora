@@ -21,35 +21,35 @@
 
     <div class="memory-options">
 
-        <a href="/ui/chat" class="memory-option-card primary-card">
+        <a href="/ui/chat?profile_id={{ profile_id }}&category=life_story" class="memory-option-card primary-card">
             <div class="memory-option-icon">✍</div>
+            <div>
+                <h3>Create a life story</h3>
+                <p class="muted">Talk with the guided AI and build a full life story through conversation.</p>
+            </div>
+        </a>
+
+        <a href="/ui/chat?profile_id={{ profile_id }}&category=memory_text" class="memory-option-card">
+            <div class="memory-option-icon">📝</div>
             <div>
                 <h3>Write a memory</h3>
                 <p class="muted">Capture a moment in your own words.</p>
             </div>
         </a>
 
-        <a href="/ui/chat" class="memory-option-card">
+        <a href="/ui/chat?profile_id={{ profile_id }}&category=voice_memory" class="memory-option-card">
             <div class="memory-option-icon">🎤</div>
             <div>
                 <h3>Record your voice</h3>
-                <p class="muted">Speak naturally and save the memory as audio.</p>
+                <p class="muted">Speak naturally and preserve the memory as voice.</p>
             </div>
         </a>
 
-        <a href="/ui/chat" class="memory-option-card">
+        <a href="/ui/chat?profile_id={{ profile_id }}&category=photo_memory" class="memory-option-card">
             <div class="memory-option-icon">🖼</div>
             <div>
                 <h3>Add a photo memory</h3>
                 <p class="muted">Attach an image to a remembered moment.</p>
-            </div>
-        </a>
-
-        <a href="/ui/chat" class="memory-option-card">
-            <div class="memory-option-icon">🎞</div>
-            <div>
-                <h3>Add a video memory</h3>
-                <p class="muted">Preserve movement, voice, and emotion together.</p>
             </div>
         </a>
 
@@ -59,8 +59,8 @@
         <div class="memory-tip-card">
             <h3>Tip</h3>
             <p class="muted">
-                The most meaningful memories are often simple moments:
-                a sentence, a habit, a laugh, a walk, a song, or a small shared ritual.
+                The most meaningful memories are often simple moments: a phrase, a habit,
+                a laugh, a ritual, a walk, a favorite meal or a small shared detail.
             </p>
         </div>
     </div>

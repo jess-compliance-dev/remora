@@ -1,8 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // =========================
-    // REGISTER
-    // =========================
     const registerForm = document.getElementById("register-form");
 
     if (registerForm) {
@@ -29,7 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    document.getElementById("error-message").innerText = data.error || "Registration failed.";
+                    document.getElementById("error-message").innerText =
+                        data.error || "Registration failed.";
                     return;
                 }
 
@@ -41,9 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =========================
-    // LOGIN
-    // =========================
     const loginForm = document.getElementById("login-form");
 
     if (loginForm) {
@@ -68,13 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    document.getElementById("login-error").innerText = data.error || "Login failed.";
+                    document.getElementById("login-error").innerText =
+                        data.error || "Login failed.";
                     return;
                 }
 
-                // 🔐 Token speichern
                 localStorage.setItem("token", data.access_token);
-
                 window.location.href = "/ui/dashboard";
 
             } catch (error) {
@@ -83,9 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =========================
-    // CREATE PROFILE
-    // =========================
     const createProfileForm = document.getElementById("create-profile-form");
 
     if (createProfileForm) {
@@ -103,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const imageFile = document.getElementById("profile-image-input")?.files[0];
 
             try {
-                // 🔥 Upload Bild zuerst
                 if (imageFile) {
                     const formData = new FormData();
                     formData.append("image", imageFile);
@@ -127,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     uploadedImageUrl = uploadData.profile_image_url;
                 }
 
-                // 🔥 Profil erstellen
                 const payload = {
                     full_name: document.getElementById("full_name").value,
                     relationship: document.getElementById("relationship").value || null,
@@ -171,9 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// =========================
-// LOAD PROFILES
-// =========================
 async function loadProfiles(containerId) {
     const token = localStorage.getItem("token");
     const container = document.getElementById(containerId);
@@ -215,10 +201,7 @@ async function loadProfiles(containerId) {
         container.innerHTML = data.map(profile => `
             <a href="/ui/profiles/${profile.profile_id}" class="profile-row-card">
                 <div class="avatar large">
-                    ${profile.profile_image_url
-                        ? `<img src="${profile.profile_image_url}" />`
-                        : ""
-                    }
+                    ${profile.profile_image_url ? `<img src="${profile.profile_image_url}" alt="${profile.full_name}">` : ""}
                 </div>
                 <div class="profile-row-text">
                     <h3>${profile.full_name}</h3>
@@ -234,9 +217,6 @@ async function loadProfiles(containerId) {
 }
 
 
-// =========================
-// HELPER: LIFE STATUS
-// =========================
 function buildLifeStatus(birthDate, deathDate) {
     if (deathDate) return "Remembered";
     if (birthDate) return "Living story";
@@ -244,9 +224,6 @@ function buildLifeStatus(birthDate, deathDate) {
 }
 
 
-// =========================
-// LOGOUT
-// =========================
 function logout() {
     localStorage.removeItem("token");
     window.location.href = "/ui/login";
