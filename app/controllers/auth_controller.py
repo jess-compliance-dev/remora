@@ -14,13 +14,16 @@ def serialize_user(user):
     """
     Convert a User object into a JSON-serializable dictionary.
     """
+    if user is None:
+        return None
+
     return {
         "user_id": user.user_id,
         "username": user.username,
         "email": user.email,
         "is_active": user.is_active,
-        "created_at": user.created_at.isoformat(),
-        "updated_at": user.updated_at.isoformat(),
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "updated_at": user.updated_at.isoformat() if user.updated_at else None,
     }
 
 
@@ -29,7 +32,10 @@ def register():
     """
     Register a new user and send an email confirmation link.
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
 
     user, error = auth_service.register_user(data)
 
@@ -37,13 +43,7 @@ def register():
         return jsonify({"error": error}), 400
 
     token = generate_confirmation_token(user.email)
-
-    confirm_url = url_for(
-        "auth.confirm_email",
-        token=token,
-        _external=True
-    )
-
+    confirm_url = url_for("auth.confirm_email", token=token, _external=True)
     send_confirmation_email(user.email, confirm_url)
 
     return jsonify({
@@ -78,7 +78,10 @@ def login():
     """
     Log in a user and return a JWT access token.
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
 
     user, error = auth_service.login_user(data)
 
@@ -90,5 +93,5 @@ def login():
     return jsonify({
         "message": "Login successful",
         "access_token": access_token,
-        "user": serialize_user(user)
+        "user": serialize_user(user),
     }), 200

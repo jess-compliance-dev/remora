@@ -11,6 +11,9 @@ def serialize_message(message):
     """
     Convert a ChatMessage object into a JSON-serializable dictionary.
     """
+    if message is None:
+        return None
+
     return {
         "message_id": message.message_id,
         "session_id": message.session_id,
@@ -22,7 +25,7 @@ def serialize_message(message):
         "related_prompt_id": message.related_prompt_id,
         "related_story_id": message.related_story_id,
         "message_order": message.message_order,
-        "created_at": message.created_at.isoformat(),
+        "created_at": message.created_at.isoformat() if message.created_at else None,
     }
 
 
@@ -54,12 +57,18 @@ def create_message():
     """
     Create a new chat message for the currently authenticated user.
     """
-    data = request.get_json()
-    user_id = get_jwt_identity()
+    data = request.get_json(silent=True)
 
-    data["user_id"] = user_id
+    if not data:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
+    data["user_id"] = get_jwt_identity()
 
     message = chat_message_service.create_message(data)
+
+    if not message:
+        return jsonify({"error": "Unable to create message"}), 400
+
     return jsonify(serialize_message(message)), 201
 
 

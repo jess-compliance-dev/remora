@@ -11,27 +11,33 @@ def serialize_session(session):
     """
     Convert a ChatSession object into a JSON-serializable dictionary.
     """
+    if session is None:
+        return None
+
     return {
         "session_id": session.session_id,
         "profile_id": session.profile_id,
         "user_id": session.user_id,
         "category": session.category,
         "status": session.status,
-        "started_at": session.started_at.isoformat(),
+        "started_at": session.started_at.isoformat() if session.started_at else None,
         "ended_at": session.ended_at.isoformat() if session.ended_at else None,
     }
 
 
 @chat_session_bp.route("", methods=["GET"])
+@jwt_required(optional=True)
 def get_sessions():
     """
     Retrieve all chat sessions.
+    Optionally authenticated; adapt to @jwt_required() if access should be private only.
     """
     sessions = chat_session_service.get_sessions()
     return jsonify([serialize_session(session) for session in sessions]), 200
 
 
 @chat_session_bp.route("/<int:session_id>", methods=["GET"])
+@jwt_required(optional=True)
 def get_session(session_id):
     """
     Retrieve a single chat session by ID.
@@ -49,13 +55,41 @@ def get_session(session_id):
 def create_session():
     """
     Create a new guided chat session for the currently authenticated user.
+    Expected JSON example:
+    {
+        "profile_id": 1,
+        "category": "childhood",
+        "status": "active"
+    }
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
+    profile_id = data.get("profile_id")
+    category = data.get("category")
+
+    if profile_id is None:
+        return jsonify({"error": "profile_id is required"}), 400
+
+    if not category:
+        return jsonify({"error": "category is required"}), 400
+
     user_id = get_jwt_identity()
 
-    data["user_id"] = user_id
+    payload = {
+        "profile_id": profile_id,
+        "category": category,
+        "status": data.get("status", "active"),
+        "user_id": user_id,
+    }
 
-    session = chat_session_service.create_session(data)
+    session = chat_session_service.create_session(payload)
+
+    if not session:
+        return jsonify({"error": "Unable to create session"}), 400
+
     return jsonify(serialize_session(session)), 201
 
 
@@ -64,8 +98,18 @@ def create_session():
 def update_session(session_id):
     """
     Update a chat session.
+    Accepts partial updates.
+    Example JSON:
+    {
+        "category": "later_years",
+        "status": "completed"
+    }
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
     session = chat_session_service.update_session(session_id, data)
 
     if not session:
@@ -89,6 +133,7 @@ def delete_session(session_id):
 
 
 @chat_session_bp.route("/profile/<int:profile_id>", methods=["GET"])
+@jwt_required(optional=True)
 def get_sessions_by_profile(profile_id):
     """
     Retrieve all chat sessions for a memorial profile.

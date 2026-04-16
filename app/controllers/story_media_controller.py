@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+
 from app.services.story_media_service import StoryMediaService
 
 story_media_bp = Blueprint("story_media", __name__)
@@ -9,13 +10,16 @@ def serialize_story_media(media):
     """
     Convert a StoryMedia object into a JSON-serializable dictionary.
     """
+    if media is None:
+        return None
+
     return {
         "media_id": media.media_id,
         "story_id": media.story_id,
         "media_type": media.media_type,
         "file_url": media.file_url,
         "caption": media.caption,
-        "created_at": media.created_at.isoformat(),
+        "created_at": media.created_at.isoformat() if media.created_at else None,
     }
 
 
@@ -46,8 +50,16 @@ def create_story_media():
     """
     Create a new story media entry.
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
     media = story_media_service.create_media(data)
+
+    if not media:
+        return jsonify({"error": "Unable to create media"}), 400
+
     return jsonify(serialize_story_media(media)), 201
 
 

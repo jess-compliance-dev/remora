@@ -13,6 +13,9 @@ def serialize_story(story):
     """
     Convert a LifeStory object into a JSON-serializable dictionary.
     """
+    if story is None:
+        return None
+
     return {
         "story_id": story.story_id,
         "profile_id": story.profile_id,
@@ -29,8 +32,8 @@ def serialize_story(story):
         "location": story.location,
         "happened_at": story.happened_at.isoformat() if story.happened_at else None,
         "is_featured": story.is_featured,
-        "created_at": story.created_at.isoformat(),
-        "updated_at": story.updated_at.isoformat(),
+        "created_at": story.created_at.isoformat() if story.created_at else None,
+        "updated_at": story.updated_at.isoformat() if story.updated_at else None,
     }
 
 
@@ -38,13 +41,16 @@ def serialize_story_media(media):
     """
     Convert a StoryMedia object into a JSON-serializable dictionary.
     """
+    if media is None:
+        return None
+
     return {
         "media_id": media.media_id,
         "story_id": media.story_id,
         "media_type": media.media_type,
         "file_url": media.file_url,
         "caption": media.caption,
-        "created_at": media.created_at.isoformat(),
+        "created_at": media.created_at.isoformat() if media.created_at else None,
     }
 
 
@@ -70,9 +76,7 @@ def get_story(story_id):
     media_entries = story_media_service.get_media_by_story_id(story_id)
 
     story_data = serialize_story(story)
-    story_data["media"] = [
-        serialize_story_media(media) for media in media_entries
-    ]
+    story_data["media"] = [serialize_story_media(media) for media in media_entries]
 
     return jsonify(story_data), 200
 
@@ -83,12 +87,19 @@ def create_story():
     """
     Create a new life story for the currently authenticated user.
     """
-    data = request.get_json()
-    user_id = get_jwt_identity()
+    data = request.get_json(silent=True)
 
+    if not data:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
+    user_id = get_jwt_identity()
     data["created_by"] = user_id
 
     story = story_service.create_story(data)
+
+    if not story:
+        return jsonify({"error": "Unable to create story"}), 400
+
     return jsonify(serialize_story(story)), 201
 
 
@@ -98,7 +109,11 @@ def update_story(story_id):
     """
     Update an existing life story.
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
     story = story_service.update_story(story_id, data)
 
     if not story:
