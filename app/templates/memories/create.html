@@ -1,204 +1,142 @@
 {% extends "base.html" %}
-
 {% block title %}Add a Memory | Remora{% endblock %}
 
 {% block content %}
-<div class="page-container" style="max-width: 1100px; margin: 0 auto; padding: 32px 20px;">
+<div class="screen center-screen">
+    <div class="phone-card">
 
-    <div style="margin-bottom: 20px;">
-        <a href="/ui/memories/select-profile" style="text-decoration: none; color: #4f46e5; font-weight: 600;">
-            ← Choose another profile
-        </a>
-    </div>
-
-    <div style="margin-bottom: 24px;">
-        <h1 style="margin: 0 0 8px 0;">Add a memory</h1>
-        <p style="margin: 0; color: #6b7280;">
-            Save a memory in the way that feels most natural.
-        </p>
-    </div>
-
-    <div style="background: #ffffff; border-radius: 18px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);">
-        <div style="font-size: 14px; color: #6b7280; margin-bottom: 6px;">Saving memory for</div>
-        <div style="font-size: 24px; font-weight: 700; color: #1f2a44;">{{ profile.full_name }}</div>
-        <div style="margin-top: 6px; color: #6b7280;">
-            {{ profile.relationship or "Memorial profile" }}
-        </div>
-    </div>
-
-    <div style="
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 20px;
-        align-items: start;
-    ">
-        <!-- Write memory -->
-        <div style="background: #ffffff; border-radius: 18px; padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);">
-            <div style="font-size: 24px; margin-bottom: 12px;">✍️</div>
-            <h2 style="margin: 0 0 8px 0; font-size: 22px;">Write memory</h2>
-            <p style="margin: 0 0 18px 0; color: #6b7280; line-height: 1.5;">
-                Write down a meaningful moment, a phrase, a ritual, or a scene you never want to forget.
-            </p>
-
-            <form method="POST" action="/api/stories">
-                <input type="hidden" name="profile_id" value="{{ profile_id }}">
-                <input type="hidden" name="source_type" value="text">
-
-                <label for="title" style="display: block; font-weight: 600; margin-bottom: 8px;">Title</label>
-                <input
-                    id="title"
-                    name="title"
-                    type="text"
-                    placeholder="A quiet Sunday morning"
-                    style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; border: 1px solid #d1d5db; margin-bottom: 14px;"
-                >
-
-                <label for="story_text" style="display: block; font-weight: 600; margin-bottom: 8px;">Memory</label>
-                <textarea
-                    id="story_text"
-                    name="story_text"
-                    placeholder="Write the memory here..."
-                    style="width: 100%; min-height: 140px; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; border: 1px solid #d1d5db; resize: vertical; margin-bottom: 16px;"
-                ></textarea>
-
-                <button
-                    type="submit"
-                    style="width: 100%; padding: 12px 16px; border: none; border-radius: 12px; background: #1f2a44; color: #ffffff; font-weight: 600; cursor: pointer;"
-                >
-                    Save written memory
-                </button>
-            </form>
+        <!-- Back -->
+        <div style="margin-bottom: 12px;">
+            <a href="/ui/memories/select-profile" style="
+                text-decoration: none;
+                color: #2f355c;
+                font-size: 18px;
+                font-weight: 600;
+            ">
+                ← Back
+            </a>
         </div>
 
-        <!-- Record your voice -->
-        <div style="background: #ffffff; border-radius: 18px; padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);">
-            <div style="font-size: 24px; margin-bottom: 12px;">🎤</div>
-            <h2 style="margin: 0 0 8px 0; font-size: 22px;">Record your voice</h2>
-            <p style="margin: 0 0 18px 0; color: #6b7280; line-height: 1.5;">
-                Upload or record an audio memory to preserve the story in your own voice.
-            </p>
-
-            <form method="POST" action="/api/stories" enctype="multipart/form-data">
-                <input type="hidden" name="profile_id" value="{{ profile_id }}">
-                <input type="hidden" name="source_type" value="audio">
-
-                <label for="voice_title" style="display: block; font-weight: 600; margin-bottom: 8px;">Title</label>
-                <input
-                    id="voice_title"
-                    name="title"
-                    type="text"
-                    placeholder="Her laugh in the kitchen"
-                    style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; border: 1px solid #d1d5db; margin-bottom: 14px;"
-                >
-
-                <label for="audio_file" style="display: block; font-weight: 600; margin-bottom: 8px;">Upload voice recording</label>
-                <input
-                    id="audio_file"
-                    name="audio_file"
-                    type="file"
-                    accept="audio/*"
-                    style="width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid #d1d5db; margin-bottom: 16px; background: #fff;"
-                >
-
-                <button
-                    type="submit"
-                    style="width: 100%; padding: 12px 16px; border: none; border-radius: 12px; background: #1f2a44; color: #ffffff; font-weight: 600; cursor: pointer;"
-                >
-                    Save voice memory
-                </button>
-            </form>
+        <div class="progress-row top-progress">
+            <span class="progress-dot active"></span>
+            <span class="progress-line"></span>
+            <span class="progress-dot active"></span>
+            <span class="progress-line"></span>
+            <span class="progress-dot"></span>
         </div>
 
-        <!-- Add a photo memory -->
-        <div style="background: #ffffff; border-radius: 18px; padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);">
-            <div style="font-size: 24px; margin-bottom: 12px;">📷</div>
-            <h2 style="margin: 0 0 8px 0; font-size: 22px;">Add a photo memory</h2>
-            <p style="margin: 0 0 18px 0; color: #6b7280; line-height: 1.5;">
-                Upload a photo and add a caption so the moment can be remembered with context.
+        <div style="text-align: center; margin-bottom: 22px;">
+            <h1 style="margin-bottom: 8px;">Add your first memory</h1>
+            <p class="muted" style="max-width: 260px; margin: 0 auto;">
+                Share something meaningful to help bring memories to life.
             </p>
-
-            <form method="POST" action="/api/story-media" enctype="multipart/form-data">
-                <input type="hidden" name="profile_id" value="{{ profile_id }}">
-                <input type="hidden" name="media_type" value="photo">
-
-                <label for="photo_caption" style="display: block; font-weight: 600; margin-bottom: 8px;">Caption</label>
-                <input
-                    id="photo_caption"
-                    name="caption"
-                    type="text"
-                    placeholder="The day she danced in the courtyard"
-                    style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; border: 1px solid #d1d5db; margin-bottom: 14px;"
-                >
-
-                <label for="photo_file" style="display: block; font-weight: 600; margin-bottom: 8px;">Upload photo</label>
-                <input
-                    id="photo_file"
-                    name="media_file"
-                    type="file"
-                    accept="image/*"
-                    style="width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid #d1d5db; margin-bottom: 16px; background: #fff;"
-                >
-
-                <button
-                    type="submit"
-                    style="width: 100%; padding: 12px 16px; border: none; border-radius: 12px; background: #1f2a44; color: #ffffff; font-weight: 600; cursor: pointer;"
-                >
-                    Save photo memory
-                </button>
-            </form>
         </div>
 
-        <!-- Add a video memory -->
-        <div style="background: #ffffff; border-radius: 18px; padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);">
-            <div style="font-size: 24px; margin-bottom: 12px;">🎥</div>
-            <h2 style="margin: 0 0 8px 0; font-size: 22px;">Add a video memory</h2>
-            <p style="margin: 0 0 18px 0; color: #6b7280; line-height: 1.5;">
-                Upload a short video memory to preserve voice, movement, and atmosphere together.
-            </p>
-
-            <form method="POST" action="/api/story-media" enctype="multipart/form-data">
-                <input type="hidden" name="profile_id" value="{{ profile_id }}">
-                <input type="hidden" name="media_type" value="video">
-
-                <label for="video_caption" style="display: block; font-weight: 600; margin-bottom: 8px;">Caption</label>
-                <input
-                    id="video_caption"
-                    name="caption"
-                    type="text"
-                    placeholder="A birthday toast at home"
-                    style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; border: 1px solid #d1d5db; margin-bottom: 14px;"
-                >
-
-                <label for="video_file" style="display: block; font-weight: 600; margin-bottom: 8px;">Upload video</label>
-                <input
-                    id="video_file"
-                    name="media_file"
-                    type="file"
-                    accept="video/*"
-                    style="width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid #d1d5db; margin-bottom: 16px; background: #fff;"
-                >
-
-                <button
-                    type="submit"
-                    style="width: 100%; padding: 12px 16px; border: none; border-radius: 12px; background: #1f2a44; color: #ffffff; font-weight: 600; cursor: pointer;"
-                >
-                    Save video memory
-                </button>
-            </form>
+        <div style="
+            background: #ffffff;
+            border: 1px solid #ececf3;
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 20px;
+            text-align: center;
+        ">
+            <div style="font-size: 12px; color: #8b90b3; margin-bottom: 4px;">Saving memory for</div>
+            <div style="font-weight: 700; font-size: 18px; color: #2f355c;">
+                {{ profile.full_name }}
+            </div>
+            <div class="muted" style="font-size: 14px; margin-top: 4px;">
+                {{ profile.relationship or "Memorial profile" }}
+            </div>
         </div>
 
-        <!-- Create a life story -->
-        <a
-            href="/ui/chat/start?profile_id={{ profile_id }}"
-            style="display: block; text-decoration: none; color: inherit; background: #ffffff; border-radius: 18px; padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);"
-        >
-            <div style="font-size: 24px; margin-bottom: 12px;">✨</div>
-            <h2 style="margin: 0 0 8px 0; font-size: 22px;">Create a life story</h2>
-            <p style="margin: 0; color: #6b7280; line-height: 1.5;">
-                Start a guided conversation and let Remora help you turn memories into a fuller life story.
-            </p>
-        </a>
+        <div style="
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        ">
+            <a href="/ui/memories/write?profile_id={{ profile_id }}" style="
+                text-decoration: none;
+                color: inherit;
+                background: #f7f8fc;
+                border: 1px solid #ececf3;
+                border-radius: 16px;
+                padding: 18px 12px;
+                text-align: center;
+                display: block;
+            ">
+                <div style="font-size: 24px; margin-bottom: 8px;">📝</div>
+                <div style="font-weight: 600; color: #2f355c;">Text</div>
+            </a>
+
+            <a href="/ui/memories/voice?profile_id={{ profile_id }}" style="
+                text-decoration: none;
+                color: inherit;
+                background: #f7f8fc;
+                border: 1px solid #ececf3;
+                border-radius: 16px;
+                padding: 18px 12px;
+                text-align: center;
+                display: block;
+            ">
+                <div style="font-size: 24px; margin-bottom: 8px;">🎤</div>
+                <div style="font-weight: 600; color: #2f355c;">Voice</div>
+            </a>
+
+            <a href="/ui/memories/photo?profile_id={{ profile_id }}" style="
+                text-decoration: none;
+                color: inherit;
+                background: #f7f8fc;
+                border: 1px solid #ececf3;
+                border-radius: 16px;
+                padding: 18px 12px;
+                text-align: center;
+                display: block;
+            ">
+                <div style="font-size: 24px; margin-bottom: 8px;">🖼️</div>
+                <div style="font-weight: 600; color: #2f355c;">Photo</div>
+            </a>
+
+            <a href="/ui/memories/video?profile_id={{ profile_id }}" style="
+                text-decoration: none;
+                color: inherit;
+                background: #f7f8fc;
+                border: 1px solid #ececf3;
+                border-radius: 16px;
+                padding: 18px 12px;
+                text-align: center;
+                display: block;
+            ">
+                <div style="font-size: 24px; margin-bottom: 8px;">🎥</div>
+                <div style="font-weight: 600; color: #2f355c;">Video</div>
+            </a>
+        </div>
+
+
+     <div style="
+            display: flex;
+            gap: 10px;
+        ">
+            <a href="/ui/dashboard" class="btn wide-btn" style="
+                flex: 1;
+                background: #f3f4f8;
+                color: #6b7280;
+                text-align: center;
+                text-decoration: none;
+                border: none;
+            ">
+                Cancel
+            </a>
+
+            <a href="/ui/memories?profile_id={{ profile_id }}" class="btn btn-secondary wide-btn" style="
+                flex: 1;
+                text-align: center;
+                text-decoration: none;
+            ">
+                View memories
+            </a>
+        </div>
+
     </div>
 </div>
 {% endblock %}
-
