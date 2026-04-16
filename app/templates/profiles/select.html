@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Select Profile | Remora{% endblock %}
+
+{% block content %}
+<div style="max-width: 860px; margin: 0 auto; padding: 28px 20px 56px;">
+
+    <div style="margin-bottom: 28px;">
+        <h1 style="
+            margin: 0 0 8px 0;
+            font-size: 36px;
+            line-height: 1.1;
+            color: #2f355c;
+            text-align: left;
+        ">
+            Select a profile
+        </h1>
+        <p class="muted" style="
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.6;
+        ">
+            Choose who you want to remember before entering the dashboard.
+        </p>
+    </div>
+
+    <div style="
+        display: grid;
+        gap: 22px;
+    ">
+        <!-- Create new profile -->
+        <section style="
+            background: #ffffff;
+            border: 1px solid #e7e9f4;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(86, 97, 160, 0.08);
+        ">
+            <div style="
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 14px;
+            ">
+                <div style="
+                    width: 58px;
+                    height: 58px;
+                    border-radius: 18px;
+                    background: #eef0ff;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 26px;
+                ">🕊️</div>
+
+                <div>
+                    <div style="
+                        font-size: 24px;
+                        font-weight: 700;
+                        color: #2f355c;
+                        margin-bottom: 4px;
+                    ">
+                        Create a memorial profile
+                    </div>
+                    <div class="muted" style="font-size: 15px; line-height: 1.6;">
+                        Create a new profile for the person whose memories you want to preserve.
+                    </div>
+                </div>
+            </div>
+
+            <a href="/ui/profiles/create" class="btn btn-primary" style="
+                width: auto;
+                min-width: 180px;
+                text-align: center;
+                text-decoration: none;
+            ">
+                Create profile
+            </a>
+        </section>
+
+        <!-- Select existing profile -->
+        <section style="
+            background: #ffffff;
+            border: 1px solid #e7e9f4;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(86, 97, 160, 0.08);
+        ">
+            <div style="margin-bottom: 18px;">
+                <div style="
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #2f355c;
+                    margin-bottom: 6px;
+                ">
+                    Select profile
+                </div>
+                <div class="muted" style="font-size: 15px; line-height: 1.6;">
+                    Continue with one of your existing memorial profiles.
+                </div>
+            </div>
+
+            <div id="profiles-list" style="display:grid; gap: 14px;"></div>
+            <div id="profiles-empty" class="muted" style="display:none; font-size:15px;">
+                No profiles yet.
+            </div>
+            <div id="profiles-error" class="error-text" style="text-align:left; display:none;"></div>
+        </section>
+    </div>
+</div>
+
+<script>
+    function selectProfile(profile) {
+        localStorage.setItem("active_profile_id", String(profile.profile_id));
+        localStorage.setItem("active_profile_name", profile.full_name || "");
+        localStorage.setItem("active_profile_relationship", profile.relationship || "");
+        localStorage.setItem("active_profile_image_url", profile.profile_image_url || "");
+        window.location.href = "/ui/dashboard";
+    }
+
+    function renderProfile(profile) {
+        const imageHtml = profile.profile_image_url
+            ? `<img src="${profile.profile_image_url}" alt="${profile.full_name}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid #e7e9f4;">`
+            : `<div style="width:64px;height:64px;border-radius:50%;background:#eef0ff;display:flex;align-items:center;justify-content:center;font-size:24px;color:#5c63d6;flex-shrink:0;">👤</div>`;
+
+        return `
+            <button type="button" data-profile-id="${profile.profile_id}" style="
+                width: 100%;
+                text-align: left;
+                background: #f8f9ff;
+                border: 1px solid #eceef8;
+                border-radius: 20px;
+                padding: 16px 18px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                cursor: pointer;
+            ">
+                <div style="display:flex; align-items:center; gap:16px; min-width:0;">
+                    ${imageHtml}
+                    <div style="min-width:0;">
+                        <div style="
+                            font-size: 22px;
+                            font-weight: 700;
+                            color: #2f355c;
+                            margin-bottom: 4px;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        ">
+                            ${profile.full_name}
+                        </div>
+                        <div style="
+                            font-size: 14px;
+                            color: #8b90b3;
+                            margin-bottom: ${profile.short_description ? "8px" : "0"};
+                        ">
+                            ${profile.relationship || "Memorial profile"}
+                        </div>
+                        ${profile.short_description ? `
+                            <div style="
+                                font-size: 14px;
+                                color: #7d84a6;
+                                line-height: 1.5;
+                            ">
+                                ${profile.short_description}
+                            </div>
+                        ` : ``}
+                    </div>
+                </div>
+
+                <div style="
+                    flex-shrink: 0;
+                    padding: 10px 14px;
+                    border-radius: 14px;
+                    background: #ffffff;
+                    border: 1px solid #eceef8;
+                    color: #5c63d6;
+                    font-size: 14px;
+                    font-weight: 700;
+                ">
+                    Select
+                </div>
+            </button>
+        `;
+    }
+
+    async function loadProfiles() {
+        const token = localStorage.getItem("access_token");
+        const list = document.getElementById("profiles-list");
+        const empty = document.getElementById("profiles-empty");
+        const error = document.getElementById("profiles-error");
+
+        if (!token) {
+            window.location.href = "/ui/login";
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/profiles", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Unable to load profiles.");
+            }
+
+            const profiles = await response.json();
+
+            if (!profiles || profiles.length === 0) {
+                empty.style.display = "block";
+                return;
+            }
+
+            list.innerHTML = profiles.map(renderProfile).join("");
+
+            list.querySelectorAll("button[data-profile-id]").forEach((button) => {
+                const profileId = Number(button.getAttribute("data-profile-id"));
+                const profile = profiles.find(p => p.profile_id === profileId);
+                button.addEventListener("click", () => selectProfile(profile));
+            });
+        } catch (err) {
+            error.style.display = "block";
+            error.textContent = err.message || "Something went wrong.";
+        }
+    }
+
+    loadProfiles();
+</script>
+{% endblock %}

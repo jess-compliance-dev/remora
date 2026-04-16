@@ -1,22 +1,301 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Remora</title>
+    <title>{% block title %}Remora{% endblock %}</title>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            font-family: Arial, sans-serif;
+            background: #f5f6fb;
+            color: #2f355c;
+        }
+
+        body {
+            min-height: 100vh;
+        }
+
+        .app-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            padding: 10px 14px 0;
+        }
+
+        .topbar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .brand-link {
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 96px;
+            height: auto;
+            display: block;
+        }
+
+        .main-content {
+            flex: 1;
+            padding-bottom: {% if show_bottom_nav %}92px{% else %}24px{% endif %};
+        }
+
+        .screen {
+            min-height: calc(100vh - 56px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .center-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .phone-card {
+            width: 100%;
+            max-width: 360px;
+            background: #ffffff;
+            border: 1px solid #e7e9f4;
+            border-radius: 28px;
+            padding: 22px 18px;
+            box-shadow: 0 10px 30px rgba(86, 97, 160, 0.08);
+        }
+
+        .stack > * + * {
+            margin-top: 12px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #dfe3f2;
+            border-radius: 16px;
+            background: #ffffff;
+            font-size: 15px;
+            color: #2f355c;
+            outline: none;
+        }
+
+        .input:focus {
+            border-color: #b7bef2;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 16px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            background: #7b82d8;
+            color: #ffffff;
+        }
+
+        .btn-secondary {
+            background: #eef0ff;
+            color: #5c63d6;
+        }
+
+        .wide-btn {
+            width: 100%;
+        }
+
+        .muted {
+            color: #8b90b3;
+        }
+
+        .foot-link {
+            margin-top: 16px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .foot-link a {
+            color: #5c63d6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .progress-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #d8dcf0;
+            display: inline-block;
+        }
+
+        .progress-dot.active {
+            background: #5c63d6;
+        }
+
+        .progress-line {
+            width: 28px;
+            height: 2px;
+            background: #d8dcf0;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            color: #2f355c;
+            text-align: center;
+        }
+
+        .error-text {
+            color: #dc2626;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .success-text {
+            color: #15803d;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ffffff;
+            border-top: 1px solid #e7e9f4;
+            box-shadow: 0 -6px 20px rgba(86, 97, 160, 0.06);
+            z-index: 1000;
+        }
+
+        .bottom-nav-inner {
+            max-width: 360px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 10px 8px 12px;
+            gap: 2px;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #8b90b3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 4px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            color: #5c63d6;
+            font-weight: 700;
+        }
+
+        .nav-icon {
+            font-size: 17px;
+            line-height: 1;
+        }
+
+        @media (max-width: 560px) {
+            .screen {
+                padding: 14px;
+            }
+
+            .phone-card {
+                border-radius: 24px;
+                padding: 20px 16px;
+            }
+
+            .brand-logo {
+                width: 52px;
+            }
+        }
+    </style>
+
+    {% block head %}{% endblock %}
 </head>
-
 <body>
+<div class="app-shell">
 
-    <div class="app-shell">
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a href="/ui/dashboard" class="brand-link" aria-label="Back to dashboard">
+                <img
+                    src="{{ url_for('static', filename='img/logo.png') }}"
+                    alt="Remora logo"
+                    class="brand-logo"
+                >
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
-    <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% if show_bottom_nav %}
+    <nav class="bottom-nav" aria-label="Main navigation">
+        <div class="bottom-nav-inner">
+            <a href="/ui/chat-home" class="nav-item {% if active_tab == 'chat' %}active{% endif %}">
+                <div class="nav-icon">💬</div>
+                <div>Chat</div>
+            </a>
 
+            <a href="/ui/memories" class="nav-item {% if active_tab == 'memories' %}active{% endif %}">
+                <div class="nav-icon">🖼️</div>
+                <div>Memories</div>
+            </a>
+
+            <a href="/ui/time-capsule" class="nav-item {% if active_tab == 'time_capsule' %}active{% endif %}">
+                <div class="nav-icon">🎁</div>
+                <div>Time Capsule</div>
+            </a>
+
+            <a href="/ui/select-profiles" class="nav-item {% if active_tab == 'profile' %}active{% endif %}">
+                <div class="nav-icon">👤</div>
+                <div>Profile</div>
+            </a>
+        </div>
+    </nav>
+    {% endif %}
+
+</div>
+{% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Memories | Remora{% endblock %}
+
+{% block content %}
+<div class="screen center-screen">
+    <div class="phone-card">
+
+        <div style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        ">
+            <div>
+                <h1 style="text-align:left; margin-bottom: 4px;">Memories</h1>
+                <p class="muted" style="font-size: 14px;">Revisit saved moments</p>
+            </div>
+
+            <a href="/ui/memories/select-profile" class="btn btn-secondary" style="
+                width: auto;
+                padding: 10px 14px;
+                border-radius: 14px;
+                text-decoration: none;
+                font-size: 14px;
+            ">
+                + Add
+            </a>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+            <input
+                class="input"
+                type="text"
+                placeholder="Search memories..."
+            >
+        </div>
+
+        <div style="
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            color: #8b90b3;
+            margin-bottom: 16px;
+            justify-content: space-between;
+        ">
+            <span style="color:#5c63d6; font-weight:700;">All</span>
+            <span>Photos</span>
+            <span>Voices</span>
+            <span>Videos</span>
+            <span>Text</span>
+        </div>
+
+        <div style="
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        ">
+
+            <!-- MEMORY 1 -->
+            <a href="/ui/memories/1" style="text-decoration:none; color:inherit;">
+                <div style="
+                    background: #f7f8fc;
+                    border: 1px solid #ececf3;
+                    border-radius: 16px;
+                    padding: 12px;
+                    transition: transform 0.15s ease;
+                ">
+                    <div style="height: 70px; background:#e8eaf8; border-radius: 12px; margin-bottom: 10px;"></div>
+                    <div style="font-weight:700; font-size:14px; color:#2f355c;">
+                        Family Dinner
+                    </div>
+                    <div class="muted" style="font-size:12px; margin-top:4px;">
+                        Mar 18, 2023
+                    </div>
+                </div>
+            </a>
+
+            <!-- MEMORY 2 -->
+            <a href="/ui/memories/2" style="text-decoration:none; color:inherit;">
+                <div style="
+                    background: #f7f8fc;
+                    border: 1px solid #ececf3;
+                    border-radius: 16px;
+                    padding: 12px;
+                ">
+                    <div style="
+                        height: 70px;
+                        border-radius: 12px;
+                        margin-bottom: 10px;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-size:28px;
+                        background:#eef0ff;
+                    ">
+                        🎤
+                    </div>
+                    <div style="font-weight:700; font-size:14px; color:#2f355c;">
+                        Voice Note
+                    </div>
+                    <div class="muted" style="font-size:12px; margin-top:4px;">
+                        Apr 2, 2022
+                    </div>
+                </div>
+            </a>
+
+            <!-- MEMORY 3 -->
+            <a href="/ui/memories/3" style="text-decoration:none; color:inherit;">
+                <div style="
+                    background: #f7f8fc;
+                    border: 1px solid #ececf3;
+                    border-radius: 16px;
+                    padding: 12px;
+                ">
+                    <div style="height: 70px; background:#e8eaf8; border-radius: 12px; margin-bottom: 10px;"></div>
+                    <div style="font-weight:700; font-size:14px; color:#2f355c;">
+                        Our Trip
+                    </div>
+                    <div class="muted" style="font-size:12px; margin-top:4px;">
+                        Jul 14, 2021
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}
