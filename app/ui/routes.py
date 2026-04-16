@@ -17,12 +17,11 @@ def render_ui(template_name, *, active_tab=None, show_bottom_nav=False, **contex
 
 @ui_bp.route("/ui/login")
 def login():
-    return render_ui("auth/login.html", show_bottom_nav=False)
-
+    return render_ui("auth/login.html", show_bottom_nav=False, show_topbar=False)
 
 @ui_bp.route("/ui/register")
 def register():
-    return render_ui("auth/register.html", show_bottom_nav=False)
+    return render_ui("auth/register.html", show_bottom_nav=False, show_topbar=False)
 
 
 @ui_bp.route("/ui/check-email")

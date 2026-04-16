@@ -1,50 +1,105 @@
 {% extends "base.html" %}
+{% block title %}Log In | Remora{% endblock %}
+
 {% block content %}
+<div style="max-width: 1180px; margin: 0 auto; padding: 32px 20px 64px;">
 
-<div class="screen center-screen">
-    <div class="phone-card auth-card">
+    <div style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 120px);
+    ">
 
-        <div style="text-align:center; margin-bottom: 18px;">
-            <h1>Welcome back</h1>
-            <p class="muted">Log in to continue with Remora.</p>
+        <div style="
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            border: 1px solid #e7e9f4;
+            border-radius: 30px;
+            padding: 34px 30px 28px;
+            box-shadow: 0 16px 40px rgba(86, 97, 160, 0.10);
+        ">
+
+            <div style="text-align: center; margin-bottom: 26px;">
+                <img src="{{ url_for('static', filename='img/logo.png') }}"
+                     alt="Remora logo"
+                     style="width: 90px; height: auto; display: block; margin: 0 auto 16px auto;">
+
+                <h2 style="
+                    margin: 0 0 8px 0;
+                    font-size: 34px;
+                    color: #2f355c;
+                    line-height: 1.1;
+                ">
+                    Log in
+                </h2>
+
+                <p class="muted" style="
+                    margin: 0;
+                    font-size: 16px;
+                    line-height: 1.6;
+                ">
+                    Continue building your memory space.
+                </p>
+            </div>
+
+            <form id="login-form" class="stack">
+                <input
+                    id="email"
+                    name="email"
+                    class="input"
+                    type="email"
+                    placeholder="Email address"
+                    required
+                >
+
+                <input
+                    id="password"
+                    name="password"
+                    class="input"
+                    type="password"
+                    placeholder="Password"
+                    required
+                >
+
+                <button id="submit-btn" class="btn btn-primary" type="submit">
+                    Log in
+                </button>
+            </form>
+
+            <p id="login-error" style="color:#dc2626; margin-top:12px; min-height:20px;"></p>
+
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:14px;
+                margin: 16px 0 18px;
+                color:#a0a6c2;
+                font-size:14px;
+            ">
+                <div style="height:1px; background:#e7e9f4; flex:1;"></div>
+                <span>or</span>
+                <div style="height:1px; background:#e7e9f4; flex:1;"></div>
+            </div>
+
+            <div class="stack">
+                <button class="btn btn-secondary" type="button">Continue with Google</button>
+                <button class="btn btn-secondary" type="button">Continue with Apple</button>
+            </div>
+
+            <p class="foot-link" style="margin-top: 20px;">
+                Don’t have an account?
+                <a href="/ui/register">Create account</a>
+            </p>
         </div>
-
-        <form id="login-form" class="stack">
-            <input
-                id="email"
-                name="email"
-                class="input"
-                type="email"
-                placeholder="Email address"
-                required
-            >
-
-            <input
-                id="password"
-                name="password"
-                class="input"
-                type="password"
-                placeholder="Password"
-                required
-            >
-
-            <button id="login-btn" class="btn btn-primary wide-btn" type="submit">
-                Log in
-            </button>
-        </form>
-
-        <p id="login-error" class="error-text"></p>
-
-        <p class="foot-link">
-            <a href="/ui/register">Create account</a>
-        </p>
     </div>
 </div>
 
 <script>
     const form = document.getElementById("login-form");
     const errorBox = document.getElementById("login-error");
-    const submitBtn = document.getElementById("login-btn");
+    const submitBtn = document.getElementById("submit-btn");
 
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
@@ -88,5 +143,4 @@
         }
     });
 </script>
-
 {% endblock %}
