@@ -17,6 +17,7 @@
 
             <input
                 id="username"
+                name="username"
                 class="input"
                 type="text"
                 placeholder="Username"
@@ -25,6 +26,7 @@
 
             <input
                 id="email"
+                name="email"
                 class="input"
                 type="email"
                 placeholder="Email address"
@@ -33,13 +35,14 @@
 
             <input
                 id="password"
+                name="password"
                 class="input"
                 type="password"
                 placeholder="Password"
                 required
             >
 
-            <button class="btn btn-primary" type="submit">
+            <button id="submit-btn" class="btn btn-primary" type="submit">
                 Sign up
             </button>
 
@@ -47,6 +50,7 @@
 
         <!-- Fehleranzeige -->
         <p id="error-message" style="color:red; margin-top:10px;"></p>
+        <p id="success-message" style="color:green; margin-top:10px;"></p>
 
         <!-- Divider -->
         <div class="divider"><span>or</span></div>
@@ -65,4 +69,57 @@
 
     </div>
 </div>
+
+<script>
+    const form = document.getElementById("register-form");
+    const errorBox = document.getElementById("error-message");
+    const successBox = document.getElementById("success-message");
+    const submitBtn = document.getElementById("submit-btn");
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        errorBox.textContent = "";
+        successBox.textContent = "";
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Creating...";
+
+        try {
+            const payload = {
+                username: document.getElementById("username").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                password: document.getElementById("password").value
+            };
+
+            const response = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Registration failed.");
+            }
+
+            successBox.textContent = data.message || "Account created successfully.";
+
+            // kleine UX-Verbesserung: kurze Pause → dann Login
+            setTimeout(() => {
+                window.location.href = "/ui/login";
+            }, 1200);
+
+        } catch (error) {
+            errorBox.textContent = error.message || "Something went wrong.";
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Sign up";
+        }
+    });
+</script>
+
 {% endblock %}

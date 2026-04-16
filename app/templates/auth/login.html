@@ -2,19 +2,17 @@
 {% block content %}
 
 <div class="screen center-screen">
-    <div class="phone-card auth-card">
+    <div class="phone-card auth-screen">
 
-        <img src="{{ url_for('static', filename='img/logo.png') }}"
-             class="logo"
-             alt="Remora logo">
-
-        <h1>Welcome back</h1>
-        <p class="muted">Sign in to continue preserving memories.</p>
+        <div class="profile-create-header">
+            <h1>Welcome back</h1>
+            <p class="muted">Log in to continue with Remora.</p>
+        </div>
 
         <form id="login-form" class="stack">
-
             <input
-                id="login-email"
+                id="email"
+                name="email"
                 class="input"
                 type="email"
                 placeholder="Email address"
@@ -22,34 +20,73 @@
             >
 
             <input
-                id="login-password"
+                id="password"
+                name="password"
                 class="input"
                 type="password"
                 placeholder="Password"
                 required
             >
 
-            <button class="btn btn-primary" type="submit">
+            <button id="login-btn" class="btn btn-primary wide-btn" type="submit">
                 Log in
             </button>
-
         </form>
 
         <p id="login-error" class="error-text"></p>
 
-        <div class="divider"><span>or</span></div>
-
-        <div class="stack">
-            <button class="btn btn-secondary" type="button">Continue with Google</button>
-            <button class="btn btn-secondary" type="button">Continue with Apple</button>
-        </div>
-
         <p class="foot-link">
-            No account yet?
-            <a href="/ui/register">Create one</a>
+            <a href="/ui/register">Create account</a>
         </p>
-
     </div>
 </div>
+
+<script>
+    const form = document.getElementById("login-form");
+    const errorBox = document.getElementById("login-error");
+    const submitBtn = document.getElementById("login-btn");
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        errorBox.textContent = "";
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Logging in...";
+
+        try {
+            const payload = {
+                email: document.getElementById("email").value.trim(),
+                password: document.getElementById("password").value
+            };
+
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Login failed.");
+            }
+
+            if (!data.access_token) {
+                throw new Error("No access token received.");
+            }
+
+            localStorage.setItem("access_token", data.access_token);
+            window.location.href = "/ui/dashboard";
+
+        } catch (error) {
+            errorBox.textContent = error.message || "Something went wrong.";
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Log in";
+        }
+    });
+</script>
 
 {% endblock %}

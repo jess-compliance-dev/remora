@@ -28,34 +28,31 @@ def email_confirmed():
 
 
 @ui_bp.route("/ui/dashboard")
-@jwt_required(optional=True)
 def dashboard():
     """
-    Dashboard with the 4 core functions:
-    1) Create a memorial profile
-    2) View Profiles
-    3) Add a memory
-    4) View life stories
+    Dashboard with the 4 core functions.
+    The Add a memory state is handled client-side via /api/profiles.
+    """
+    return render_template("dashboard/index.html")
+
+
+@ui_bp.route("/ui/profiles")
+@jwt_required(optional=True)
+def profiles():
+    """
+    View all profiles for the current user.
     """
     user_id = get_jwt_identity()
     profiles = []
 
     if user_id:
-        # Falls dein Service nur get_profiles_by_owner_id hat, ist das korrekt so.
         profiles = profile_service.get_profiles_by_owner_id(user_id)
 
-    has_profiles = len(profiles) > 0
-
     return render_template(
-        "dashboard/index.html",
+        "profiles/list.html",
         profiles=profiles,
-        has_profiles=has_profiles
+        has_profiles=len(profiles) > 0
     )
-
-
-@ui_bp.route("/ui/profiles")
-def profiles():
-    return render_template("profiles/list.html")
 
 
 @ui_bp.route("/ui/profiles/create")
@@ -64,8 +61,21 @@ def create_profile():
 
 
 @ui_bp.route("/ui/profiles/<int:profile_id>")
+@jwt_required(optional=True)
 def profile_detail(profile_id):
-    return render_template("profiles/detail.html", profile_id=profile_id)
+    """
+    View one profile.
+    """
+    profile = profile_service.get_profile_by_id(profile_id)
+
+    if not profile:
+        return redirect(url_for("ui.profiles"))
+
+    return render_template(
+        "profiles/detail.html",
+        profile=profile,
+        profile_id=profile_id
+    )
 
 
 @ui_bp.route("/ui/life-stories")

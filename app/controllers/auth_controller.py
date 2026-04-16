@@ -11,9 +11,6 @@ auth_service = AuthService()
 
 
 def serialize_user(user):
-    """
-    Convert a User object into a JSON-serializable dictionary.
-    """
     if user is None:
         return None
 
@@ -22,39 +19,54 @@ def serialize_user(user):
         "username": user.username,
         "email": user.email,
         "is_active": user.is_active,
-        "created_at": user.created_at.isoformat() if user.created_at else None,
-        "updated_at": user.updated_at.isoformat() if user.updated_at else None,
+        "created_at": user.created_at.isoformat() if getattr(user, "created_at", None) else None,
+        "updated_at": user.updated_at.isoformat() if getattr(user, "updated_at", None) else None,
     }
 
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    """
-    Register a new user and send an email confirmation link.
-    """
     data = request.get_json(silent=True)
 
     if not data:
         return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    user, error = auth_service.register_user(data)
+    username = (data.get("username") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    if not username:
+        return jsonify({"error": "username is required"}), 400
+
+    if not email:
+        return jsonify({"error": "email is required"}), 400
+
+    if not password:
+        return jsonify({"error": "password is required"}), 400
+
+    user, error = auth_service.register_user({
+        "username": username,
+        "email": email,
+        "password": password
+    })
 
     if error:
         return jsonify({"error": error}), 400
 
-    token = generate_confirmation_token(user.email)
-    confirm_url = url_for("auth.confirm_email", token=token, _external=True)
-    send_confirmation_email(user.email, confirm_url)
+    # 🔥 WICHTIG: User sofort aktivieren
+    user.is_active = True
+    db.session.commit()
 
     return jsonify({
-        "message": "User created. Please check your email to confirm your account."
+        "message": "User created successfully.",
+        "user": serialize_user(user)
     }), 201
 
 
 @auth_bp.route("/confirm/<token>", methods=["GET"])
 def confirm_email(token):
     """
-    Confirm a user's email address using the confirmation token.
+    Confirm a user's email address using the token from the email.
     """
     email = confirm_token(token)
 
@@ -83,7 +95,16 @@ def login():
     if not data:
         return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    user, error = auth_service.login_user(data)
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    if not email or not password:
+        return jsonify({"error": "email and password are required"}), 400
+
+    user, error = auth_service.login_user({
+        "email": email,
+        "password": password
+    })
 
     if error:
         return jsonify({"error": error}), 401

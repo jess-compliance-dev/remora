@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from flask import Blueprint, request, jsonify, current_app, redirect
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 
@@ -65,8 +65,7 @@ def get_profile(profile_id):
 @jwt_required()
 def create_profile():
     """
-    Create a new memorial profile.
-    Supports JSON requests from the UI.
+    Create a new memorial profile from JSON.
     """
     data = request.get_json(silent=True)
 
@@ -110,7 +109,6 @@ def create_profile():
 def upload_profile_image():
     """
     Upload a profile image and return the file URL.
-    Expected multipart/form-data with field name: image
     """
     if "image" not in request.files:
         return jsonify({"error": "No image file provided"}), 400
