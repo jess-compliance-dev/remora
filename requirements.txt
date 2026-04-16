@@ -1,0 +1,8 @@
+Flask
+python-dotenv
+Flask-JWT-Extended
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Mail
+itsdangerous
+openai
