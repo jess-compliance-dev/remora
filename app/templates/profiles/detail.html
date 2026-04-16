@@ -3,22 +3,45 @@
 
 <div class="screen">
 
-    <div class="profile-header">
+    <div class="profile-hero">
 
-        <div class="avatar xl"></div>
+        <div class="hero-top">
+            <a href="/ui/dashboard" class="back-link">← Back</a>
 
-        <h1 id="profile-name">Loading...</h1>
-        <p id="profile-sub" class="muted"></p>
+            <button onclick="logout()" class="logout-btn">
+                Log out
+            </button>
+        </div>
+
+        <div class="profile-hero-content">
+
+            <div class="avatar xl" id="profile-avatar"></div>
+
+            <h1 id="profile-name">Loading...</h1>
+
+            <p id="profile-relationship" class="muted"></p>
+
+            <p id="profile-dates" class="muted small-text"></p>
+
+        </div>
 
         <div class="profile-actions">
-            <button class="btn btn-primary" onclick="goToCreateMemory()">Add memory</button>
-            <button class="btn btn-secondary" onclick="goToChat()">Start conversation</button>
+            <button class="btn btn-primary" onclick="goToCreateMemory()">
+                Add memory
+            </button>
+
+            <button class="btn btn-secondary" onclick="goToChat()">
+                Start conversation
+            </button>
         </div>
 
     </div>
 
     <div class="section-block">
-        <h2>Memories</h2>
+        <div class="section-head">
+            <h2>Memories</h2>
+        </div>
+
         <div id="stories-container" class="profiles-stack"></div>
     </div>
 
@@ -37,7 +60,23 @@
         const data = await res.json();
 
         document.getElementById("profile-name").innerText = data.full_name;
-        document.getElementById("profile-sub").innerText = data.relationship || "";
+        document.getElementById("profile-relationship").innerText = data.relationship || "";
+
+        // Avatar
+        if (data.profile_image_url) {
+            document.getElementById("profile-avatar").innerHTML =
+                `<img src="${data.profile_image_url}" />`;
+        }
+
+        // Dates
+        document.getElementById("profile-dates").innerText =
+            formatDates(data.birth_date, data.death_date);
+    }
+
+    function formatDates(birth, death) {
+        if (birth && death) return `${birth} – ${death}`;
+        if (birth) return `Born ${birth}`;
+        return "";
     }
 
     async function loadStories() {
@@ -52,7 +91,12 @@
         const container = document.getElementById("stories-container");
 
         if (!data.length) {
-            container.innerHTML = "<p>No memories yet.</p>";
+            container.innerHTML = `
+                <div class="empty-state-card">
+                    <h3>No memories yet</h3>
+                    <p class="muted">Start capturing meaningful moments.</p>
+                </div>
+            `;
             return;
         }
 
@@ -71,7 +115,7 @@
     }
 
     function goToCreateMemory() {
-        window.location.href = `/ui/story?profile_id=${profileId}`;
+        window.location.href = `/ui/memories/create?profile_id=${profileId}`;
     }
 
     loadProfile();

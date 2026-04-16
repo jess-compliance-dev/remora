@@ -2,53 +2,66 @@
 {% block content %}
 
 <div class="screen">
-    <div class="phone-card home-screen">
 
-        <div class="home-header">
-            <div>
-                <p class="eyebrow">Remora</p>
-                <h1>Memories</h1>
-                <p class="muted">Capture moments, preserve life stories and keep meaningful memories close.</p>
-            </div>
-            <button onclick="logout()" class="icon-btn" aria-label="Logout">⎋</button>
+    <div class="home-hero">
+        <div class="hero-top">
+            <span class="brand-mini">Remora</span>
+
+            <button onclick="logout()" class="logout-btn" aria-label="Log out">
+                Log out
+            </button>
         </div>
 
-        <div class="home-actions">
-            <a href="/ui/profiles/create" class="action-card primary-card">
-                <div class="action-icon">＋</div>
-                <div>
-                    <h3>Create a memorial profile</h3>
-                    <p class="muted">Start with one person and begin collecting memories.</p>
-                </div>
-            </a>
+        <h1 class="hero-title">Your memories</h1>
 
-            <a href="/ui/chat" class="action-card">
-                <div class="action-icon">💬</div>
-                <div>
-                    <h3>Continue memory interview</h3>
-                    <p class="muted">Capture a memory through guided questions.</p>
-                </div>
-            </a>
-
-            <a href="/ui/profiles" class="action-card">
-                <div class="action-icon">♡</div>
-                <div>
-                    <h3>View profiles</h3>
-                    <p class="muted">Open existing profiles and continue their story.</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="section-block">
-            <div class="section-head">
-                <h2>Your profiles</h2>
-                <a href="/ui/profiles" class="text-link">See all</a>
-            </div>
-
-            <div id="profiles-container" class="profiles-stack"></div>
-        </div>
-
+        <p class="hero-sub">
+            Capture moments, preserve life stories and keep your memories close.
+        </p>
     </div>
+
+    <div class="home-actions">
+        <a href="/ui/profiles/create" class="action-card primary-card">
+            <div class="action-icon">＋</div>
+            <div>
+                <h3>Create a memorial profile</h3>
+                <p class="muted">Start with one person and begin collecting memories.</p>
+            </div>
+        </a>
+
+        <a href="/ui/chat" class="action-card">
+            <div class="action-icon">💬</div>
+            <div>
+                <h3>Create a life story</h3>
+                <p class="muted">Capture a memory through guided questions.</p>
+            </div>
+        </a>
+
+        <a href="/ui/memories/create" class="action-card">
+            <div class="action-icon">✍</div>
+            <div>
+                <h3>Add a memory</h3>
+                <p class="muted">Preserve your memories in text, voice, photo, or video.</p>
+            </div>
+        </a>
+
+        <a href="/ui/profiles" class="action-card">
+            <div class="action-icon">♡</div>
+            <div>
+                <h3>View profiles</h3>
+                <p class="muted">Open existing profiles and continue their story.</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="section-block">
+        <div class="section-head">
+            <h2>Your profiles</h2>
+            <a href="/ui/profiles" class="text-link">See all</a>
+        </div>
+
+        <div id="profiles-container" class="profiles-stack"></div>
+    </div>
+
 </div>
 
 <script>

@@ -20,10 +20,22 @@
         <form id="create-profile-form" class="stack">
 
             <div class="image-upload-placeholder">
-                <div class="avatar-upload-circle">
-                    <span class="image-icon">🖼</span>
-                </div>
-                <button type="button" class="mini-add-btn">＋</button>
+                <label for="profile-image-input" class="avatar-upload-circle clickable">
+                    <img id="profile-image-preview"
+                         src=""
+                         alt="Profile preview"
+                         class="profile-preview hidden">
+                    <span id="profile-image-icon" class="image-icon">🖼</span>
+                </label>
+
+                <input
+                    id="profile-image-input"
+                    type="file"
+                    accept="image/*"
+                    class="hidden-file-input"
+                >
+
+                <button type="button" class="mini-add-btn" onclick="document.getElementById('profile-image-input').click()">＋</button>
             </div>
 
             <input
@@ -54,17 +66,8 @@
             </div>
 
             <div id="dates-fields" class="stack hidden">
-                <input
-                    id="birth_date"
-                    class="input"
-                    type="date"
-                >
-
-                <input
-                    id="death_date"
-                    class="input"
-                    type="date"
-                >
+                <input id="birth_date" class="input" type="date">
+                <input id="death_date" class="input" type="date">
             </div>
 
             <textarea
@@ -73,13 +76,6 @@
                 rows="4"
                 placeholder="A short description or a few words about this person"
             ></textarea>
-
-            <input
-                id="profile_image_url"
-                class="input"
-                type="text"
-                placeholder="Profile image URL (optional)"
-            >
 
             <button class="btn btn-primary wide-btn" type="submit">
                 Continue
@@ -99,6 +95,9 @@
 <script>
     const toggle = document.getElementById("show-dates-toggle");
     const datesFields = document.getElementById("dates-fields");
+    const imageInput = document.getElementById("profile-image-input");
+    const imagePreview = document.getElementById("profile-image-preview");
+    const imageIcon = document.getElementById("profile-image-icon");
 
     if (toggle) {
         toggle.addEventListener("change", () => {
@@ -107,6 +106,21 @@
             } else {
                 datesFields.classList.add("hidden");
             }
+        });
+    }
+
+    if (imageInput) {
+        imageInput.addEventListener("change", () => {
+            const file = imageInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.classList.remove("hidden");
+                imageIcon.classList.add("hidden");
+            };
+            reader.readAsDataURL(file);
         });
     }
 </script>

@@ -1,10 +1,19 @@
-from flask import Blueprint, request, jsonify
+import os
+import uuid
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from werkzeug.utils import secure_filename
 
 from app.services.profile_service import ProfileService
 
 profile_bp = Blueprint("profiles", __name__)
 profile_service = ProfileService()
+
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def serialize_profile(profile):
@@ -50,7 +59,7 @@ def get_profile(profile_id):
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
 
-    if profile.owner_id != user_id:
+    if str(profile.owner_id) != str(user_id):
         return jsonify({"error": "Access denied"}), 403
 
     return jsonify(serialize_profile(profile)), 200
@@ -65,10 +74,46 @@ def create_profile():
     data = request.get_json()
     user_id = get_jwt_identity()
 
-    data["owner_id"] = user_id
+    data["owner_id"] = int(user_id)
+    data.setdefault("status", None)
 
     profile = profile_service.create_profile(data)
     return jsonify(serialize_profile(profile)), 201
+
+
+@profile_bp.route("/upload-image", methods=["POST"])
+@jwt_required()
+def upload_profile_image():
+    """
+    Upload a profile image and return the saved file URL.
+    """
+    if "image" not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+
+    file = request.files["image"]
+
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+
+    if not allowed_file(file.filename):
+        return jsonify({"error": "Invalid file type"}), 400
+
+    filename = secure_filename(file.filename)
+    ext = filename.rsplit(".", 1)[1].lower()
+    unique_name = f"{uuid.uuid4().hex}.{ext}"
+
+    upload_folder = os.path.join(current_app.static_folder, "uploads", "profiles")
+    os.makedirs(upload_folder, exist_ok=True)
+
+    save_path = os.path.join(upload_folder, unique_name)
+    file.save(save_path)
+
+    file_url = f"/static/uploads/profiles/{unique_name}"
+
+    return jsonify({
+        "message": "Image uploaded successfully",
+        "profile_image_url": file_url
+    }), 201
 
 
 @profile_bp.route("/<int:profile_id>", methods=["PUT"])
@@ -83,7 +128,7 @@ def update_profile(profile_id):
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
 
-    if profile.owner_id != user_id:
+    if str(profile.owner_id) != str(user_id):
         return jsonify({"error": "Access denied"}), 403
 
     data = request.get_json()
@@ -104,7 +149,7 @@ def delete_profile(profile_id):
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
 
-    if profile.owner_id != user_id:
+    if str(profile.owner_id) != str(user_id):
         return jsonify({"error": "Access denied"}), 403
 
     deleted = profile_service.delete_profile(profile_id)

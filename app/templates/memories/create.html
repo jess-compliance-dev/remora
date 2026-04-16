@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="screen">
+
+    <div class="memory-hero">
+        <div class="hero-top">
+            <a href="/ui/dashboard" class="back-link">← Back</a>
+
+            <button onclick="logout()" class="logout-btn">
+                Log out
+            </button>
+        </div>
+
+        <h1 class="hero-title">Add a memory</h1>
+
+        <p class="hero-sub">
+            Choose how you want to preserve this moment.
+        </p>
+    </div>
+
+    <div class="memory-options">
+
+        <a href="/ui/chat" class="memory-option-card primary-card">
+            <div class="memory-option-icon">✍</div>
+            <div>
+                <h3>Write a memory</h3>
+                <p class="muted">Capture a moment in your own words.</p>
+            </div>
+        </a>
+
+        <a href="/ui/chat" class="memory-option-card">
+            <div class="memory-option-icon">🎤</div>
+            <div>
+                <h3>Record your voice</h3>
+                <p class="muted">Speak naturally and save the memory as audio.</p>
+            </div>
+        </a>
+
+        <a href="/ui/chat" class="memory-option-card">
+            <div class="memory-option-icon">🖼</div>
+            <div>
+                <h3>Add a photo memory</h3>
+                <p class="muted">Attach an image to a remembered moment.</p>
+            </div>
+        </a>
+
+        <a href="/ui/chat" class="memory-option-card">
+            <div class="memory-option-icon">🎞</div>
+            <div>
+                <h3>Add a video memory</h3>
+                <p class="muted">Preserve movement, voice, and emotion together.</p>
+            </div>
+        </a>
+
+    </div>
+
+    <div class="section-block">
+        <div class="memory-tip-card">
+            <h3>Tip</h3>
+            <p class="muted">
+                The most meaningful memories are often simple moments:
+                a sentence, a habit, a laugh, a walk, a song, or a small shared ritual.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
