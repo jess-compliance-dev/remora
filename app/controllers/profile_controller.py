@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, redirect
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 
@@ -10,7 +10,7 @@ from app.services.profile_service import ProfileService
 profile_bp = Blueprint("profiles", __name__)
 profile_service = ProfileService()
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 
 def allowed_file(filename):
@@ -18,9 +18,6 @@ def allowed_file(filename):
 
 
 def serialize_profile(profile):
-    """
-    Convert a MemorialProfile object into a JSON-serializable dictionary.
-    """
     if profile is None:
         return None
 
@@ -34,8 +31,8 @@ def serialize_profile(profile):
         "status": profile.status,
         "short_description": profile.short_description,
         "profile_image_url": profile.profile_image_url,
-        "created_at": profile.created_at.isoformat() if profile.created_at else None,
-        "updated_at": profile.updated_at.isoformat() if profile.updated_at else None,
+        "created_at": profile.created_at.isoformat() if getattr(profile, "created_at", None) else None,
+        "updated_at": profile.updated_at.isoformat() if getattr(profile, "updated_at", None) else None,
     }
 
 
@@ -43,7 +40,7 @@ def serialize_profile(profile):
 @jwt_required()
 def get_profiles():
     """
-    Retrieve all memorial profiles for the currently authenticated user.
+    Return all profiles for the authenticated user.
     """
     user_id = get_jwt_identity()
     profiles = profile_service.get_profiles_by_owner_id(user_id)
@@ -51,19 +48,15 @@ def get_profiles():
 
 
 @profile_bp.route("/<int:profile_id>", methods=["GET"])
-@jwt_required()
+@jwt_required(optional=True)
 def get_profile(profile_id):
     """
-    Retrieve a single memorial profile by ID for the currently authenticated user.
+    Return a single profile by id.
     """
-    user_id = get_jwt_identity()
     profile = profile_service.get_profile_by_id(profile_id)
 
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
-
-    if str(profile.owner_id) != str(user_id):
-        return jsonify({"error": "Access denied"}), 403
 
     return jsonify(serialize_profile(profile)), 200
 
@@ -72,18 +65,39 @@ def get_profile(profile_id):
 @jwt_required()
 def create_profile():
     """
-    Create a new memorial profile for the currently authenticated user.
+    Create a new memorial profile.
+    Supports JSON requests from the UI.
     """
     data = request.get_json(silent=True)
 
     if not data:
         return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    user_id = get_jwt_identity()
-    data["owner_id"] = int(user_id)
-    data.setdefault("status", None)
+    full_name = (data.get("full_name") or "").strip()
+    relationship = (data.get("relationship") or "").strip() or None
+    birth_date = data.get("birth_date") or None
+    death_date = data.get("death_date") or None
+    short_description = (data.get("short_description") or "").strip() or None
+    profile_image_url = data.get("profile_image_url") or None
+    status = data.get("status") or None
 
-    profile = profile_service.create_profile(data)
+    if not full_name:
+        return jsonify({"error": "full_name is required"}), 400
+
+    user_id = get_jwt_identity()
+
+    payload = {
+        "owner_id": int(user_id),
+        "full_name": full_name,
+        "relationship": relationship,
+        "birth_date": birth_date,
+        "death_date": death_date,
+        "status": status,
+        "short_description": short_description,
+        "profile_image_url": profile_image_url,
+    }
+
+    profile = profile_service.create_profile(payload)
 
     if not profile:
         return jsonify({"error": "Unable to create profile"}), 400
@@ -95,14 +109,15 @@ def create_profile():
 @jwt_required()
 def upload_profile_image():
     """
-    Upload a profile image and return the saved file URL.
+    Upload a profile image and return the file URL.
+    Expected multipart/form-data with field name: image
     """
     if "image" not in request.files:
         return jsonify({"error": "No image file provided"}), 400
 
     file = request.files["image"]
 
-    if file.filename == "":
+    if not file or file.filename == "":
         return jsonify({"error": "No selected file"}), 400
 
     if not allowed_file(file.filename):
@@ -122,7 +137,7 @@ def upload_profile_image():
 
     return jsonify({
         "message": "Image uploaded successfully",
-        "profile_image_url": file_url,
+        "profile_image_url": file_url
     }), 201
 
 
@@ -132,24 +147,30 @@ def update_profile(profile_id):
     """
     Update an existing memorial profile.
     """
-    user_id = get_jwt_identity()
-    profile = profile_service.get_profile_by_id(profile_id)
+    existing_profile = profile_service.get_profile_by_id(profile_id)
 
-    if not profile:
+    if not existing_profile:
         return jsonify({"error": "Profile not found"}), 404
-
-    if str(profile.owner_id) != str(user_id):
-        return jsonify({"error": "Access denied"}), 403
 
     data = request.get_json(silent=True)
 
     if not data:
         return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    updated_profile = profile_service.update_profile(profile_id, data)
+    updatable_fields = {
+        "full_name": (data.get("full_name") or "").strip() if data.get("full_name") is not None else existing_profile.full_name,
+        "relationship": (data.get("relationship") or "").strip() if data.get("relationship") is not None else existing_profile.relationship,
+        "birth_date": data.get("birth_date") if "birth_date" in data else existing_profile.birth_date,
+        "death_date": data.get("death_date") if "death_date" in data else existing_profile.death_date,
+        "status": data.get("status") if "status" in data else existing_profile.status,
+        "short_description": (data.get("short_description") or "").strip() if data.get("short_description") is not None else existing_profile.short_description,
+        "profile_image_url": data.get("profile_image_url") if "profile_image_url" in data else existing_profile.profile_image_url,
+    }
+
+    updated_profile = profile_service.update_profile(profile_id, updatable_fields)
 
     if not updated_profile:
-        return jsonify({"error": "Profile not found"}), 404
+        return jsonify({"error": "Unable to update profile"}), 400
 
     return jsonify(serialize_profile(updated_profile)), 200
 
@@ -160,19 +181,14 @@ def delete_profile(profile_id):
     """
     Delete a memorial profile.
     """
-    user_id = get_jwt_identity()
-    profile = profile_service.get_profile_by_id(profile_id)
+    existing_profile = profile_service.get_profile_by_id(profile_id)
 
-    if not profile:
+    if not existing_profile:
         return jsonify({"error": "Profile not found"}), 404
-
-    if str(profile.owner_id) != str(user_id):
-        return jsonify({"error": "Access denied"}), 403
 
     deleted = profile_service.delete_profile(profile_id)
 
     if not deleted:
-        return jsonify({"error": "Profile not found"}), 404
+        return jsonify({"error": "Unable to delete profile"}), 400
 
     return jsonify({"message": "Profile deleted successfully"}), 200
-

@@ -17,7 +17,13 @@
             <p class="muted">Who would you like to remember?</p>
         </div>
 
-        <form id="create-profile-form" class="stack">
+        <form
+            id="create-profile-form"
+            class="stack"
+            method="POST"
+            action="/api/profiles"
+        >
+            <input type="hidden" id="profile_image_url" name="profile_image_url">
 
             <div class="image-upload-placeholder">
                 <label for="profile-image-input" class="avatar-upload-circle clickable">
@@ -35,11 +41,18 @@
                     class="hidden-file-input"
                 >
 
-                <button type="button" class="mini-add-btn" onclick="document.getElementById('profile-image-input').click()">＋</button>
+                <button
+                    type="button"
+                    class="mini-add-btn"
+                    onclick="document.getElementById('profile-image-input').click()"
+                >
+                    ＋
+                </button>
             </div>
 
             <input
                 id="full_name"
+                name="full_name"
                 class="input"
                 type="text"
                 placeholder="Full name"
@@ -48,6 +61,7 @@
 
             <input
                 id="relationship"
+                name="relationship"
                 class="input"
                 type="text"
                 placeholder="Your relationship"
@@ -66,21 +80,21 @@
             </div>
 
             <div id="dates-fields" class="stack hidden">
-                <input id="birth_date" class="input" type="date">
-                <input id="death_date" class="input" type="date">
+                <input id="birth_date" name="birth_date" class="input" type="date">
+                <input id="death_date" name="death_date" class="input" type="date">
             </div>
 
             <textarea
                 id="short_description"
+                name="short_description"
                 class="input"
                 rows="4"
                 placeholder="A short description or a few words about this person"
             ></textarea>
 
-            <button class="btn btn-primary wide-btn" type="submit">
+            <button id="submit-btn" class="btn btn-primary wide-btn" type="submit">
                 Continue
             </button>
-
         </form>
 
         <p id="profile-error" class="error-text"></p>
@@ -98,6 +112,23 @@
     const imageInput = document.getElementById("profile-image-input");
     const imagePreview = document.getElementById("profile-image-preview");
     const imageIcon = document.getElementById("profile-image-icon");
+    const profileImageUrlInput = document.getElementById("profile_image_url");
+    const form = document.getElementById("create-profile-form");
+    const errorBox = document.getElementById("profile-error");
+    const submitBtn = document.getElementById("submit-btn");
+
+    function getAuthHeaders(extraHeaders = {}) {
+        const token = localStorage.getItem("access_token");
+
+        if (!token) {
+            throw new Error("You are not logged in. Please log in again.");
+        }
+
+        return {
+            "Authorization": `Bearer ${token}`,
+            ...extraHeaders
+        };
+    }
 
     if (toggle) {
         toggle.addEventListener("change", () => {
@@ -105,6 +136,8 @@
                 datesFields.classList.remove("hidden");
             } else {
                 datesFields.classList.add("hidden");
+                document.getElementById("birth_date").value = "";
+                document.getElementById("death_date").value = "";
             }
         });
     }
@@ -123,6 +156,80 @@
             reader.readAsDataURL(file);
         });
     }
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        errorBox.textContent = "";
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Saving...";
+
+        try {
+            const imageFile = imageInput.files[0];
+
+            if (imageFile) {
+                const imageFormData = new FormData();
+                imageFormData.append("image", imageFile);
+
+                const uploadResponse = await fetch("/api/profiles/upload-image", {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: imageFormData
+                });
+
+                if (!uploadResponse.ok) {
+                    let uploadError = "Image upload failed.";
+                    try {
+                        const uploadData = await uploadResponse.json();
+                        uploadError = uploadData.error || uploadError;
+                    } catch (_) {}
+                    throw new Error(uploadError);
+                }
+
+                const uploadData = await uploadResponse.json();
+                profileImageUrlInput.value = uploadData.profile_image_url || "";
+            }
+
+            const payload = {
+                full_name: document.getElementById("full_name").value.trim(),
+                relationship: document.getElementById("relationship").value.trim(),
+                birth_date: document.getElementById("birth_date").value || null,
+                death_date: document.getElementById("death_date").value || null,
+                short_description: document.getElementById("short_description").value.trim(),
+                profile_image_url: profileImageUrlInput.value || null
+            };
+
+            const response = await fetch("/api/profiles", {
+                method: "POST",
+                headers: getAuthHeaders({
+                    "Content-Type": "application/json"
+                }),
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                let errorMessage = "Unable to create profile.";
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch (_) {}
+                throw new Error(errorMessage);
+            }
+
+            const profile = await response.json();
+
+            if (profile && profile.profile_id) {
+                window.location.href = `/ui/profiles/${profile.profile_id}`;
+                return;
+            }
+
+            window.location.href = "/ui/profiles";
+        } catch (error) {
+            errorBox.textContent = error.message || "Something went wrong.";
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Continue";
+        }
+    });
 </script>
 
 {% endblock %}
