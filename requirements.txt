@@ -6,3 +6,4 @@ Flask-Migrate
 Flask-Mail
 itsdangerous
 openai
+psycopg2-binary
