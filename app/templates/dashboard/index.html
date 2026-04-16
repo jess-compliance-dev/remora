@@ -1,11 +1,9 @@
 {% extends "base.html" %}
-
 {% block title %}Dashboard | Remora{% endblock %}
 
 {% block content %}
 <div style="max-width: 1100px; margin: 0 auto; padding: 32px 20px 56px;">
 
-    <!-- Header -->
     <div style="margin-bottom: 28px;">
         <div style="
             font-size: 13px;
@@ -38,49 +36,41 @@
         </p>
     </div>
 
-    <!-- Grid -->
-    <div style="
+    <div id="dashboard-grid" style="
         display: grid;
         grid-template-columns: repeat(2, minmax(280px, 1fr));
         gap: 22px;
     ">
-
-        <!-- Create Profile -->
-        <a href="/ui/profiles/create" class="card">
-            <div class="icon">🕊️</div>
-            <div class="title">Create a memorial profile</div>
-            <div class="text">
+        <a href="/ui/profiles/create" class="remora-card">
+            <div class="remora-icon">🕊️</div>
+            <div class="remora-title">Create a memorial profile</div>
+            <div class="remora-text">
                 Create a profile for the person whose life and memories you want to preserve.
             </div>
         </a>
 
-        <!-- View Profiles -->
-        <a href="/ui/profiles" class="card">
-            <div class="icon">👥</div>
-            <div class="title">View Profiles</div>
-            <div class="text">
+        <a href="/ui/profiles" class="remora-card">
+            <div class="remora-icon">👥</div>
+            <div class="remora-title">View Profiles</div>
+            <div class="remora-text">
                 See and manage the memorial profiles you have created.
             </div>
         </a>
 
-        <!-- Add Memory (dynamic) -->
         <div id="add-memory-container"></div>
 
-        <!-- Life Stories -->
-        <a href="/ui/life-stories" class="card">
-            <div class="icon">📖</div>
-            <div class="title">View life stories</div>
-            <div class="text">
+        <a href="/ui/life-stories" class="remora-card">
+            <div class="remora-icon">📖</div>
+            <div class="remora-title">View life stories</div>
+            <div class="remora-text">
                 Browse collected life stories and revisit meaningful moments.
             </div>
         </a>
-
     </div>
 </div>
 
-<!-- Styles -->
 <style>
-.card {
+.remora-card {
     text-decoration: none;
     color: inherit;
     background: #ffffff;
@@ -91,13 +81,11 @@
     display: block;
     transition: all 0.15s ease;
 }
-
-.card:hover {
+.remora-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 14px 34px rgba(86, 97, 160, 0.12);
 }
-
-.icon {
+.remora-icon {
     width: 58px;
     height: 58px;
     border-radius: 18px;
@@ -108,25 +96,21 @@
     font-size: 26px;
     margin-bottom: 18px;
 }
-
-.title {
+.remora-title {
     font-size: 24px;
     font-weight: 700;
     color: #2f355c;
     margin-bottom: 10px;
 }
-
-.text {
+.remora-text {
     font-size: 15px;
     line-height: 1.6;
     color: #7d84a6;
 }
-
 .disabled-card {
     background: #f8f9ff;
-    opacity: 0.9;
+    opacity: 0.95;
 }
-
 .hint {
     margin-top: 14px;
     padding: 10px 14px;
@@ -136,68 +120,32 @@
     font-size: 14px;
     color: #8b6b2f;
 }
-
 @media (max-width: 820px) {
-    div[style*="grid-template-columns"] {
+    #dashboard-grid {
         grid-template-columns: 1fr !important;
     }
 }
 </style>
 
-<!-- Logic -->
 <script>
-async function loadAddMemoryState() {
-    const container = document.getElementById("add-memory-container");
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-        container.innerHTML = disabledCard();
-        return;
-    }
-
-    try {
-        const response = await fetch("/api/profiles", {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) {
-            container.innerHTML = disabledCard();
-            return;
-        }
-
-        const profiles = await response.json();
-
-        if (profiles.length > 0) {
-            container.innerHTML = enabledCard();
-        } else {
-            container.innerHTML = disabledCard();
-        }
-
-    } catch (e) {
-        container.innerHTML = disabledCard();
-    }
-}
-
-function enabledCard() {
+function enabledMemoryCard() {
     return `
-        <a href="/ui/memories/select-profile" class="card">
-            <div class="icon">✨</div>
-            <div class="title">Add a memory</div>
-            <div class="text">
+        <a href="/ui/memories/select-profile" class="remora-card">
+            <div class="remora-icon">✨</div>
+            <div class="remora-title">Add a memory</div>
+            <div class="remora-text">
                 Choose a profile first, then save a memory through writing, voice, photo, video, or a guided life story conversation.
             </div>
         </a>
     `;
 }
 
-function disabledCard() {
+function disabledMemoryCard() {
     return `
-        <div class="card disabled-card">
-            <div class="icon">✨</div>
-            <div class="title">Add a memory</div>
-            <div class="text">
+        <div class="remora-card disabled-card">
+            <div class="remora-icon">✨</div>
+            <div class="remora-title">Add a memory</div>
+            <div class="remora-text">
                 Choose a profile first, then save a memory through writing, voice, photo, video, or a guided life story conversation.
             </div>
             <div class="hint">
@@ -207,7 +155,37 @@ function disabledCard() {
     `;
 }
 
+async function loadAddMemoryState() {
+    const container = document.getElementById("add-memory-container");
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+        container.innerHTML = disabledMemoryCard();
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/profiles", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            container.innerHTML = disabledMemoryCard();
+            return;
+        }
+
+        const profiles = await response.json();
+        container.innerHTML = profiles && profiles.length > 0
+            ? enabledMemoryCard()
+            : disabledMemoryCard();
+    } catch (error) {
+        container.innerHTML = disabledMemoryCard();
+    }
+}
+
 loadAddMemoryState();
 </script>
-
 {% endblock %}

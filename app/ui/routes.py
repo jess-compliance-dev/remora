@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.services.profile_service import ProfileService
 
@@ -30,29 +29,18 @@ def email_confirmed():
 @ui_bp.route("/ui/dashboard")
 def dashboard():
     """
-    Dashboard with the 4 core functions.
-    The Add a memory state is handled client-side via /api/profiles.
+    Dashboard state is handled client-side via /api/profiles
+    because the JWT currently lives in localStorage.
     """
     return render_template("dashboard/index.html")
 
 
 @ui_bp.route("/ui/profiles")
-@jwt_required(optional=True)
 def profiles():
     """
-    View all profiles for the current user.
+    Profiles list is loaded client-side from /api/profiles.
     """
-    user_id = get_jwt_identity()
-    profiles = []
-
-    if user_id:
-        profiles = profile_service.get_profiles_by_owner_id(user_id)
-
-    return render_template(
-        "profiles/list.html",
-        profiles=profiles,
-        has_profiles=len(profiles) > 0
-    )
+    return render_template("profiles/list.html")
 
 
 @ui_bp.route("/ui/profiles/create")
@@ -61,21 +49,8 @@ def create_profile():
 
 
 @ui_bp.route("/ui/profiles/<int:profile_id>")
-@jwt_required(optional=True)
 def profile_detail(profile_id):
-    """
-    View one profile.
-    """
-    profile = profile_service.get_profile_by_id(profile_id)
-
-    if not profile:
-        return redirect(url_for("ui.profiles"))
-
-    return render_template(
-        "profiles/detail.html",
-        profile=profile,
-        profile_id=profile_id
-    )
+    return render_template("profiles/detail.html", profile_id=profile_id)
 
 
 @ui_bp.route("/ui/life-stories")
@@ -94,32 +69,15 @@ def story(story_id):
 
 
 @ui_bp.route("/ui/memories/select-profile")
-@jwt_required(optional=True)
 def select_memory_profile():
     """
-    Selecting the profile.
+    Profiles are loaded client-side from /api/profiles.
     """
-    user_id = get_jwt_identity()
-    profiles = []
-
-    if user_id:
-        profiles = profile_service.get_profiles_by_owner_id(user_id)
-
-    if len(profiles) == 1:
-        return redirect(url_for("ui.create_memory", profile_id=profiles[0].profile_id))
-
-    return render_template(
-        "memories/select_profile.html",
-        profiles=profiles
-    )
+    return render_template("memories/select_profile.html")
 
 
 @ui_bp.route("/ui/memories/create")
-@jwt_required(optional=True)
 def create_memory():
-    """
-    Memory creation page.
-    """
     profile_id = request.args.get("profile_id", type=int)
 
     if not profile_id:
@@ -135,3 +93,18 @@ def create_memory():
         profile=profile,
         profile_id=profile_id
     )
+
+
+@ui_bp.route("/ui/chat/start")
+def start_chat():
+    profile_id = request.args.get("profile_id", type=int)
+
+    if not profile_id:
+        return redirect(url_for("ui.select_memory_profile"))
+
+    profile = profile_service.get_profile_by_id(profile_id)
+
+    if not profile:
+        return redirect(url_for("ui.select_memory_profile"))
+
+    return render_template("chat/start.html", profile=profile, profile_id=profile_id)

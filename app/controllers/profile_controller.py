@@ -10,7 +10,7 @@ from app.services.profile_service import ProfileService
 profile_bp = Blueprint("profiles", __name__)
 profile_service = ProfileService()
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+ALLOWED_EXTENSIONS = {"png", "jpg"}
 
 
 def allowed_file(filename):
@@ -39,9 +39,6 @@ def serialize_profile(profile):
 @profile_bp.route("", methods=["GET"])
 @jwt_required()
 def get_profiles():
-    """
-    Return all profiles for the authenticated user.
-    """
     user_id = get_jwt_identity()
     profiles = profile_service.get_profiles_by_owner_id(user_id)
     return jsonify([serialize_profile(profile) for profile in profiles]), 200
@@ -50,9 +47,6 @@ def get_profiles():
 @profile_bp.route("/<int:profile_id>", methods=["GET"])
 @jwt_required(optional=True)
 def get_profile(profile_id):
-    """
-    Return a single profile by id.
-    """
     profile = profile_service.get_profile_by_id(profile_id)
 
     if not profile:
@@ -64,9 +58,6 @@ def get_profile(profile_id):
 @profile_bp.route("", methods=["POST"])
 @jwt_required()
 def create_profile():
-    """
-    Create a new memorial profile from JSON.
-    """
     data = request.get_json(silent=True)
 
     if not data:
@@ -107,9 +98,6 @@ def create_profile():
 @profile_bp.route("/upload-image", methods=["POST"])
 @jwt_required()
 def upload_profile_image():
-    """
-    Upload a profile image and return the file URL.
-    """
     if "image" not in request.files:
         return jsonify({"error": "No image file provided"}), 400
 
@@ -142,9 +130,6 @@ def upload_profile_image():
 @profile_bp.route("/<int:profile_id>", methods=["PUT"])
 @jwt_required()
 def update_profile(profile_id):
-    """
-    Update an existing memorial profile.
-    """
     existing_profile = profile_service.get_profile_by_id(profile_id)
 
     if not existing_profile:
@@ -176,9 +161,6 @@ def update_profile(profile_id):
 @profile_bp.route("/<int:profile_id>", methods=["DELETE"])
 @jwt_required()
 def delete_profile(profile_id):
-    """
-    Delete a memorial profile.
-    """
     existing_profile = profile_service.get_profile_by_id(profile_id)
 
     if not existing_profile:
