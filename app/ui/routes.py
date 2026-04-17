@@ -194,6 +194,17 @@ def time_capsule():
     )
 
 
+@ui_bp.route("/ui/memories/add")
+def add_memory():
+    profile_id = request.args.get("profile_id", type=int)
+    return render_ui(
+        "memories/add_memory.html",
+        profile_id=profile_id,
+        active_tab="memories",
+        show_bottom_nav=True,
+    )
+
+
 @ui_bp.route("/ui/memories/<int:memory_id>")
 def memory_detail(memory_id):
     """

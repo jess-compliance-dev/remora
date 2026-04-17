@@ -4,14 +4,13 @@
 {% block content %}
 <div style="max-width: 980px; margin: 0 auto; padding: 28px 20px 56px;">
 
-    <!-- HEADER -->
     <div style="margin-bottom: 28px;">
         <h1 style="
             margin: 0 0 6px 0;
             font-size: 36px;
             text-align: left;
         ">
-            Welcome back
+            Welcome
         </h1>
 
         <p class="muted" style="font-size: 16px;">
@@ -19,7 +18,6 @@
         </p>
     </div>
 
-    <!-- ACTIVE PROFILE -->
     <div id="active-profile-box" style="
         display:none;
         background: #ffffff;
@@ -67,56 +65,48 @@
         </div>
     </div>
 
-    <!-- ACTION GRID -->
     <div style="
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 18px;
     ">
 
-        <!-- CHAT -->
         <a id="start-chat-link" href="#" class="dashboard-card">
             <div class="icon">💬</div>
             <div class="title">Start a chat</div>
             <div class="text">A guided conversation to capture meaningful memories step by step.</div>
         </a>
 
-        <!-- ADD MEMORY -->
         <a id="add-memory-link" href="#" class="dashboard-card">
             <div class="icon">✨</div>
             <div class="title">Add a memory</div>
             <div class="text">Capture a meaningful moment while it’s still vivid.</div>
         </a>
 
-        <!-- LIFE STORY -->
         <a id="life-story-link" href="#" class="dashboard-card">
             <div class="icon">🌱</div>
             <div class="title">Create life story</div>
             <div class="text">Bring together chats and memories into a coherent life story.</div>
         </a>
 
-        <!-- TIME CAPSULE -->
         <a href="/ui/time-capsule" class="dashboard-card">
             <div class="icon">⏰</div>
             <div class="title">Time capsule</div>
             <div class="text">Save something today to be opened in the future.</div>
         </a>
 
-        <!-- MEMORIES -->
-        <a href="/ui/memories" class="dashboard-card">
+        <a id="view-memories-link" href="#" class="dashboard-card">
             <div class="icon">🧠</div>
             <div class="title">View memories</div>
             <div class="text">Revisit and reflect on saved moments.</div>
         </a>
 
-        <!-- STORIES -->
         <a href="/ui/life-stories" class="dashboard-card">
             <div class="icon">📖</div>
             <div class="title">View life stories</div>
             <div class="text">Read and revisit complete life stories.</div>
         </a>
 
-        <!-- PROFILE SETTINGS -->
         <a id="profile-settings-link" href="#" class="dashboard-card">
             <div class="icon">⚙️</div>
             <div class="title">Profile settings</div>
@@ -126,7 +116,6 @@
     </div>
 </div>
 
-<!-- STYLES -->
 <style>
 .dashboard-card {
     text-decoration: none;
@@ -181,8 +170,9 @@
     }
 }
 </style>
+{% endblock %}
 
-<!-- SCRIPT -->
+{% block scripts %}
 <script>
     const profileId = localStorage.getItem("active_profile_id");
     const name = localStorage.getItem("active_profile_name");
@@ -205,7 +195,10 @@
             `/ui/chat/start?profile_id=${profileId}`;
 
         document.getElementById("add-memory-link").href =
-            `/ui/memories/create?profile_id=${profileId}`;
+            `/ui/memories/add?profile_id=${profileId}`;
+
+        document.getElementById("view-memories-link").href =
+            `/ui/memories/add?profile_id=${profileId}`;;
 
         document.getElementById("life-story-link").href =
             `/ui/chat/start?profile_id=${profileId}`;
@@ -214,5 +207,4 @@
             `/ui/profiles/${profileId}`;
     }
 </script>
-
 {% endblock %}
