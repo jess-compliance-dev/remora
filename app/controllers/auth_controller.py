@@ -53,7 +53,6 @@ def register():
     if error:
         return jsonify({"error": error}), 400
 
-    # 🔥 WICHTIG: User sofort aktivieren
     user.is_active = True
     db.session.commit()
 
