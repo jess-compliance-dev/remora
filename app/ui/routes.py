@@ -19,6 +19,7 @@ def render_ui(template_name, *, active_tab=None, show_bottom_nav=False, **contex
 def login():
     return render_ui("auth/login.html", show_bottom_nav=False, show_topbar=False)
 
+
 @ui_bp.route("/ui/register")
 def register():
     return render_ui("auth/register.html", show_bottom_nav=False, show_topbar=False)
@@ -68,9 +69,14 @@ def chat_home():
 
 @ui_bp.route("/ui/chat/<int:session_id>")
 def chat(session_id):
+    profile_id = request.args.get("profile_id", type=int)
+    profile = profile_service.get_profile_by_id(profile_id) if profile_id else None
+
     return render_ui(
         "chat/session.html",
         session_id=session_id,
+        profile_id=profile_id,
+        profile=profile,
         active_tab="chat",
         show_bottom_nav=True
     )

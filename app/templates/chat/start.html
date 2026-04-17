@@ -1,23 +1,261 @@
 {% extends "base.html" %}
+{% block title %}Start a chat | Remora{% endblock %}
 
 {% block content %}
-<div class="page-container">
-    <div class="dashboard-card">
-        <div class="dashboard-card-title">Create a life story</div>
-        <div class="dashboard-card-text" style="margin-top: 8px;">
-            Start a guided story conversation for {{ profile.full_name }}.
-        </div>
+<section class="chat-start-page">
+    <div class="chat-start-shell">
+        <a href="/ui/dashboard" class="back-link">← Back</a>
 
-        <div style="margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 14px;">
-            <div style="font-weight: 700;">{{ profile.full_name }}</div>
-            <div style="color: #6b7280; margin-top: 4px;">
-                {{ profile.relationship or "Memorial profile" }}
+        <h1 class="chat-title">Start a chat</h1>
+
+        <p class="chat-subtitle">
+            A guided conversation to capture meaningful memories step by step.
+        </p>
+
+        <div class="profile-card">
+            <div class="profile-avatar">
+                {% if profile.profile_image_url %}
+                    <img src="{{ profile.profile_image_url }}" alt="{{ profile.full_name }}">
+                {% else %}
+                    <span>{{ profile.full_name[:1] }}</span>
+                {% endif %}
+            </div>
+
+            <div class="profile-content">
+                <h2>{{ profile.full_name }}</h2>
+
+                {% if profile.relationship %}
+                    <p class="profile-relationship">{{ profile.relationship }}</p>
+                {% endif %}
+
+                {% if profile.short_description %}
+                    <p class="profile-description">{{ profile.short_description }}</p>
+                {% endif %}
             </div>
         </div>
 
-        <div style="margin-top: 20px;">
-            <a href="/ui/chat/1" class="primary-button">Start guided story chat</a>
+        <div class="chat-preview">
+            <div class="preview-bubble assistant">
+                Hello. I’ll guide you through a few gentle questions to help capture meaningful memories.
+            </div>
+
+            <div class="preview-bubble assistant">
+                What is one moment with {{ profile.full_name }} that comes to your mind first?
+            </div>
         </div>
+
+        <button id="start-chat-btn" class="primary-btn">Start a chat</button>
+        <p id="start-chat-error" class="error-text" hidden></p>
     </div>
-</div>
+</section>
+
+<style>
+.chat-start-page {
+    min-height: calc(100vh - 80px);
+    padding: 40px 20px 64px;
+    background: #f7f8fc;
+}
+
+.chat-start-shell {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 24px;
+    text-decoration: none;
+    color: #66708d;
+    font-size: 15px;
+}
+
+.chat-eyebrow {
+    margin: 0 0 12px;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7c84a3;
+}
+
+.chat-title {
+    margin: 0 0 10px;
+    font-size: 42px;
+    line-height: 1.08;
+    text-align: left;
+    font-weight: 800;
+    color: #22305f;
+}
+
+.chat-subtitle {
+    margin: 0 0 28px;
+    font-size: 18px;
+    line-height: 1.6;
+    color: #5b6480;
+    max-width: 620px;
+}
+
+.profile-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: #ffffff;
+    border: 1px solid #e8ebf5;
+    border-radius: 24px;
+    padding: 22px;
+    margin-bottom: 22px;
+}
+
+.profile-avatar {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #eef1ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #22305f;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-content h2 {
+    margin: 0 0 6px;
+    font-size: 30px;
+    line-height: 1.15;
+    color: #22305f;
+}
+
+.profile-relationship {
+    margin: 0 0 8px;
+    font-size: 17px;
+    color: #4f5978;
+}
+
+.profile-description {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #66708d;
+}
+
+.chat-preview {
+    background: #ffffff;
+    border: 1px solid #e8ebf5;
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 26px;
+}
+
+.preview-bubble {
+    max-width: 100%;
+    padding: 14px 16px;
+    border-radius: 18px;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.preview-bubble + .preview-bubble {
+    margin-top: 12px;
+}
+
+.preview-bubble.assistant {
+    background: #f4f6fb;
+    color: #26345f;
+    border: 1px solid #e7ebf5;
+}
+
+.primary-btn {
+    border: none;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.error-text {
+    margin: 12px 0 0;
+    color: #b42318;
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .chat-start-page {
+        padding: 28px 16px 48px;
+    }
+
+    .chat-title {
+        font-size: 34px;
+    }
+
+    .chat-subtitle {
+        font-size: 17px;
+    }
+
+    .profile-card {
+        align-items: flex-start;
+    }
+
+    .profile-content h2 {
+        font-size: 26px;
+    }
+}
+</style>
+
+<script>
+    const startButton = document.getElementById("start-chat-btn");
+    const errorEl = document.getElementById("start-chat-error");
+    const profileId = {{ profile_id|tojson }};
+
+    startButton.addEventListener("click", async () => {
+        errorEl.hidden = true;
+
+        const token =
+            localStorage.getItem("access_token") ||
+            localStorage.getItem("jwt") ||
+            localStorage.getItem("token");
+
+        if (!token) {
+            errorEl.textContent = "No auth token found. Please log in again.";
+            errorEl.hidden = false;
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/chat/sessions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    profile_id: profileId,
+                    category: "memory_chat",
+                    status: "active"
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to create chat session.");
+            }
+
+            window.location.href = `/ui/chat/${data.session_id}?profile_id=${profileId}`;
+        } catch (error) {
+            errorEl.textContent = error.message;
+            errorEl.hidden = false;
+        }
+    });
+</script>
 {% endblock %}

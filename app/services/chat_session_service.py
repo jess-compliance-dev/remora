@@ -1,110 +1,87 @@
-from app.database.chat_session_database import ChatSessionDatabase
-from app.services.chat_message_service import ChatMessageService
-from app.services.story_service import StoryService
-from app.services.story_ai_service import StoryAIService
+from datetime import datetime, UTC
+
+from app.extensions.db import db
+from app.models.chat_session import ChatSession
 
 
 class ChatSessionService:
-    """
-    Service layer for chat session business logic.
-    """
-
-    def __init__(self):
-        self.session_db = ChatSessionDatabase()
-
     def get_sessions(self):
-        """Get all chat sessions."""
-        return self.session_db.get_all()
+        return (
+            ChatSession.query
+            .order_by(ChatSession.started_at.desc())
+            .all()
+        )
 
-    def get_session_by_id(self, session_id: int):
-        """Get chat session by ID."""
-        return self.session_db.get_by_id(session_id)
+    def get_session_by_id(self, session_id):
+        return ChatSession.query.get(session_id)
 
-    def get_sessions_by_profile_id(self, profile_id: int):
-        """Get all sessions for a profile."""
-        return self.session_db.get_by_profile_id(profile_id)
+    def get_sessions_by_profile_id(self, profile_id):
+        return (
+            ChatSession.query
+            .filter_by(profile_id=profile_id)
+            .order_by(ChatSession.started_at.desc())
+            .all()
+        )
 
-    def create_session(self, data: dict):
-        """Create a new chat session."""
-        return self.session_db.create(data)
+    def create_session(self, data):
+        try:
+            session = ChatSession(
+                profile_id=data.get("profile_id"),
+                user_id=data.get("user_id"),
+                category=data.get("category"),
+                status=data.get("status", "active"),
+            )
 
-    def update_session(self, session_id: int, data: dict):
-        """Update an existing chat session."""
-        session = self.session_db.get_by_id(session_id)
+            db.session.add(session)
+            db.session.commit()
+            return session
 
+        except Exception:
+            db.session.rollback()
+            return None
+
+    def update_session(self, session_id, data):
+        session = self.get_session_by_id(session_id)
         if not session:
             return None
 
-        return self.session_db.update(session, data)
+        try:
+            if "profile_id" in data:
+                session.profile_id = data["profile_id"]
 
-    def delete_session(self, session_id: int):
-        """Delete a chat session."""
-        session = self.session_db.get_by_id(session_id)
+            if "category" in data:
+                session.category = data["category"]
 
+            if "status" in data and data["status"] in ["active", "ended"]:
+                session.status = data["status"]
+
+                if data["status"] == "ended" and not session.ended_at:
+                    session.ended_at = datetime.now(UTC)
+
+                if data["status"] == "active":
+                    session.ended_at = None
+
+            db.session.commit()
+            return session
+
+        except Exception:
+            db.session.rollback()
+            return None
+
+    def delete_session(self, session_id):
+        session = self.get_session_by_id(session_id)
         if not session:
             return False
 
-        self.session_db.delete(session)
-        return True
+        try:
+            db.session.delete(session)
+            db.session.commit()
+            return True
 
-    def generate_story_from_session(self, session_id: int):
-        """
-        Generate a life story from a chat session.
-        """
+        except Exception:
+            db.session.rollback()
+            return False
 
-        session = self.session_db.get_by_id(session_id)
 
-        if not session:
-            return None
-
-        message_service = ChatMessageService()
-        story_service = StoryService()
-        ai_service = StoryAIService()
-
-        messages = message_service.get_messages_by_session_id(session_id)
-
-        if not messages:
-            return None
-
-        # collect only user answers
-        user_answers = [
-            m.message_text
-            for m in messages
-            if m.role == "user" and m.message_text
-        ]
-
-        if not user_answers:
-            return None
-
-        story_text = "\n\n".join(user_answers)
-
-        # AI enrichment
-        title = ai_service.generate_title(story_text)
-        summary = ai_service.generate_summary(story_text)
-        emotion = ai_service.detect_emotion(story_text)
-        theme = ai_service.detect_theme(story_text)
-
-        story_data = {
-            "profile_id": session.profile_id,
-            "created_by": session.user_id,
-            "title": title,
-            "story_text": story_text,
-            "summary": summary,
-            "theme": theme,
-            "emotion_tag": emotion,
-            "life_period": session.category,
-            "source_type": "chat",
-            "is_featured": False
-        }
-
-        story = story_service.create_story(story_data)
-
-        # mark session completed
-        self.session_db.update(
-            session,
-            {
-                "status": "completed"
-            }
-        )
-
-        return story
+    def generate_story_from_session(self, session_id):
+        return None

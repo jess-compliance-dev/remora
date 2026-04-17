@@ -24,6 +24,8 @@ class ChatSession(db.Model):
     )
 
     category = db.Column(db.String(100), nullable=True)
+
+    # possible values: "active", "ended"
     status = db.Column(db.String(50), nullable=False, default="active")
 
     started_at = db.Column(
@@ -33,3 +35,23 @@ class ChatSession(db.Model):
     )
 
     ended_at = db.Column(db.DateTime, nullable=True)
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(UTC)
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC)
+    )
+
+    def is_active(self):
+        return self.status == "active"
+
+    def end(self):
+        self.status = "ended"
+        self.ended_at = datetime.now(UTC)

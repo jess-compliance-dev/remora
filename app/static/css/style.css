@@ -175,6 +175,7 @@ select.input:focus {
     flex: 1;
 }
 
+
 .foot-link {
     margin-top: 16px;
     font-size: 14px;
@@ -368,6 +369,7 @@ select.input:focus {
     letter-spacing: -0.01em;
 }
 
+
 .hero-sub {
     font-size: 14px;
     color: var(--muted);
@@ -467,8 +469,9 @@ select.input:focus {
 
 .chat-header {
     display: flex;
-    gap: 12px;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 16px;
 }
 
 .progress-row {
@@ -498,6 +501,16 @@ select.input:focus {
     height: 3px;
     border-radius: 999px;
     background: #e7e8f2;
+}
+
+.chat-header-wireframe {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-back {
+    display: none;
 }
 
 .chat-list {

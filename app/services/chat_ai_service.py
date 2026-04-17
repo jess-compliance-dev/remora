@@ -1,67 +1,103 @@
 import os
 
-try:
-    from openai import OpenAI
-except ImportError:
-    OpenAI = None
+from openai import OpenAI
 
 
 class ChatAIService:
     """
-    Service for guided life story conversation.
+    Service for Remora's memorial conversation chat.
+    Uses the OpenAI Responses API.
     """
 
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
-        self.client = OpenAI(api_key=self.api_key) if self.api_key and OpenAI else None
+        self.model = os.getenv("OPENAI_MODEL", "gpt-5")
+        self.client = OpenAI(api_key=self.api_key) if self.api_key else None
 
-    def build_system_prompt(self):
+    def build_system_prompt(self, profile=None) -> str:
+        profile_name = getattr(profile, "full_name", None) or "the memorialized person"
+        relationship = getattr(profile, "relationship", None) or "someone meaningful to the user"
+        short_description = getattr(profile, "short_description", None) or ""
+
         return (
-            "You are a warm, thoughtful memory interviewer for a memorial storytelling app. "
-            "Your role is to help the user preserve meaningful life stories, memories, moments, "
-            "habits, values, relationships, and personal details about someone. "
-            "Ask one clear follow-up question at a time. "
-            "Be empathetic, concise, and natural. "
-            "Focus on helping the user tell a rich, biographical story."
+            "You are Remora, a warm and thoughtful memorial conversation guide. "
+            "Your task is to help the user preserve meaningful memories, stories, "
+            "habits, values, relationships, and small personal details.\n\n"
+            f"The person being remembered is {profile_name}. "
+            f"Their relationship to the user is {relationship}. "
+            f"{short_description}\n\n"
+            "Guidelines:\n"
+            "- Be empathetic, calm, and natural.\n"
+            "- Keep replies concise.\n"
+            "- Ask at most one clear follow-up question at a time.\n"
+            "- Encourage specific sensory details, people, places, and emotions.\n"
+            "- Never invent facts.\n"
+            "- If the user shares something painful, respond gently and supportively.\n"
+            "- Focus on preserving memory, not therapy or diagnosis."
         )
 
-    def generate_reply(self, messages: list[dict]) -> str:
-        """
-        Generate an assistant reply from chat history.
-        """
+    def _normalize_role(self, role: str) -> str:
+        if role in ("user", "assistant", "system", "developer"):
+            return role
+        return "user"
 
-        if self.client:
-            completion = self.client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": self.build_system_prompt()},
-                    *messages
-                ],
-                temperature=0.7
+    def _to_responses_input(self, messages: list[dict]) -> list[dict]:
+        response_items = []
+
+        for message in messages or []:
+            role = self._normalize_role(message.get("role", "user"))
+            text = str(message.get("content") or "").strip()
+
+            if not text:
+                continue
+
+            response_items.append(
+                {
+                    "role": role,
+                    "content": text,
+                }
             )
-            return completion.choices[0].message.content.strip()
 
-        # Fallback, wenn kein API-Key gesetzt ist
+        return response_items
+
+    def generate_reply(self, messages: list[dict], profile=None) -> str:
+        if self.client:
+            response_input = self._to_responses_input(messages)
+
+            if not response_input:
+                response_input = [
+                    {
+                        "role": "user",
+                        "content": "Help the user begin sharing a meaningful memory.",
+                    }
+                ]
+
+            response = self.client.responses.create(
+                model=self.model,
+                instructions=self.build_system_prompt(profile),
+                input=response_input,
+            )
+
+            return (response.output_text or "").strip()
+
         if not messages:
-            return "Tell me about a moment from this person's life that still feels especially vivid to you."
+            return "What is one memory of this person that comes to your mind immediately?"
 
         last_user_message = ""
         for msg in reversed(messages):
-            if msg["role"] == "user":
-                last_user_message = msg["content"]
+            if msg.get("role") == "user" and msg.get("content"):
+                last_user_message = str(msg["content"]).strip()
                 break
 
         if not last_user_message:
-            return "What is one memory that immediately comes to mind when you think of this person?"
+            return "What is one small detail about this person that you never want to forget?"
 
         fallback_questions = [
-            "Can you describe that moment in a little more detail?",
-            "Who else was there, and what do you remember most clearly?",
-            "How did that moment make you feel?",
-            "Why do you think this memory stayed with you?",
-            "What does this memory say about who this person was?"
+            "Can you tell me a little more about that moment?",
+            "What do you remember most clearly about it?",
+            "Who else was there, and how did it feel?",
+            "What did that moment reveal about who this person was?",
+            "Is there a small detail from that memory that still stays with you?",
         ]
-
         index = min(len(messages) // 2, len(fallback_questions) - 1)
         return fallback_questions[index]
-    

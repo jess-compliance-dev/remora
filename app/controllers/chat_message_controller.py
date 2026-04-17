@@ -1,5 +1,5 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from app.services.chat_message_service import ChatMessageService
 
@@ -8,9 +8,6 @@ chat_message_service = ChatMessageService()
 
 
 def serialize_message(message):
-    """
-    Convert a ChatMessage object into a JSON-serializable dictionary.
-    """
     if message is None:
         return None
 
@@ -31,41 +28,27 @@ def serialize_message(message):
 
 @chat_message_bp.route("", methods=["GET"])
 def get_messages():
-    """
-    Retrieve all chat messages.
-    """
     messages = chat_message_service.get_messages()
     return jsonify([serialize_message(message) for message in messages]), 200
 
 
 @chat_message_bp.route("/<int:message_id>", methods=["GET"])
 def get_message(message_id):
-    """
-    Retrieve a single chat message by ID.
-    """
     message = chat_message_service.get_message_by_id(message_id)
-
     if not message:
         return jsonify({"error": "Message not found"}), 404
-
     return jsonify(serialize_message(message)), 200
 
 
 @chat_message_bp.route("", methods=["POST"])
 @jwt_required()
 def create_message():
-    """
-    Create a new chat message for the currently authenticated user.
-    """
     data = request.get_json(silent=True)
-
     if not data:
         return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    data["user_id"] = get_jwt_identity()
-
+    data["user_id"] = int(get_jwt_identity())
     message = chat_message_service.create_message(data)
-
     if not message:
         return jsonify({"error": "Unable to create message"}), 400
 
@@ -75,11 +58,7 @@ def create_message():
 @chat_message_bp.route("/<int:message_id>", methods=["DELETE"])
 @jwt_required()
 def delete_message(message_id):
-    """
-    Delete a chat message.
-    """
     deleted = chat_message_service.delete_message(message_id)
-
     if not deleted:
         return jsonify({"error": "Message not found"}), 404
 
@@ -88,8 +67,5 @@ def delete_message(message_id):
 
 @chat_message_bp.route("/session/<int:session_id>", methods=["GET"])
 def get_messages_by_session(session_id):
-    """
-    Retrieve all messages for a chat session.
-    """
     messages = chat_message_service.get_messages_by_session_id(session_id)
     return jsonify([serialize_message(message) for message in messages]), 200
