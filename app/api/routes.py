@@ -8,7 +8,7 @@ from app.controllers.chatbot_prompt_controller import chatbot_prompt_bp
 from app.controllers.chat_session_controller import chat_session_bp
 from app.controllers.chat_message_controller import chat_message_bp
 from app.controllers.chat_ai_controller import chat_ai_bp
-
+from app.controllers.memory_controller import memory_bp
 
 def register_blueprints(app):
     api_bp = Blueprint("api", __name__)
@@ -21,5 +21,6 @@ def register_blueprints(app):
     api_bp.register_blueprint(chat_session_bp, url_prefix="/chat/sessions")
     api_bp.register_blueprint(chat_message_bp, url_prefix="/chat/messages")
     api_bp.register_blueprint(chat_ai_bp, url_prefix="/chat")
+    app.register_blueprint(memory_bp, url_prefix="/memories")
 
     app.register_blueprint(api_bp, url_prefix="/api")

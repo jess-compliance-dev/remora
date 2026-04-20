@@ -10,7 +10,7 @@ from app.services.profile_service import ProfileService
 profile_bp = Blueprint("profiles", __name__)
 profile_service = ProfileService()
 
-ALLOWED_EXTENSIONS = {"png", "jpg"}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 
 def allowed_file(filename):
@@ -39,18 +39,22 @@ def serialize_profile(profile):
 @profile_bp.route("", methods=["GET"])
 @jwt_required()
 def get_profiles():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     profiles = profile_service.get_profiles_by_owner_id(user_id)
     return jsonify([serialize_profile(profile) for profile in profiles]), 200
 
 
 @profile_bp.route("/<int:profile_id>", methods=["GET"])
-@jwt_required(optional=True)
+@jwt_required()
 def get_profile(profile_id):
+    user_id = int(get_jwt_identity())
     profile = profile_service.get_profile_by_id(profile_id)
 
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
+
+    if profile.owner_id != user_id:
+        return jsonify({"error": "Forbidden"}), 403
 
     return jsonify(serialize_profile(profile)), 200
 
@@ -69,15 +73,15 @@ def create_profile():
     death_date = data.get("death_date") or None
     short_description = (data.get("short_description") or "").strip() or None
     profile_image_url = data.get("profile_image_url") or None
-    status = data.get("status") or None
+    status = (data.get("status") or "").strip() or None
 
     if not full_name:
         return jsonify({"error": "full_name is required"}), 400
 
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
 
     payload = {
-        "owner_id": int(user_id),
+        "owner_id": user_id,
         "full_name": full_name,
         "relationship": relationship,
         "birth_date": birth_date,
@@ -130,10 +134,14 @@ def upload_profile_image():
 @profile_bp.route("/<int:profile_id>", methods=["PUT"])
 @jwt_required()
 def update_profile(profile_id):
+    user_id = int(get_jwt_identity())
     existing_profile = profile_service.get_profile_by_id(profile_id)
 
     if not existing_profile:
         return jsonify({"error": "Profile not found"}), 404
+
+    if existing_profile.owner_id != user_id:
+        return jsonify({"error": "Forbidden"}), 403
 
     data = request.get_json(silent=True)
 
@@ -145,10 +153,13 @@ def update_profile(profile_id):
         "relationship": (data.get("relationship") or "").strip() if data.get("relationship") is not None else existing_profile.relationship,
         "birth_date": data.get("birth_date") if "birth_date" in data else existing_profile.birth_date,
         "death_date": data.get("death_date") if "death_date" in data else existing_profile.death_date,
-        "status": data.get("status") if "status" in data else existing_profile.status,
+        "status": (data.get("status") or "").strip() if data.get("status") is not None else existing_profile.status,
         "short_description": (data.get("short_description") or "").strip() if data.get("short_description") is not None else existing_profile.short_description,
         "profile_image_url": data.get("profile_image_url") if "profile_image_url" in data else existing_profile.profile_image_url,
     }
+
+    if not updatable_fields["full_name"]:
+        return jsonify({"error": "full_name cannot be empty"}), 400
 
     updated_profile = profile_service.update_profile(profile_id, updatable_fields)
 
@@ -161,10 +172,14 @@ def update_profile(profile_id):
 @profile_bp.route("/<int:profile_id>", methods=["DELETE"])
 @jwt_required()
 def delete_profile(profile_id):
+    user_id = int(get_jwt_identity())
     existing_profile = profile_service.get_profile_by_id(profile_id)
 
     if not existing_profile:
         return jsonify({"error": "Profile not found"}), 404
+
+    if existing_profile.owner_id != user_id:
+        return jsonify({"error": "Forbidden"}), 403
 
     deleted = profile_service.delete_profile(profile_id)
 
@@ -172,3 +187,4 @@ def delete_profile(profile_id):
         return jsonify({"error": "Unable to delete profile"}), 400
 
     return jsonify({"message": "Profile deleted successfully"}), 200
+

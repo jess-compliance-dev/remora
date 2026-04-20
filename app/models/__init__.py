@@ -5,6 +5,7 @@ from app.models.story_media import StoryMedia
 from app.models.chatbot_prompt import ChatbotPrompt
 from app.models.chat_session import ChatSession
 from app.models.chat_message import ChatMessage
+from app.models.memory import Memory
 
 """
 from app.models.story_tag import StoryTag
