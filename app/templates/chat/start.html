@@ -1,217 +1,439 @@
 {% extends "base.html" %}
 {% block title %}Start a chat | Remora{% endblock %}
 
-{% block content %}
-<section class="chat-start-page">
-    <div class="chat-start-shell">
-        <a href="/ui/dashboard" class="back-link">← Back</a>
-
-        <h1 class="chat-title">Start a chat</h1>
-
-        <p class="chat-subtitle">
-            A guided conversation to capture meaningful memories step by step.
-        </p>
-
-        <div class="profile-card">
-            <div class="profile-avatar">
-                {% if profile.profile_image_url %}
-                    <img src="{{ profile.profile_image_url }}" alt="{{ profile.full_name }}">
-                {% else %}
-                    <span>{{ profile.full_name[:1] }}</span>
-                {% endif %}
-            </div>
-
-            <div class="profile-content">
-                <h2>{{ profile.full_name }}</h2>
-
-                {% if profile.relationship %}
-                    <p class="profile-relationship">{{ profile.relationship }}</p>
-                {% endif %}
-
-                {% if profile.short_description %}
-                    <p class="profile-description">{{ profile.short_description }}</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="chat-preview">
-            <div class="preview-bubble assistant">
-                Hello. I’ll guide you through a few gentle questions to help capture meaningful memories.
-            </div>
-
-            <div class="preview-bubble assistant">
-                What is one moment with {{ profile.full_name }} that comes to your mind first?
-            </div>
-        </div>
-
-        <button id="start-chat-btn" class="primary-btn">Start a chat</button>
-        <p id="start-chat-error" class="error-text" hidden></p>
-    </div>
-</section>
-
+{% block head %}
 <style>
-.chat-start-page {
-    min-height: calc(100vh - 80px);
-    padding: 40px 20px 64px;
-    background: #f7f8fc;
-}
-
-.chat-start-shell {
-    max-width: 720px;
-    margin: 0 auto;
-}
-
-.back-link {
-    display: inline-block;
-    margin-bottom: 24px;
-    text-decoration: none;
-    color: #66708d;
-    font-size: 15px;
-}
-
-.chat-eyebrow {
-    margin: 0 0 12px;
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #7c84a3;
-}
-
-.chat-title {
-    margin: 0 0 10px;
-    font-size: 42px;
-    line-height: 1.08;
-    text-align: left;
-    font-weight: 800;
-    color: #22305f;
-}
-
-.chat-subtitle {
-    margin: 0 0 28px;
-    font-size: 18px;
-    line-height: 1.6;
-    color: #5b6480;
-    max-width: 620px;
-}
-
-.profile-card {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    background: #ffffff;
-    border: 1px solid #e8ebf5;
-    border-radius: 24px;
-    padding: 22px;
-    margin-bottom: 22px;
-}
-
-.profile-avatar {
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    background: #eef1ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    flex-shrink: 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #22305f;
-}
-
-.profile-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.profile-content h2 {
-    margin: 0 0 6px;
-    font-size: 30px;
-    line-height: 1.15;
-    color: #22305f;
-}
-
-.profile-relationship {
-    margin: 0 0 8px;
-    font-size: 17px;
-    color: #4f5978;
-}
-
-.profile-description {
-    margin: 0;
-    font-size: 16px;
-    line-height: 1.6;
-    color: #66708d;
-}
-
-.chat-preview {
-    background: #ffffff;
-    border: 1px solid #e8ebf5;
-    border-radius: 24px;
-    padding: 20px;
-    margin-bottom: 26px;
-}
-
-.preview-bubble {
-    max-width: 100%;
-    padding: 14px 16px;
-    border-radius: 18px;
-    font-size: 16px;
-    line-height: 1.55;
-}
-
-.preview-bubble + .preview-bubble {
-    margin-top: 12px;
-}
-
-.preview-bubble.assistant {
-    background: #f4f6fb;
-    color: #26345f;
-    border: 1px solid #e7ebf5;
-}
-
-.primary-btn {
-    border: none;
-    background: #0f172a;
-    color: #ffffff;
-    padding: 14px 22px;
-    border-radius: 14px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.error-text {
-    margin: 12px 0 0;
-    color: #b42318;
-    font-size: 14px;
-}
-
-@media (max-width: 640px) {
     .chat-start-page {
-        padding: 28px 16px 48px;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px 20px 56px;
     }
 
-    .chat-title {
+    .chat-start-panel {
+        background: #ffffff;
+        border: 1px solid #e7e9f4;
+        border-radius: 28px;
+        padding: 28px;
+        box-shadow: 0 10px 30px rgba(86, 97, 160, 0.08);
+    }
+
+    .chat-start-topbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 8px;
+    }
+
+    .chat-start-back {
+        width: 42px;
+        height: 42px;
+        border: none;
+        background: #eef0ff;
+        color: #5c63d6;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease;
+        flex-shrink: 0;
+    }
+
+    .chat-start-back:hover {
+        background: #e3e6ff;
+        transform: translateY(-1px);
+    }
+
+    .chat-start-back svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .chat-start-header-copy {
+        min-width: 0;
+    }
+
+    .chat-start-title {
+        margin: 0;
         font-size: 34px;
+        line-height: 1.1;
+        color: #2f355c;
+        text-align: left;
     }
 
-    .chat-subtitle {
-        font-size: 17px;
+    .chat-start-subtitle {
+        margin: 10px 0 0;
+        color: #8b90b3;
+        font-size: 16px;
+        line-height: 1.5;
+        max-width: 58ch;
     }
 
-    .profile-card {
+    .chat-start-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 18px;
+        margin-top: 28px;
+    }
+
+    .chat-start-card {
+        background: #ffffff;
+        border: 1px solid #e7e9f4;
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
+    }
+
+    .chat-profile-card {
+        display: flex;
         align-items: flex-start;
+        gap: 18px;
+        min-height: 100%;
     }
 
-    .profile-content h2 {
-        font-size: 26px;
+    .chat-profile-avatar {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: #eef0ff;
+        color: #5c63d6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+        font-size: 28px;
+        font-weight: 700;
     }
-}
+
+    .chat-profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .chat-profile-content h2 {
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        line-height: 1.15;
+        color: #2f355c;
+    }
+
+    .chat-profile-relationship {
+        margin: 0 0 10px 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: #5c63d6;
+        font-weight: 700;
+    }
+
+    .chat-profile-description {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #7d84a6;
+    }
+
+    .chat-preview-card {
+        min-height: 100%;
+    }
+
+    .chat-preview-title {
+        margin: 0 0 14px 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #2f355c;
+    }
+
+    .chat-preview-bubble {
+        max-width: 100%;
+        padding: 14px 16px;
+        border-radius: 18px;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #2f355c;
+        background: #f7f8ff;
+        border: 1px solid #e7e9f4;
+    }
+
+    .chat-preview-bubble + .chat-preview-bubble {
+        margin-top: 12px;
+    }
+
+    .chat-preview-bubble.assistant {
+        background: #f7f8ff;
+    }
+
+    .chat-start-highlights {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+    }
+
+    .chat-highlight {
+        border: 1px solid #e7e9f4;
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-highlight-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: #eef0ff;
+        color: #5c63d6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+    }
+
+    .chat-highlight-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .chat-highlight-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2f355c;
+        margin-bottom: 8px;
+    }
+
+    .chat-highlight-text {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #7d84a6;
+        max-width: 28ch;
+    }
+
+    .chat-start-status {
+        margin-top: 20px;
+        min-height: 24px;
+        font-size: 14px;
+        color: #7d84a6;
+    }
+
+    .chat-start-status.is-error {
+        color: #c23d4b;
+    }
+
+    .chat-start-status.is-loading {
+        color: #5c63d6;
+    }
+
+    .chat-start-actions {
+        margin-top: 22px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .chat-start-primary {
+        width: auto;
+        min-width: 180px;
+    }
+
+    .chat-start-secondary {
+        width: auto;
+        min-width: 160px;
+    }
+
+    @media (max-width: 980px) {
+        .chat-start-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chat-start-highlights {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 640px) {
+        .chat-start-page {
+            padding: 20px 14px 40px;
+        }
+
+        .chat-start-panel {
+            padding: 20px;
+            border-radius: 24px;
+        }
+
+        .chat-start-title {
+            font-size: 28px;
+        }
+
+        .chat-start-subtitle {
+            font-size: 15px;
+        }
+
+        .chat-profile-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .chat-profile-content h2 {
+            font-size: 24px;
+        }
+
+        .chat-start-highlights {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .chat-highlight {
+            min-height: 160px;
+            padding: 18px;
+        }
+
+        .chat-highlight-title {
+            font-size: 19px;
+        }
+
+        .chat-start-actions {
+            flex-direction: column-reverse;
+            justify-content: stretch;
+        }
+
+        .chat-start-primary,
+        .chat-start-secondary {
+            width: 100%;
+        }
+    }
 </style>
+{% endblock %}
 
+{% block content %}
+<div class="chat-start-page">
+    <div class="chat-start-panel">
+
+        <div class="chat-start-topbar">
+            <button
+                class="chat-start-back"
+                type="button"
+                aria-label="Go back"
+                onclick="window.history.back()"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6"></path>
+                </svg>
+            </button>
+
+            <div class="chat-start-header-copy">
+                <h1 class="chat-start-title">Start a chat</h1>
+                <p class="chat-start-subtitle">
+                    A guided conversation to capture meaningful memories step by step.
+                </p>
+            </div>
+        </div>
+
+        <div class="chat-start-grid">
+            <div class="chat-start-card chat-profile-card">
+                <div class="chat-profile-avatar">
+                    {% if profile.profile_image_url %}
+                        <img src="{{ profile.profile_image_url }}" alt="{{ profile.full_name }}">
+                    {% else %}
+                        <span>{{ profile.full_name[:1] }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="chat-profile-content">
+                    <h2>{{ profile.full_name }}</h2>
+
+                    {% if profile.relationship %}
+                        <p class="chat-profile-relationship">{{ profile.relationship }}</p>
+                    {% endif %}
+
+                    {% if profile.short_description %}
+                        <p class="chat-profile-description">{{ profile.short_description }}</p>
+                    {% else %}
+                        <p class="chat-profile-description">
+                            Begin a gentle conversation and preserve important memories, moments, and stories.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="chat-start-card chat-preview-card">
+                <h2 class="chat-preview-title">Preview</h2>
+
+                <div class="chat-preview-bubble assistant">
+                    Hello. I’ll guide you through a few gentle questions to help capture meaningful memories.
+                </div>
+
+                <div class="chat-preview-bubble assistant">
+                    What is one moment with {{ profile.full_name }} that comes to your mind first?
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-start-highlights">
+            <div class="chat-highlight">
+                <div class="chat-highlight-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M8 12h8"></path>
+                        <path d="M12 8v8"></path>
+                        <circle cx="12" cy="12" r="9"></circle>
+                    </svg>
+                </div>
+                <div class="chat-highlight-title">Gentle Start</div>
+                <div class="chat-highlight-text">
+                    Begin with simple questions and move through memories step by step.
+                </div>
+            </div>
+
+            <div class="chat-highlight">
+                <div class="chat-highlight-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <div class="chat-highlight-title">Guided Questions</div>
+                <div class="chat-highlight-text">
+                    The chat helps uncover stories, details, feelings, and meaningful moments.
+                </div>
+            </div>
+
+            <div class="chat-highlight">
+                <div class="chat-highlight-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 20s8-4.5 8-11a4 4 0 0 0-7-2.65A4 4 0 0 0 4 9c0 6.5 8 11 8 11z"></path>
+                    </svg>
+                </div>
+                <div class="chat-highlight-title">Meaningful Memory</div>
+                <div class="chat-highlight-text">
+                    Capture stories in a calm, personal space designed for remembrance.
+                </div>
+            </div>
+        </div>
+
+        <div id="start-chat-error" class="chat-start-status" aria-live="polite" hidden></div>
+
+        <div class="chat-start-actions">
+            <button
+                class="btn btn-secondary chat-start-secondary"
+                type="button"
+                onclick="window.location.href='/ui/dashboard'"
+            >
+                Cancel
+            </button>
+
+            <button id="start-chat-btn" class="btn btn-primary chat-start-primary" type="button">
+                Start a chat
+            </button>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script>
     const startButton = document.getElementById("start-chat-btn");
     const errorEl = document.getElementById("start-chat-error");
@@ -219,6 +441,9 @@
 
     startButton.addEventListener("click", async () => {
         errorEl.hidden = true;
+        errorEl.textContent = "";
+        errorEl.className = "chat-start-status is-loading";
+        errorEl.textContent = "Starting chat...";
 
         const token =
             localStorage.getItem("access_token") ||
@@ -227,6 +452,7 @@
 
         if (!token) {
             errorEl.textContent = "No auth token found. Please log in again.";
+            errorEl.className = "chat-start-status is-error";
             errorEl.hidden = false;
             return;
         }
@@ -254,6 +480,7 @@
             window.location.href = `/ui/chat/${data.session_id}?profile_id=${profileId}`;
         } catch (error) {
             errorEl.textContent = error.message;
+            errorEl.className = "chat-start-status is-error";
             errorEl.hidden = false;
         }
     });

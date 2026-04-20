@@ -99,7 +99,7 @@ def create_profile():
 @ui_bp.route("/ui/profiles/<int:profile_id>")
 def profile_detail(profile_id):
     return render_ui(
-        "profiles/detail.html",
+        "profiles/profile_setting.html",
         profile_id=profile_id,
         active_tab="profile",
         show_bottom_nav=True
@@ -118,7 +118,7 @@ def life_stories():
 @ui_bp.route("/ui/story/<int:story_id>")
 def story(story_id):
     return render_ui(
-        "stories/detail.html",
+        "stories/profile_setting.html",
         story_id=story_id,
         active_tab="memories",
         show_bottom_nav=True
@@ -234,7 +234,7 @@ def memory_detail(memory_id):
     For now this renders the detail screen with the memory id.
     """
     return render_ui(
-        "memories/detail.html",
+        "memories/profile_setting.html",
         memory_id=memory_id,
         active_tab="memories",
         show_bottom_nav=True

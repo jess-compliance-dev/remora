@@ -1,88 +1,369 @@
 {% extends "base.html" %}
+
 {% block title %}Time Capsule | Remora{% endblock %}
 
+{% block head %}
+<style>
+    .time-capsule-page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px 20px 56px;
+    }
+
+    .time-capsule-panel {
+        background: #ffffff;
+        border: 1px solid #e7e9f4;
+        border-radius: 28px;
+        padding: 28px;
+        box-shadow: 0 10px 30px rgba(86, 97, 160, 0.08);
+    }
+
+    .time-capsule-topbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 8px;
+    }
+
+    .time-capsule-back {
+        width: 42px;
+        height: 42px;
+        border: none;
+        background: #eef0ff;
+        color: #5c63d6;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease;
+        flex-shrink: 0;
+    }
+
+    .time-capsule-back:hover {
+        background: #e3e6ff;
+        transform: translateY(-1px);
+    }
+
+    .time-capsule-back svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .time-capsule-header-copy {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .time-capsule-title {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.1;
+        color: #2f355c;
+        text-align: left;
+    }
+
+    .time-capsule-subtitle {
+        margin: 10px 0 0;
+        color: #8b90b3;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .time-capsule-filters {
+        display: flex;
+        gap: 18px;
+        margin-top: 26px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eceef8;
+        overflow-x: auto;
+    }
+
+    .time-capsule-filter {
+        appearance: none;
+        border: none;
+        background: transparent;
+        padding: 0;
+        color: #8b90b3;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .time-capsule-filter.is-active {
+        color: #5c63d6;
+    }
+
+    .time-capsule-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 28px;
+    }
+
+    .time-capsule-option {
+        appearance: none;
+        width: 100%;
+        border: 1px solid #e7e9f4;
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 22px;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        min-height: 205px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .time-capsule-option:hover,
+    .time-capsule-option:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(86, 97, 160, 0.10);
+        border-color: #cfd6f6;
+        outline: none;
+    }
+
+    .time-capsule-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: #eef0ff;
+        color: #5c63d6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+        font-size: 24px;
+    }
+
+    .time-capsule-option-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #2f355c;
+        margin-bottom: 8px;
+    }
+
+    .time-capsule-option-text {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #7d84a6;
+        max-width: 30ch;
+    }
+
+    .time-capsule-section {
+        margin-top: 30px;
+    }
+
+    .time-capsule-section-title {
+        margin: 0 0 14px 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #2f355c;
+    }
+
+    .time-capsule-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .time-capsule-card {
+        background: #f7f8fc;
+        border: 1px solid #ececf3;
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .time-capsule-card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2f355c;
+        margin-bottom: 6px;
+    }
+
+    .time-capsule-card-date {
+        font-size: 13px;
+        line-height: 1.5;
+        color: #8b90b3;
+    }
+
+    .time-capsule-card-text {
+        font-size: 13px;
+        line-height: 1.6;
+        color: #5f678d;
+        margin-top: 8px;
+    }
+
+    .time-capsule-card-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #eef0ff;
+        color: #5c63d6;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .time-capsule-actions {
+        margin-top: 22px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .time-capsule-new {
+        width: auto;
+        min-width: 160px;
+    }
+
+    @media (max-width: 980px) {
+        .time-capsule-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 640px) {
+        .time-capsule-page {
+            padding: 20px 14px 40px;
+        }
+
+        .time-capsule-panel {
+            padding: 20px;
+            border-radius: 24px;
+        }
+
+        .time-capsule-title {
+            font-size: 28px;
+        }
+
+        .time-capsule-subtitle {
+            font-size: 15px;
+        }
+
+        .time-capsule-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-top: 22px;
+        }
+
+        .time-capsule-option {
+            min-height: 160px;
+            padding: 18px;
+        }
+
+        .time-capsule-option-title {
+            font-size: 19px;
+        }
+
+        .time-capsule-actions {
+            justify-content: stretch;
+        }
+
+        .time-capsule-new {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="screen center-screen">
-    <div class="phone-card">
+<div class="time-capsule-page">
+    <div class="time-capsule-panel">
 
-        <div style="
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-        ">
-            <div>
-                <h1 style="text-align:left; margin-bottom: 4px;">Time Capsule</h1>
-                <p class="muted" style="font-size: 14px;">Send a message to the future</p>
+        <div class="time-capsule-topbar">
+            <button
+                class="time-capsule-back"
+                type="button"
+                aria-label="Go back"
+                onclick="window.history.back()"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6"></path>
+                </svg>
+            </button>
+
+            <div class="time-capsule-header-copy">
+                <h1 class="time-capsule-title">Time Capsule</h1>
+                <p class="time-capsule-subtitle">
+                    Send a message, memory or moment forward in time.
+                </p>
             </div>
-
-            <a href="#" class="btn btn-secondary" style="
-                width: auto;
-                padding: 10px 14px;
-                border-radius: 14px;
-                text-decoration: none;
-                font-size: 14px;
-            ">
-                + New
-            </a>
         </div>
 
-        <div style="
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-            font-size: 14px;
-        ">
-            <span style="color:#5c63d6; font-weight:700;">Upcoming</span>
-            <span class="muted">Sent</span>
-            <span class="muted">Received</span>
+        <div class="time-capsule-filters">
+            <button class="time-capsule-filter is-active" type="button">Upcoming</button>
+            <button class="time-capsule-filter" type="button">Sent</button>
+            <button class="time-capsule-filter" type="button">Received</button>
         </div>
 
-        <div class="stack">
-            <div style="
-                background: #f7f8fc;
-                border: 1px solid #ececf3;
-                border-radius: 16px;
-                padding: 14px;
-            ">
-                <div style="font-weight:700; color:#2f355c; margin-bottom:6px;">Birthday Message</div>
-                <div class="muted" style="font-size:13px; line-height:1.5;">
-                    To be delivered on May 12
+        <div class="time-capsule-grid">
+            <button class="time-capsule-option" type="button">
+                <div class="time-capsule-icon">✉️</div>
+                <div class="time-capsule-option-title">Write Message</div>
+                <div class="time-capsule-option-text">
+                    Create a personal note to be delivered on a future date.
                 </div>
-                <div style="font-size:13px; color:#5f678d; margin-top:8px;">
-                    “Some words for her special day.”
-                </div>
-            </div>
+            </button>
 
-            <div style="
-                background: #f7f8fc;
-                border: 1px solid #ececf3;
-                border-radius: 16px;
-                padding: 14px;
-            ">
-                <div style="font-weight:700; color:#2f355c; margin-bottom:6px;">Anniversary</div>
-                <div class="muted" style="font-size:13px; line-height:1.5;">
-                    To be delivered on Aug 20
+            <button class="time-capsule-option" type="button">
+                <div class="time-capsule-icon">🎙️</div>
+                <div class="time-capsule-option-title">Voice Message</div>
+                <div class="time-capsule-option-text">
+                    Record something meaningful in your own voice for later.
                 </div>
-                <div style="font-size:13px; color:#5f678d; margin-top:8px;">
-                    “Our day, our story.”
-                </div>
-            </div>
+            </button>
 
-            <div style="
-                background: #f7f8fc;
-                border: 1px solid #ececf3;
-                border-radius: 16px;
-                padding: 14px;
-            ">
-                <div style="font-weight:700; color:#2f355c; margin-bottom:6px;">To My Future Self</div>
-                <div class="muted" style="font-size:13px; line-height:1.5;">
-                    To be delivered on Jan 1, 2026
+            <button class="time-capsule-option" type="button">
+                <div class="time-capsule-icon">📷</div>
+                <div class="time-capsule-option-title">Photo Capsule</div>
+                <div class="time-capsule-option-text">
+                    Save an image and let it resurface at the right moment.
                 </div>
-                <div style="font-size:13px; color:#5f678d; margin-top:8px;">
-                    “A letter for when I need it most.”
+            </button>
+        </div>
+
+        <div class="time-capsule-section">
+            <h2 class="time-capsule-section-title">Upcoming Capsules</h2>
+
+            <div class="time-capsule-list">
+                <div class="time-capsule-card">
+                    <div class="time-capsule-card-title">Birthday Message</div>
+                    <div class="time-capsule-card-date">To be delivered on May 12</div>
+                    <div class="time-capsule-card-text">
+                        “Some words for her special day.”
+                    </div>
+                    <div class="time-capsule-card-status">Scheduled</div>
+                </div>
+
+                <div class="time-capsule-card">
+                    <div class="time-capsule-card-title">Our travel to Berlin</div>
+                    <div class="time-capsule-card-date">To be delivered on Aug 20</div>
+                    <div class="time-capsule-card-text">
+                        “Our day, our story.”
+                    </div>
+                    <div class="time-capsule-card-status">Scheduled</div>
+                </div>
+
+                <div class="time-capsule-card">
+                    <div class="time-capsule-card-title">To My Future Self</div>
+                    <div class="time-capsule-card-date">To be delivered on Jan 1, 2026</div>
+                    <div class="time-capsule-card-text">
+                        “A letter for when I need it most.”
+                    </div>
+                    <div class="time-capsule-card-status">Scheduled</div>
                 </div>
             </div>
+        </div>
+
+        <div class="time-capsule-actions">
+            <button class="btn btn-secondary time-capsule-new" type="button">
+                + New Capsule
+            </button>
         </div>
 
     </div>

@@ -279,7 +279,6 @@
 <body>
 <div class="app-shell">
 
-    <!-- ✅ OPTIONAL TOPBAR -->
     {% if show_topbar != False %}
     <header class="topbar">
         <div class="topbar-inner">
@@ -298,27 +297,26 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- ✅ OPTIONAL BOTTOM NAV -->
     {% if show_bottom_nav %}
     <nav class="bottom-nav">
         <div class="bottom-nav-inner">
 
-            <a href="/ui/chat-home" class="nav-item {% if active_tab == 'chat' %}active{% endif %}">
+            <a id="bottom-nav-chat" href="/ui/chat-home" class="nav-item {% if active_tab == 'chat' %}active{% endif %}">
                 <div class="nav-icon">💬</div>
                 <div>Chat</div>
             </a>
 
-            <a href="/ui/memories" class="nav-item {% if active_tab == 'memories' %}active{% endif %}">
-                <div class="nav-icon">🖼️</div>
+            <a id="bottom-nav-memories" href="/ui/memories/select-profile" class="nav-item {% if active_tab == 'memories' %}active{% endif %}">
+                <div class="nav-icon">🧠</div>
                 <div>Memories</div>
             </a>
 
             <a href="/ui/time-capsule" class="nav-item {% if active_tab == 'time_capsule' %}active{% endif %}">
-                <div class="nav-icon">🎁</div>
+                <div class="nav-icon">🕰️</div>
                 <div>Time Capsule</div>
             </a>
 
-            <a href="/ui/select-profiles" class="nav-item {% if active_tab == 'profile' %}active{% endif %}">
+            <a id="bottom-nav-profile" href="/ui/select-profiles" class="nav-item {% if active_tab == 'profile' %}active{% endif %}">
                 <div class="nav-icon">👤</div>
                 <div>Profile</div>
             </a>
@@ -330,5 +328,45 @@
 </div>
 
 {% block scripts %}{% endblock %}
+
+{% if show_bottom_nav %}
+<script>
+    (function () {
+        const profileId = localStorage.getItem("active_profile_id");
+
+        const chatLink = document.getElementById("bottom-nav-chat");
+        const memoriesLink = document.getElementById("bottom-nav-memories");
+        const profileLink = document.getElementById("bottom-nav-profile");
+
+        if (!profileId) {
+            if (chatLink) {
+                chatLink.href = "/ui/select-profiles";
+            }
+
+            if (memoriesLink) {
+                memoriesLink.href = "/ui/select-profiles";
+            }
+
+            if (profileLink) {
+                profileLink.href = "/ui/select-profiles";
+            }
+
+            return;
+        }
+
+        if (chatLink) {
+            chatLink.href = `/ui/chat/start?profile_id=${profileId}`;
+        }
+
+        if (memoriesLink) {
+            memoriesLink.href = `/ui/memories?profile_id=${profileId}`;
+        }
+
+        if (profileLink) {
+            profileLink.href = `/ui/profiles/${profileId}`;
+        }
+    })();
+</script>
+{% endif %}
 </body>
 </html>
