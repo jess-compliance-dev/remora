@@ -127,8 +127,20 @@ def story(story_id):
 
 @ui_bp.route("/ui/memories")
 def memories():
+    profile_id = request.args.get("profile_id", type=int)
+
+    if not profile_id:
+        return redirect(url_for("ui.select_profiles"))
+
+    profile = profile_service.get_profile_by_id(profile_id)
+
+    if not profile:
+        return redirect(url_for("ui.select_profiles"))
+
     return render_ui(
         "memories/list.html",
+        profile=profile,
+        profile_id=profile_id,
         active_tab="memories",
         show_bottom_nav=True
     )
@@ -197,8 +209,18 @@ def time_capsule():
 @ui_bp.route("/ui/memories/add")
 def add_memory():
     profile_id = request.args.get("profile_id", type=int)
+
+    if not profile_id:
+        return redirect(url_for("ui.select_profiles"))
+
+    profile = profile_service.get_profile_by_id(profile_id)
+
+    if not profile:
+        return redirect(url_for("ui.select_profiles"))
+
     return render_ui(
         "memories/add_memory.html",
+        profile=profile,
         profile_id=profile_id,
         active_tab="memories",
         show_bottom_nav=True,
@@ -210,7 +232,6 @@ def memory_detail(memory_id):
     """
     Memory detail page with story-focused presentation.
     For now this renders the detail screen with the memory id.
-    You can later load real memory data from the backend/API.
     """
     return render_ui(
         "memories/detail.html",

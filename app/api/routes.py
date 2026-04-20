@@ -21,6 +21,6 @@ def register_blueprints(app):
     api_bp.register_blueprint(chat_session_bp, url_prefix="/chat/sessions")
     api_bp.register_blueprint(chat_message_bp, url_prefix="/chat/messages")
     api_bp.register_blueprint(chat_ai_bp, url_prefix="/chat")
-    app.register_blueprint(memory_bp, url_prefix="/memories")
+    api_bp.register_blueprint(memory_bp, url_prefix="/memories")
 
     app.register_blueprint(api_bp, url_prefix="/api")

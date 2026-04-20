@@ -1,129 +1,939 @@
 {% extends "base.html" %}
+
 {% block title %}Memories | Remora{% endblock %}
 
-{% block content %}
-<div class="screen center-screen">
-    <div class="phone-card">
+{% block head %}
+<style>
+    .memories-page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px 20px 56px;
+    }
 
-        <div style="
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-        ">
-            <div>
-                <h1 style="text-align:left; margin-bottom: 4px;">Memories</h1>
-                <p class="muted" style="font-size: 14px;">Revisit saved moments</p>
+    .memories-panel {
+        background: #ffffff;
+        border: 1px solid #e7e9f4;
+        border-radius: 28px;
+        padding: 28px;
+        box-shadow: 0 10px 30px rgba(86, 97, 160, 0.08);
+    }
+
+    .memories-topbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 8px;
+    }
+
+    .memories-back {
+        width: 42px;
+        height: 42px;
+        border: none;
+        background: #eef0ff;
+        color: #5c63d6;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease;
+        flex-shrink: 0;
+    }
+
+    .memories-back:hover {
+        background: #e3e6ff;
+        transform: translateY(-1px);
+    }
+
+    .memories-back svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .memories-header-copy {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .memories-title {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.1;
+        color: #2f355c;
+        text-align: left;
+    }
+
+    .memories-subtitle {
+        margin: 10px 0 0;
+        color: #8b90b3;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .memories-add-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .memories-add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 110px;
+        height: 42px;
+        padding: 0 16px;
+        border: none;
+        border-radius: 14px;
+        background: #5c63d6;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 700;
+        box-shadow: 0 10px 24px rgba(92, 99, 214, 0.18);
+        transition: transform 0.15s ease, background 0.15s ease;
+        cursor: pointer;
+    }
+
+    .memories-add:hover {
+        background: #5259c9;
+        transform: translateY(-1px);
+    }
+
+    .memories-add-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        min-width: 220px;
+        background: #ffffff;
+        border: 1px solid #e7e9f4;
+        border-radius: 18px;
+        box-shadow: 0 18px 36px rgba(86, 97, 160, 0.16);
+        padding: 8px;
+        z-index: 20;
+    }
+
+    .memories-add-menu.hidden {
+        display: none;
+    }
+
+    .memories-add-option {
+        width: 100%;
+        appearance: none;
+        border: none;
+        background: transparent;
+        border-radius: 14px;
+        padding: 12px 14px;
+        text-align: left;
+        color: #2f355c;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .memories-add-option:hover {
+        background: #f5f7ff;
+    }
+
+    .memories-add-option small {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        font-weight: 400;
+        color: #8b90b3;
+    }
+
+    .memories-filters {
+        display: flex;
+        gap: 18px;
+        margin-top: 26px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eceef8;
+        overflow-x: auto;
+    }
+
+    .memories-filter {
+        appearance: none;
+        border: none;
+        background: transparent;
+        padding: 0;
+        color: #8b90b3;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .memories-filter.is-active {
+        color: #5c63d6;
+    }
+
+    .memories-filter.is-disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .memories-status {
+        min-height: 24px;
+        margin-top: 18px;
+        font-size: 14px;
+        color: #7d84a6;
+    }
+
+    .memories-status.is-error {
+        color: #c23d4b;
+    }
+
+    .memories-status.is-success {
+        color: #1f7a4c;
+    }
+
+    .memories-status.is-loading {
+        color: #5c63d6;
+    }
+
+    .memories-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+    }
+
+    .memory-card {
+        border: 1px solid #e7e9f4;
+        background: #ffffff;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .memory-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(86, 97, 160, 0.10);
+        border-color: #cfd6f6;
+    }
+
+    .memory-card-media {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        background: #f5f6fc;
+        overflow: hidden;
+    }
+
+    .memory-card-media img,
+    .memory-card-media video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .memory-card-delete {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #c23d4b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(47, 53, 92, 0.12);
+        transition: transform 0.15s ease, background 0.15s ease;
+        z-index: 2;
+    }
+
+    .memory-card-delete:hover {
+        transform: translateY(-1px);
+        background: #fff5f6;
+    }
+
+    .memory-card-delete svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .memory-card-audio {
+        width: 100%;
+        height: 100%;
+        min-height: 190px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: #f7f8ff;
+        position: relative;
+    }
+
+    .memory-card-audio-inner {
+        width: 100%;
+        text-align: center;
+    }
+
+    .memory-card-audio-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: #eef0ff;
+        color: #5c63d6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+    }
+
+    .memory-card-audio-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .memory-card-audio-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: #2f355c;
+        margin-bottom: 12px;
+    }
+
+    .memory-card-audio audio {
+        width: 100%;
+    }
+
+    .memory-card-body {
+        padding: 14px 16px 16px;
+    }
+
+    .memory-card-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #2f355c;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .memory-card-date {
+        margin-top: 6px;
+        color: #8b90b3;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .memories-empty {
+        grid-column: 1 / -1;
+        border: 1px dashed #d6dbf3;
+        border-radius: 22px;
+        padding: 28px;
+        text-align: center;
+        color: #7d84a6;
+        background: #fafbff;
+    }
+
+    @media (max-width: 980px) {
+        .memories-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 760px) {
+        .memories-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 640px) {
+        .memories-page {
+            padding: 20px 14px 40px;
+        }
+
+        .memories-panel {
+            padding: 20px;
+            border-radius: 24px;
+        }
+
+        .memories-topbar {
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .memories-title {
+            font-size: 28px;
+        }
+
+        .memories-subtitle {
+            font-size: 15px;
+        }
+
+        .memories-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .memory-card-body {
+            padding: 12px 14px 14px;
+        }
+
+        .memory-card-title {
+            font-size: 15px;
+        }
+
+        .memory-card-date {
+            font-size: 12px;
+        }
+
+        .memories-add-menu {
+            left: 0;
+            right: auto;
+            min-width: 200px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="memories-page">
+    <div class="memories-panel">
+
+        <div class="memories-topbar">
+            <button
+                class="memories-back"
+                type="button"
+                aria-label="Go back"
+                onclick="window.history.back()"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6"></path>
+                </svg>
+            </button>
+
+            <div class="memories-header-copy">
+                <h1 class="memories-title">Memories</h1>
+                <p class="memories-subtitle">
+                    Browse all uploaded memories for {{ profile.full_name if profile else "this profile" }}.
+                </p>
             </div>
 
-            <a href="/ui/memories/select-profile" class="btn btn-secondary" style="
-                width: auto;
-                padding: 10px 14px;
-                border-radius: 14px;
-                text-decoration: none;
-                font-size: 14px;
-            ">
-                + Add
-            </a>
-        </div>
+            <div class="memories-add-wrap">
+                <button class="memories-add" id="memories-add-button" type="button">
+                    <span>+</span>
+                    <span>Add</span>
+                </button>
 
-        <div style="margin-bottom: 14px;">
-            <input
-                class="input"
-                type="text"
-                placeholder="Search memories..."
-            >
-        </div>
-
-        <div style="
-            display: flex;
-            gap: 12px;
-            font-size: 13px;
-            color: #8b90b3;
-            margin-bottom: 16px;
-            justify-content: space-between;
-        ">
-            <span style="color:#5c63d6; font-weight:700;">All</span>
-            <span>Photos</span>
-            <span>Voices</span>
-            <span>Videos</span>
-            <span>Text</span>
-        </div>
-
-        <div style="
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        ">
-
-            <!-- MEMORY 1 -->
-            <a href="/ui/memories/1" style="text-decoration:none; color:inherit;">
-                <div style="
-                    background: #f7f8fc;
-                    border: 1px solid #ececf3;
-                    border-radius: 16px;
-                    padding: 12px;
-                    transition: transform 0.15s ease;
-                ">
-                    <div style="height: 70px; background:#e8eaf8; border-radius: 12px; margin-bottom: 10px;"></div>
-                    <div style="font-weight:700; font-size:14px; color:#2f355c;">
-                        Family Dinner
-                    </div>
-                    <div class="muted" style="font-size:12px; margin-top:4px;">
-                        Mar 18, 2023
-                    </div>
+                <div class="memories-add-menu hidden" id="memories-add-menu">
+                    <button class="memories-add-option" type="button" data-quick-add="photo">
+                        Photo
+                        <small>Upload one or more images directly</small>
+                    </button>
+                    <button class="memories-add-option" type="button" data-quick-add="video">
+                        Video
+                        <small>Upload a video directly</small>
+                    </button>
+                    <button class="memories-add-option" type="button" data-quick-add="voice">
+                        Voice
+                        <small>Record and upload now</small>
+                    </button>
                 </div>
-            </a>
-
-            <!-- MEMORY 2 -->
-            <a href="/ui/memories/2" style="text-decoration:none; color:inherit;">
-                <div style="
-                    background: #f7f8fc;
-                    border: 1px solid #ececf3;
-                    border-radius: 16px;
-                    padding: 12px;
-                ">
-                    <div style="
-                        height: 70px;
-                        border-radius: 12px;
-                        margin-bottom: 10px;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-size:28px;
-                        background:#eef0ff;
-                    ">
-                        🎤
-                    </div>
-                    <div style="font-weight:700; font-size:14px; color:#2f355c;">
-                        Voice Note
-                    </div>
-                    <div class="muted" style="font-size:12px; margin-top:4px;">
-                        Apr 2, 2022
-                    </div>
-                </div>
-            </a>
-
-            <!-- MEMORY 3 -->
-            <a href="/ui/memories/3" style="text-decoration:none; color:inherit;">
-                <div style="
-                    background: #f7f8fc;
-                    border: 1px solid #ececf3;
-                    border-radius: 16px;
-                    padding: 12px;
-                ">
-                    <div style="height: 70px; background:#e8eaf8; border-radius: 12px; margin-bottom: 10px;"></div>
-                    <div style="font-weight:700; font-size:14px; color:#2f355c;">
-                        Our Trip
-                    </div>
-                    <div class="muted" style="font-size:12px; margin-top:4px;">
-                        Jul 14, 2021
-                    </div>
-                </div>
-            </a>
-
+            </div>
         </div>
 
+        <div class="memories-filters">
+            <button class="memories-filter is-active" type="button" data-filter="all">All</button>
+            <button class="memories-filter" type="button" data-filter="photo">Photos</button>
+            <button class="memories-filter" type="button" data-filter="voice">Voices</button>
+            <button class="memories-filter" type="button" data-filter="video">Videos</button>
+            <button class="memories-filter is-disabled" type="button" disabled aria-disabled="true">Text</button>
+            <button class="memories-filter is-disabled" type="button" disabled aria-disabled="true">Document</button>
+        </div>
+
+        <div id="memories-status" class="memories-status" aria-live="polite"></div>
+        <div id="memories-grid" class="memories-grid"></div>
+
+        <input type="file" id="quick-photo-input" accept="image/png,image/jpeg,image/webp" multiple hidden>
+        <input type="file" id="quick-video-input" accept="video/mp4,video/quicktime,video/webm,video/x-m4v" hidden>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const profileId = {{ profile_id|tojson }};
+    const memoriesGrid = document.getElementById("memories-grid");
+    const memoriesStatus = document.getElementById("memories-status");
+    const filters = document.querySelectorAll(".memories-filter");
+    const addButton = document.getElementById("memories-add-button");
+    const addMenu = document.getElementById("memories-add-menu");
+    const quickPhotoInput = document.getElementById("quick-photo-input");
+    const quickVideoInput = document.getElementById("quick-video-input");
+
+    let allMemories = [];
+    let activeFilter = "all";
+    let mediaRecorder = null;
+    let mediaStream = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    function getAccessToken() {
+        return (
+            localStorage.getItem("access_token") ||
+            localStorage.getItem("token") ||
+            localStorage.getItem("jwt") ||
+            ""
+        );
+    }
+
+    function setStatus(message = "", state = "") {
+        memoriesStatus.textContent = message;
+        memoriesStatus.className = "memories-status";
+        if (state) {
+            memoriesStatus.classList.add(state);
+        }
+    }
+
+    function formatDate(value) {
+        if (!value) return "";
+        const date = new Date(value);
+        return new Intl.DateTimeFormat("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+        }).format(date);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function getMemoryTitle(memory) {
+        const originalFilename = memory.original_filename || "";
+        if (originalFilename) {
+            const cleaned = originalFilename.replace(/\.[^/.]+$/, "");
+            return cleaned || "Untitled";
+        }
+
+        if (memory.memory_type === "photo") return "Photo Memory";
+        if (memory.memory_type === "video") return "Video Memory";
+        if (memory.memory_type === "voice") return "Voice Note";
+        return "Memory";
+    }
+
+    function renderDeleteButton(memoryId, title) {
+        return `
+            <button
+                class="memory-card-delete"
+                type="button"
+                aria-label="Delete ${title}"
+                data-delete-memory-id="${memoryId}"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 6h18"></path>
+                    <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path>
+                    <path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                </svg>
+            </button>
+        `;
+    }
+
+    function renderMemoryCard(memory) {
+        const type = memory.memory_type;
+        const fileUrl = escapeHtml(memory.file_url);
+        const title = escapeHtml(getMemoryTitle(memory));
+        const createdAt = formatDate(memory.created_at);
+        const deleteButton = renderDeleteButton(memory.memory_id, title);
+
+        let mediaMarkup = "";
+
+        if (type === "photo") {
+            mediaMarkup = `
+                <div class="memory-card-media">
+                    ${deleteButton}
+                    <img src="${fileUrl}" alt="${title}" loading="lazy">
+                </div>
+            `;
+        } else if (type === "video") {
+            mediaMarkup = `
+                <div class="memory-card-media">
+                    ${deleteButton}
+                    <video controls preload="metadata">
+                        <source src="${fileUrl}">
+                    </video>
+                </div>
+            `;
+        } else if (type === "voice") {
+            mediaMarkup = `
+                <div class="memory-card-media memory-card-audio">
+                    ${deleteButton}
+                    <div class="memory-card-audio-inner">
+                        <div class="memory-card-audio-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 14a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v4a3 3 0 0 0 3 3Z"></path>
+                                <path d="M19 11a7 7 0 0 1-14 0"></path>
+                                <path d="M12 18v3"></path>
+                                <path d="M8 21h8"></path>
+                            </svg>
+                        </div>
+                        <div class="memory-card-audio-label">Voice Note</div>
+                        <audio controls preload="metadata">
+                            <source src="${fileUrl}">
+                            Your browser does not support audio playback.
+                        </audio>
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
+            <article class="memory-card">
+                ${mediaMarkup}
+                <div class="memory-card-body">
+                    <h3 class="memory-card-title">${title}</h3>
+                    <div class="memory-card-date">${createdAt}</div>
+                </div>
+            </article>
+        `;
+    }
+
+    function renderMemories() {
+        const filtered = activeFilter === "all"
+            ? allMemories
+            : allMemories.filter(memory => memory.memory_type === activeFilter);
+
+        if (!filtered.length) {
+            memoriesGrid.innerHTML = `
+                <div class="memories-empty">
+                    No memories in this category yet.
+                </div>
+            `;
+            return;
+        }
+
+        memoriesGrid.innerHTML = filtered.map(renderMemoryCard).join("");
+        bindDeleteButtons();
+    }
+
+    function closeAddMenu() {
+        addMenu.classList.add("hidden");
+    }
+
+    function toggleAddMenu() {
+        addMenu.classList.toggle("hidden");
+    }
+
+    async function uploadSingleMemory(file, memoryType) {
+        const token = getAccessToken();
+
+        if (!token) {
+            setStatus("You are not logged in.", "is-error");
+            return null;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("memory_type", memoryType);
+        formData.append("profile_id", profileId);
+
+        const response = await fetch("/api/memories/upload", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Upload failed.");
+        }
+
+        return result.memory || null;
+    }
+
+    async function uploadPhotoBatch(files) {
+        if (!files.length) {
+            return;
+        }
+
+        setStatus(
+            files.length === 1
+                ? "Uploading photo..."
+                : `Uploading ${files.length} photos...`,
+            "is-loading"
+        );
+
+        const uploadedMemories = [];
+        let successCount = 0;
+        let failureCount = 0;
+
+        for (const file of files) {
+            try {
+                const memory = await uploadSingleMemory(file, "photo");
+                if (memory) {
+                    uploadedMemories.push(memory);
+                }
+                successCount += 1;
+            } catch (error) {
+                failureCount += 1;
+            }
+        }
+
+        if (uploadedMemories.length) {
+            allMemories = [...uploadedMemories, ...allMemories];
+            renderMemories();
+        }
+
+        if (successCount && failureCount) {
+            setStatus(
+                `${successCount} photo${successCount > 1 ? "s" : ""} uploaded, ${failureCount} failed.`,
+                "is-success"
+            );
+            return;
+        }
+
+        if (successCount) {
+            setStatus(
+                `${successCount} photo${successCount > 1 ? "s" : ""} uploaded successfully.`,
+                "is-success"
+            );
+            return;
+        }
+
+        setStatus("Could not upload photos.", "is-error");
+    }
+
+    async function uploadMemory(file, memoryType) {
+        setStatus("Uploading memory...", "is-loading");
+
+        try {
+            const memory = await uploadSingleMemory(file, memoryType);
+
+            if (memory) {
+                allMemories = [memory, ...allMemories];
+            }
+
+            setStatus("Memory uploaded successfully.", "is-success");
+            renderMemories();
+        } catch (error) {
+            setStatus(error.message || "Upload failed. Please try again.", "is-error");
+        }
+    }
+
+    async function startVoiceRecording() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setStatus("Audio recording is not supported in this browser.", "is-error");
+            return;
+        }
+
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            let mimeType = "";
+            if (MediaRecorder.isTypeSupported("audio/webm")) {
+                mimeType = "audio/webm";
+            } else if (MediaRecorder.isTypeSupported("audio/ogg")) {
+                mimeType = "audio/ogg";
+            }
+
+            mediaRecorder = mimeType
+                ? new MediaRecorder(mediaStream, { mimeType })
+                : new MediaRecorder(mediaStream);
+
+            recordedChunks = [];
+
+            mediaRecorder.addEventListener("dataavailable", (event) => {
+                if (event.data && event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            });
+
+            mediaRecorder.addEventListener("stop", async () => {
+                const finalMimeType = mediaRecorder?.mimeType || "audio/webm";
+                const extension = finalMimeType.includes("ogg") ? "ogg" : "webm";
+                const blob = new Blob(recordedChunks, { type: finalMimeType });
+                const file = new File([blob], `voice-memory.${extension}`, { type: finalMimeType });
+
+                recordedChunks = [];
+                await uploadMemory(file, "voice");
+            });
+
+            mediaRecorder.start();
+            isRecording = true;
+            setStatus("Recording... click Voice again to stop.", "is-loading");
+        } catch (error) {
+            setStatus("Microphone access was denied.", "is-error");
+        }
+    }
+
+    function stopVoiceRecording() {
+        if (!mediaRecorder || !isRecording) return;
+
+        mediaRecorder.stop();
+
+        if (mediaStream) {
+            mediaStream.getTracks().forEach((track) => track.stop());
+        }
+
+        mediaStream = null;
+        isRecording = false;
+        setStatus("Finishing recording...", "is-loading");
+    }
+
+    async function deleteMemory(memoryId) {
+        const token = getAccessToken();
+
+        if (!token) {
+            setStatus("You are not logged in.", "is-error");
+            return;
+        }
+
+        const confirmed = window.confirm("Do you really want to delete this memory?");
+        if (!confirmed) {
+            return;
+        }
+
+        setStatus("Deleting memory...", "is-loading");
+
+        try {
+            const response = await fetch(`/api/memories/${memoryId}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setStatus(result.error || "Could not delete memory.", "is-error");
+                return;
+            }
+
+            allMemories = allMemories.filter(memory => memory.memory_id !== Number(memoryId));
+            setStatus("Memory deleted successfully.", "is-success");
+            renderMemories();
+        } catch (error) {
+            setStatus("Could not delete memory.", "is-error");
+        }
+    }
+
+    function bindDeleteButtons() {
+        document.querySelectorAll("[data-delete-memory-id]").forEach((button) => {
+            button.addEventListener("click", async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const memoryId = button.dataset.deleteMemoryId;
+                await deleteMemory(memoryId);
+            });
+        });
+    }
+
+    document.querySelectorAll("[data-quick-add]").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const kind = button.dataset.quickAdd;
+            closeAddMenu();
+
+            if (kind === "photo") {
+                quickPhotoInput.value = "";
+                quickPhotoInput.click();
+                return;
+            }
+
+            if (kind === "video") {
+                quickVideoInput.value = "";
+                quickVideoInput.click();
+                return;
+            }
+
+            if (kind === "voice") {
+                if (isRecording) {
+                    stopVoiceRecording();
+                    return;
+                }
+                await startVoiceRecording();
+            }
+        });
+    });
+
+    quickPhotoInput.addEventListener("change", async (event) => {
+        const files = Array.from(event.target.files || []);
+        if (!files.length) return;
+        await uploadPhotoBatch(files);
+    });
+
+    quickVideoInput.addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        await uploadMemory(file, "video");
+    });
+
+    addButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleAddMenu();
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!addMenu.contains(event.target) && !addButton.contains(event.target)) {
+            closeAddMenu();
+        }
+    });
+
+    filters.forEach((button) => {
+        if (button.classList.contains("is-disabled")) {
+            return;
+        }
+
+        button.addEventListener("click", () => {
+            filters.forEach((item) => item.classList.remove("is-active"));
+            button.classList.add("is-active");
+            activeFilter = button.dataset.filter;
+            renderMemories();
+        });
+    });
+
+    async function loadMemories() {
+        const token = getAccessToken();
+
+        if (!token) {
+            setStatus("You are not logged in.", "is-error");
+            return;
+        }
+
+        setStatus("Loading memories...", "is-loading");
+
+        try {
+            const response = await fetch(`/api/memories?profile_id=${profileId}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setStatus(result.error || "Could not load memories.", "is-error");
+                return;
+            }
+
+            allMemories = Array.isArray(result) ? result : [];
+            setStatus("");
+            renderMemories();
+        } catch (error) {
+            setStatus("Could not load memories.", "is-error");
+        }
+    }
+
+    loadMemories();
+</script>
 {% endblock %}
