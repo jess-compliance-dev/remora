@@ -28,7 +28,6 @@ def serialize_message(message):
         "role": getattr(message, "role", None),
         "message_text": getattr(message, "message_text", None),
         "audio_url": getattr(message, "audio_url", None),
-        "related_prompt_id": getattr(message, "related_prompt_id", None),
         "related_story_id": getattr(message, "related_story_id", None),
         "message_order": getattr(message, "message_order", None),
         "created_at": message.created_at.isoformat() if getattr(message, "created_at", None) else None,
