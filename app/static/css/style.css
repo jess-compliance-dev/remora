@@ -77,8 +77,8 @@ p {
 }
 
 .logo {
-    width: 220px;
-    max-width: 90%;
+    width: 380px;
+    max-width: 95%;
     margin: 10px auto 24px;
     display: block;
     filter: none;
@@ -393,7 +393,7 @@ select.input:focus {
     background: #e6e9fa;
 }
 
-/* LEGACY HEADER BLOCKS, still useful on other screens */
+/* LEGACY HEADER BLOCKS */
 
 .home-header {
     display: flex;

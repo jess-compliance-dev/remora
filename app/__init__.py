@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
-from flask import Flask
+from flask import Flask, redirect
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 
@@ -66,5 +66,9 @@ def create_app():
     # REGISTER ROUTES
     register_blueprints(app)
     app.register_blueprint(ui_bp)
+
+    @app.route("/")
+    def index():
+        return redirect("/ui/login")
 
     return app
