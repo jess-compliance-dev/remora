@@ -20,9 +20,11 @@ html,
 body {
     margin: 0;
     padding: 0;
+    min-height: 100%;
 }
 
 body {
+    min-height: 100vh;
     background: linear-gradient(180deg, #fbfbfe 0%, var(--bg) 100%);
     color: var(--text);
     font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -46,16 +48,50 @@ p {
     line-height: 1.55;
 }
 
-.app-shell {
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    padding: 20px 16px 96px;
-}
+/* ================= APP SHELL ================= */
 
-.screen {
+.app-shell {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding-bottom: 92px;
+}
+
+/* ================= TOPBAR ================= */
+
+.topbar {
+    padding: 10px 18px 0;
+}
+
+.topbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.brand-link {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.brand-logo {
+    width: 120px;
+    height: auto;
+    display: block;
+}
+
+/* ================= GENERIC LAYOUT ================= */
+
+.screen {
+    min-height: calc(100vh - 56px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
     gap: 16px;
 }
 
@@ -65,6 +101,8 @@ p {
 }
 
 .phone-card {
+    width: 100%;
+    max-width: 360px;
     background: var(--card);
     border: 1px solid rgba(124, 132, 215, 0.12);
     border-radius: 30px;
@@ -75,6 +113,19 @@ p {
 .auth-card {
     text-align: center;
 }
+
+.stack {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.cards-grid {
+    display: grid;
+    gap: 14px;
+}
+
+/* ================= LOGOS ================= */
 
 .logo {
     width: 380px;
@@ -87,15 +138,15 @@ p {
     border: none;
 }
 
-.muted {
-    color: var(--muted);
+.auth-logo {
+    width: 220px;
+    max-width: 95%;
+    height: auto;
+    display: block;
+    margin: 0 auto 20px auto;
 }
 
-.stack {
-    display: grid;
-    gap: 12px;
-    margin-top: 18px;
-}
+/* ================= INPUTS ================= */
 
 .input,
 textarea.input,
@@ -117,12 +168,17 @@ select.input:focus {
     box-shadow: 0 0 0 4px rgba(124, 132, 215, 0.12);
 }
 
+/* ================= BUTTONS ================= */
+
 .btn {
+    display: inline-block;
     border: 0;
     border-radius: 16px;
     padding: 14px 18px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
+    text-decoration: none;
     transition: 0.18s ease;
 }
 
@@ -159,6 +215,60 @@ select.input:focus {
     width: 100%;
 }
 
+/* ================= TEXT ================= */
+
+.muted {
+    color: var(--muted);
+}
+
+.foot-link {
+    margin-top: 16px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.foot-link a {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.text-link {
+    color: var(--primary-dark);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.eyebrow {
+    margin: 0;
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.small-text {
+    font-size: 13px;
+}
+
+/* ================= FEEDBACK ================= */
+
+.error-text {
+    color: var(--danger);
+    margin-top: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.success-text {
+    color: #15803d;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+/* ================= DIVIDER ================= */
+
 .divider {
     display: flex;
     align-items: center;
@@ -175,38 +285,55 @@ select.input:focus {
     flex: 1;
 }
 
+/* ================= PROGRESS ================= */
 
-.foot-link {
-    margin-top: 16px;
-    font-size: 14px;
-}
-
-.foot-link a {
-    color: var(--primary);
-    font-weight: 600;
-}
-
-.error-text {
-    color: var(--danger);
-    margin-top: 10px;
-    text-align: center;
-}
-
-.topbar {
+.progress-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
 }
+
+.top-progress {
+    margin-bottom: 4px;
+}
+
+.progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #d7d9e8;
+}
+
+.progress-dot.active {
+    background: var(--primary-dark);
+}
+
+.progress-line {
+    width: 56px;
+    height: 3px;
+    border-radius: 999px;
+    background: #e7e8f2;
+}
+
+/* ================= TOPBAR HELPERS ================= */
 
 .topbar.simple {
     padding-bottom: 8px;
 }
 
-.cards-grid {
-    display: grid;
-    gap: 14px;
+.back-link {
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: none;
 }
+
+.back-link:hover {
+    color: var(--primary-dark);
+}
+
+/* ================= PROFILE / CARD ELEMENTS ================= */
 
 .profile-card,
 .profile-row-card {
@@ -309,6 +436,8 @@ select.input:focus {
     max-width: 320px;
 }
 
+/* ================= CONTENT BLOCKS ================= */
+
 .section-list,
 .section-block {
     display: grid;
@@ -330,13 +459,7 @@ select.input:focus {
     gap: 12px;
 }
 
-.text-link {
-    color: var(--primary-dark);
-    font-weight: 600;
-    font-size: 14px;
-}
-
-/* DASHBOARD HERO */
+/* ================= DASHBOARD ================= */
 
 .home-hero {
     background: linear-gradient(180deg, #ffffff 0%, #f4f6ff 100%);
@@ -369,7 +492,6 @@ select.input:focus {
     letter-spacing: -0.01em;
 }
 
-
 .hero-sub {
     font-size: 14px;
     color: var(--muted);
@@ -393,8 +515,6 @@ select.input:focus {
     background: #e6e9fa;
 }
 
-/* LEGACY HEADER BLOCKS */
-
 .home-header {
     display: flex;
     align-items: flex-start;
@@ -405,15 +525,6 @@ select.input:focus {
 .brand-copy {
     display: grid;
     gap: 4px;
-}
-
-.eyebrow {
-    margin: 0;
-    color: var(--primary-dark);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
 }
 
 .hero-text {
@@ -465,42 +576,13 @@ select.input:focus {
     text-align: center;
 }
 
-/* CHAT */
+/* ================= CHAT ================= */
 
 .chat-header {
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
     gap: 16px;
-}
-
-.progress-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.top-progress {
-    margin-bottom: 4px;
-}
-
-.progress-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: #d7d9e8;
-}
-
-.progress-dot.active {
-    background: var(--primary-dark);
-}
-
-.progress-line {
-    width: 56px;
-    height: 3px;
-    border-radius: 999px;
-    background: #e7e8f2;
 }
 
 .chat-header-wireframe {
@@ -561,7 +643,7 @@ select.input:focus {
     align-items: center;
 }
 
-/* STORIES */
+/* ================= STORIES ================= */
 
 .story-body {
     background: #fbfbfe;
@@ -605,7 +687,7 @@ select.input:focus {
     color: var(--primary-dark);
 }
 
-/* PROFILE CREATE */
+/* ================= PROFILE CREATE ================= */
 
 .profile-create-header {
     text-align: center;
@@ -682,10 +764,6 @@ select.input:focus {
     gap: 2px;
 }
 
-.small-text {
-    font-size: 12px;
-}
-
 .hidden {
     display: none !important;
 }
@@ -732,47 +810,56 @@ select.input:focus {
     transform: translateX(20px);
 }
 
-/* MOBILE NAV */
+/* ================= MOBILE NAV ================= */
 
-.mobile-nav {
+.bottom-nav {
     position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 18px;
-    width: min(448px, calc(100vw - 32px));
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(124, 132, 215, 0.12);
-    border-radius: 22px;
-    box-shadow: var(--shadow);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    border-top: 1px solid #e7e9f4;
+    box-shadow: 0 -6px 20px rgba(86, 97, 160, 0.06);
+    z-index: 1000;
+}
+
+.bottom-nav-inner {
+    max-width: 420px;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    padding: 10px;
+    padding: 10px 8px 12px;
 }
 
 .nav-item {
+    text-decoration: none;
+    color: #8b90b3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
     text-align: center;
-    color: var(--muted);
-    font-size: 14px;
-    padding: 10px 0;
+}
+
+.nav-item.active {
+    color: #5c63d6;
+    font-weight: 700;
 }
 
 .nav-item:hover {
     color: var(--primary-dark);
 }
 
-@media (min-width: 900px) {
-    .app-shell {
-        max-width: 1100px;
-        padding-top: 40px;
-    }
-
-    .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.nav-icon {
+    font-size: 17px;
 }
 
-/* PROFILE HERO */
+/* ================= PROFILE HERO ================= */
 
 .profile-hero {
     background: linear-gradient(180deg, #ffffff 0%, #f4f6ff 100%);
@@ -791,26 +878,7 @@ select.input:focus {
     gap: 8px;
 }
 
-/* Back Button */
-
-.back-link {
-    font-size: 14px;
-    color: var(--muted);
-    text-decoration: none;
-}
-
-.back-link:hover {
-    color: var(--primary-dark);
-}
-
-/* Small text */
-
-.small-text {
-    font-size: 13px;
-}
-
-
-/* MEMORY CREATE SCREEN */
+/* ================= MEMORY CREATE ================= */
 
 .memory-hero {
     background: linear-gradient(180deg, #ffffff 0%, #f4f6ff 100%);
@@ -856,4 +924,33 @@ select.input:focus {
     padding: 18px;
     display: grid;
     gap: 8px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 560px) {
+    .screen {
+        padding: 14px;
+    }
+
+    .phone-card {
+        border-radius: 24px;
+        padding: 20px 16px;
+    }
+
+    .brand-logo {
+        width: 100px;
+    }
+
+    .auth-logo,
+    .logo {
+        width: 220px;
+        max-width: 92%;
+    }
+}
+
+@media (min-width: 900px) {
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

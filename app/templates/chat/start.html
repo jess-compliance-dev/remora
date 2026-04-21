@@ -164,25 +164,68 @@
         background: #f7f8ff;
     }
 
-    .chat-start-highlights {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
+    .chat-start-journey {
         margin-top: 18px;
-    }
-
-    .chat-highlight {
         border: 1px solid #e7e9f4;
-        background: #ffffff;
+        background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
         border-radius: 22px;
         padding: 22px;
         box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
-        min-height: 180px;
-        display: flex;
-        flex-direction: column;
     }
 
-    .chat-highlight-icon {
+    .chat-journey-header {
+        margin-bottom: 18px;
+    }
+
+    .chat-journey-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #2f355c;
+    }
+
+    .chat-journey-subtitle {
+        margin: 8px 0 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #7d84a6;
+    }
+
+    .chat-journey-wireframe {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr) 36px minmax(0, 1fr);
+        gap: 0;
+        align-items: center;
+    }
+
+    .chat-journey-step {
+        position: relative;
+        border: 1px solid #e7e9f4;
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 18px;
+        min-height: 170px;
+        box-shadow: 0 10px 22px rgba(86, 97, 160, 0.04);
+    }
+
+    .chat-journey-badge {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 8px;
+        border-radius: 999px;
+        background: #eef0ff;
+        color: #5c63d6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .chat-journey-icon {
         width: 56px;
         height: 56px;
         border-radius: 16px;
@@ -191,26 +234,49 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
     }
 
-    .chat-highlight-icon svg {
+    .chat-journey-icon svg {
         width: 24px;
         height: 24px;
     }
 
-    .chat-highlight-title {
+    .chat-journey-copy {
+        display: grid;
+        gap: 8px;
+    }
+
+    .chat-journey-step-title {
         font-size: 20px;
         font-weight: 700;
         color: #2f355c;
-        margin-bottom: 8px;
     }
 
-    .chat-highlight-text {
+    .chat-journey-step-text {
         font-size: 15px;
         line-height: 1.6;
         color: #7d84a6;
-        max-width: 28ch;
+    }
+
+    .chat-journey-line {
+        position: relative;
+        height: 2px;
+        background: linear-gradient(90deg, #dfe4fb 0%, #cfd6f6 100%);
+        border-radius: 999px;
+        margin: 0 6px;
+    }
+
+    .chat-journey-line::after {
+        content: "";
+        position: absolute;
+        right: -2px;
+        top: 50%;
+        width: 8px;
+        height: 8px;
+        background: #cfd6f6;
+        border-radius: 999px;
+        transform: translateY(-50%);
     }
 
     .chat-start-status {
@@ -250,8 +316,22 @@
             grid-template-columns: 1fr;
         }
 
-        .chat-start-highlights {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        .chat-journey-wireframe {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .chat-journey-line {
+            width: 2px;
+            height: 24px;
+            margin: 0 auto;
+        }
+
+        .chat-journey-line::after {
+            right: 50%;
+            top: auto;
+            bottom: -2px;
+            transform: translateX(50%);
         }
     }
 
@@ -280,20 +360,6 @@
 
         .chat-profile-content h2 {
             font-size: 24px;
-        }
-
-        .chat-start-highlights {
-            grid-template-columns: 1fr;
-            gap: 14px;
-        }
-
-        .chat-highlight {
-            min-height: 160px;
-            padding: 18px;
-        }
-
-        .chat-highlight-title {
-            font-size: 19px;
         }
 
         .chat-start-actions {
@@ -373,42 +439,64 @@
             </div>
         </div>
 
-        <div class="chat-start-highlights">
-            <div class="chat-highlight">
-                <div class="chat-highlight-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M8 12h8"></path>
-                        <path d="M12 8v8"></path>
-                        <circle cx="12" cy="12" r="9"></circle>
-                    </svg>
-                </div>
-                <div class="chat-highlight-title">Gentle Start</div>
-                <div class="chat-highlight-text">
-                    Begin with simple questions and move through memories step by step.
-                </div>
+        <div class="chat-start-journey">
+            <div class="chat-journey-header">
+                <h2 class="chat-journey-title">How the chat works</h2>
+                <p class="chat-journey-subtitle">
+                    A simple guided flow from first memory to a fuller story.
+                </p>
             </div>
 
-            <div class="chat-highlight">
-                <div class="chat-highlight-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
+            <div class="chat-journey-wireframe">
+                <div class="chat-journey-step">
+                    <div class="chat-journey-badge">1</div>
+                    <div class="chat-journey-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M8 12h8"></path>
+                            <path d="M12 8v8"></path>
+                            <circle cx="12" cy="12" r="9"></circle>
+                        </svg>
+                    </div>
+                    <div class="chat-journey-copy">
+                        <div class="chat-journey-step-title">Gentle Start</div>
+                        <div class="chat-journey-step-text">
+                            Begin with one simple memory or moment.
+                        </div>
+                    </div>
                 </div>
-                <div class="chat-highlight-title">Guided Questions</div>
-                <div class="chat-highlight-text">
-                    The chat helps uncover stories, details, feelings, and meaningful moments.
-                </div>
-            </div>
 
-            <div class="chat-highlight">
-                <div class="chat-highlight-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M12 20s8-4.5 8-11a4 4 0 0 0-7-2.65A4 4 0 0 0 4 9c0 6.5 8 11 8 11z"></path>
-                    </svg>
+                <div class="chat-journey-line" aria-hidden="true"></div>
+
+                <div class="chat-journey-step">
+                    <div class="chat-journey-badge">2</div>
+                    <div class="chat-journey-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="chat-journey-copy">
+                        <div class="chat-journey-step-title">Guided Questions</div>
+                        <div class="chat-journey-step-text">
+                            Follow thoughtful prompts that uncover details and feelings.
+                        </div>
+                    </div>
                 </div>
-                <div class="chat-highlight-title">Meaningful Memory</div>
-                <div class="chat-highlight-text">
-                    Capture stories in a calm, personal space designed for remembrance.
+
+                <div class="chat-journey-line" aria-hidden="true"></div>
+
+                <div class="chat-journey-step">
+                    <div class="chat-journey-badge">3</div>
+                    <div class="chat-journey-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 20s8-4.5 8-11a4 4 0 0 0-7-2.65A4 4 0 0 0 4 9c0 6.5 8 11 8 11z"></path>
+                        </svg>
+                    </div>
+                    <div class="chat-journey-copy">
+                        <div class="chat-journey-step-title">Meaningful Memory</div>
+                        <div class="chat-journey-step-text">
+                            Turn memories into a richer story worth keeping.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
