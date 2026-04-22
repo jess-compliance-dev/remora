@@ -1,3 +1,5 @@
+import traceback
+
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
@@ -6,7 +8,6 @@ from app.services.chat_message_service import ChatMessageService
 from app.services.chat_session_service import ChatSessionService
 from app.services.profile_service import ProfileService
 
-import traceback
 
 chat_ai_bp = Blueprint("chat_ai", __name__)
 
@@ -73,14 +74,16 @@ def get_ai_session_messages(session_id):
 
         messages = chat_message_service.get_messages_by_session_id(session_id) or []
 
-        return jsonify({
-            "session": serialize_session(session),
-            "messages": [serialize_message(msg) for msg in messages]
-        }), 200
+        return jsonify(
+            {
+                "session": serialize_session(session),
+                "messages": [serialize_message(msg) for msg in messages],
+            }
+        ), 200
 
-    except Exception as e:
+    except Exception as error:
         traceback.print_exc()
-        return json_error("Failed to load chat messages", 500, str(e))
+        return json_error("Failed to load chat messages", 500, str(error))
 
 
 @chat_ai_bp.route("/chat/ai/<int:session_id>/message", methods=["POST"])
@@ -156,12 +159,9 @@ def send_ai_message(session_id):
         if not ai_messages:
             return json_error("No valid messages available for AI reply generation", 500)
 
-        assistant_reply = chat_ai_service.generate_reply(ai_messages, profile=profile)
+        ai_result = chat_ai_service.generate_reply(ai_messages, profile=profile)
 
-        if assistant_reply is None:
-            return json_error("AI service returned no response", 500)
-
-        assistant_reply = str(assistant_reply).strip()
+        assistant_reply = str(ai_result.get("reply") or "").strip()
         if not assistant_reply:
             return json_error("AI service returned an empty response", 500)
 
@@ -181,15 +181,24 @@ def send_ai_message(session_id):
 
         final_messages = chat_message_service.get_messages_by_session_id(session_id) or []
 
+        assistant_ui = {
+            "show_topic_choices": bool(ai_result.get("show_topic_choices")),
+            "suggested_topics": ai_result.get("suggested_topics") or [],
+            "current_topic": ai_result.get("current_topic"),
+            "topic_complete": bool(ai_result.get("topic_complete")),
+            "assistant_message_id": getattr(assistant_message, "message_id", None),
+        }
+
         return jsonify(
             {
                 "session": serialize_session(session),
                 "user_message": serialize_message(user_message),
                 "assistant_message": serialize_message(assistant_message),
+                "assistant_ui": assistant_ui,
                 "messages": [serialize_message(msg) for msg in final_messages],
             }
         ), 200
 
-    except Exception as e:
+    except Exception as error:
         traceback.print_exc()
-        return json_error("Internal server error", 500, str(e))
+        return json_error("Internal server error", 500, str(error))

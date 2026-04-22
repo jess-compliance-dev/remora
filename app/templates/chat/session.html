@@ -150,6 +150,39 @@
         box-shadow: 0 10px 22px rgba(92, 99, 214, 0.16);
     }
 
+    .topic-choice-wrap {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .topic-choice-btn {
+        appearance: none;
+        border: 1px solid #dfe5fb;
+        background: #ffffff;
+        color: #5c63d6;
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .topic-choice-btn:hover {
+        background: #eef0ff;
+        border-color: #cfd6f6;
+        transform: translateY(-1px);
+    }
+
+    .topic-choice-btn:disabled {
+        opacity: 0.65;
+        cursor: default;
+        transform: none;
+    }
+
     .composer-wrap {
         position: sticky;
         bottom: 0;
@@ -269,6 +302,15 @@
         .messages {
             padding-top: 24px;
         }
+
+        .topic-choice-wrap {
+            gap: 8px;
+        }
+
+        .topic-choice-btn {
+            padding: 9px 12px;
+            font-size: 12px;
+        }
     }
 </style>
 {% endblock %}
@@ -303,7 +345,7 @@
         </div>
 
         <main id="messages" class="messages">
-            <div class="message assistant">
+            <div class="message assistant" data-message-id="initial-assistant">
                 <div class="message-inner">
                     <div class="message-avatar">R</div>
                     <div class="message-content">
@@ -351,12 +393,51 @@
     const sendBtn = document.getElementById("send-btn");
     const errorEl = document.getElementById("chat-error");
 
+    const topicLabels = {
+        childhood: "Childhood",
+        daily_life: "Daily Life",
+        personality: "Personality",
+        values: "Values",
+        humor: "Humor",
+        relationships: "Relationships",
+        family: "Family",
+        hobbies: "Hobbies",
+        achievements: "Achievements",
+        loss: "Loss"
+    };
+
     function getToken() {
         return (
             localStorage.getItem("access_token") ||
             localStorage.getItem("jwt") ||
             localStorage.getItem("token")
         );
+    }
+
+    function getTopicUiStorageKey() {
+        return `chat_topic_ui_${sessionId}`;
+    }
+
+    function saveTopicUi(uiState) {
+        if (!uiState || !uiState.show_topic_choices || !uiState.assistant_message_id) {
+            localStorage.removeItem(getTopicUiStorageKey());
+            return;
+        }
+
+        localStorage.setItem(getTopicUiStorageKey(), JSON.stringify(uiState));
+    }
+
+    function loadTopicUi() {
+        try {
+            const raw = localStorage.getItem(getTopicUiStorageKey());
+            return raw ? JSON.parse(raw) : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function clearTopicUi() {
+        localStorage.removeItem(getTopicUiStorageKey());
     }
 
     function escapeHtml(text) {
@@ -374,36 +455,109 @@
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    function appendMessage(role, text) {
-        const wrapper = document.createElement("div");
-        wrapper.className = `message ${role}`;
+    function setSendingState(isSending) {
+        sendBtn.disabled = isSending;
 
-        if (role === "assistant") {
+        const topicButtons = document.querySelectorAll(".topic-choice-btn");
+        topicButtons.forEach((button) => {
+            button.disabled = isSending;
+        });
+
+        sendBtn.textContent = isSending ? "…" : "↑";
+    }
+
+    function createTopicChoices(topics) {
+        const wrap = document.createElement("div");
+        wrap.className = "topic-choice-wrap";
+
+        const uniqueTopics = Array.from(new Set(
+            (Array.isArray(topics) ? topics : []).filter(Boolean)
+        ));
+
+        uniqueTopics.forEach((topic) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "topic-choice-btn";
+            button.dataset.topic = topic;
+            button.textContent = topicLabels[topic] || topic.replaceAll("_", " ");
+            button.addEventListener("click", async () => {
+                await sendMessage(topic);
+            });
+            wrap.appendChild(button);
+        });
+
+        const nextButton = document.createElement("button");
+        nextButton.type = "button";
+        nextButton.className = "topic-choice-btn";
+        nextButton.dataset.topic = "next";
+        nextButton.textContent = "Next";
+        nextButton.addEventListener("click", async () => {
+            await sendMessage("next");
+        });
+        wrap.appendChild(nextButton);
+
+        return wrap;
+    }
+
+    function appendMessage(message) {
+        const wrapper = document.createElement("div");
+        wrapper.className = `message ${message.role}`;
+        wrapper.dataset.messageId = message.message_id || "";
+
+        if (message.role === "assistant") {
             wrapper.innerHTML = `
                 <div class="message-inner">
                     <div class="message-avatar">R</div>
                     <div class="message-content">
-                        <div class="bubble assistant-bubble">${escapeHtml(text).replace(/\n/g, "<br>")}</div>
+                        <div class="bubble assistant-bubble">${escapeHtml(message.message_text || "").replace(/\n/g, "<br>")}</div>
                     </div>
                 </div>
             `;
         } else {
             wrapper.innerHTML = `
-                <div class="bubble">${escapeHtml(text).replace(/\n/g, "<br>")}</div>
+                <div class="bubble">${escapeHtml(message.message_text || "").replace(/\n/g, "<br>")}</div>
             `;
         }
 
         messagesEl.appendChild(wrapper);
         scrollToBottom();
+
+        return wrapper;
+    }
+
+    function renderStoredTopicChoices() {
+        const storedUi = loadTopicUi();
+        if (!storedUi || !storedUi.show_topic_choices || !storedUi.assistant_message_id) {
+            return;
+        }
+
+        const target = messagesEl.querySelector(
+            `.message.assistant[data-message-id="${storedUi.assistant_message_id}"] .message-content`
+        );
+
+        if (!target) {
+            return;
+        }
+
+        const oldChoices = target.querySelector(".topic-choice-wrap");
+        if (oldChoices) {
+            oldChoices.remove();
+        }
+
+        target.appendChild(createTopicChoices(storedUi.suggested_topics || []));
     }
 
     function renderMessages(messages) {
         messagesEl.innerHTML = "";
+
         messages.forEach((msg) => {
             if (msg.message_text) {
-                appendMessage(msg.role, msg.message_text);
+                appendMessage(msg);
             }
         });
+
+        renderStoredTopicChoices();
+        scrollToBottom();
     }
 
     async function loadHistory() {
@@ -428,12 +582,12 @@
         }
     }
 
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
+    async function sendMessage(messageText) {
         errorEl.hidden = true;
+        errorEl.textContent = "";
 
         const token = getToken();
-        const message = input.value.trim();
+        const message = (messageText || "").trim();
 
         if (!token) {
             errorEl.textContent = "No auth token found. Please log in again.";
@@ -443,12 +597,14 @@
 
         if (!message) return;
 
-        appendMessage("user", message);
-        input.value = "";
-        autoResizeTextarea();
+        clearTopicUi();
 
-        sendBtn.disabled = true;
-        sendBtn.textContent = "…";
+        appendMessage({
+            role: "user",
+            message_text: message
+        });
+
+        setSendingState(true);
 
         try {
             const response = await fetch(`/api/chat/chat/ai/${sessionId}/message`, {
@@ -470,15 +626,28 @@
                 throw new Error(data.error || "Unable to continue the conversation.");
             }
 
+            saveTopicUi(data.assistant_ui || null);
             renderMessages(data.messages || []);
         } catch (error) {
             errorEl.textContent = error.message;
             errorEl.hidden = false;
+            clearTopicUi();
         } finally {
-            sendBtn.disabled = false;
-            sendBtn.textContent = "↑";
+            setSendingState(false);
             input.focus();
         }
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const message = input.value.trim();
+        if (!message) return;
+
+        input.value = "";
+        autoResizeTextarea();
+
+        await sendMessage(message);
     });
 
     input.addEventListener("input", autoResizeTextarea);
