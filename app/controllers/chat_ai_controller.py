@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from app.services.chat_ai_service import ChatAIService
+from app.services.chat_analysis_service import ChatAnalysisService
 from app.services.chat_message_service import ChatMessageService
 from app.services.chat_session_service import ChatSessionService
 from app.services.profile_service import ProfileService
@@ -12,6 +13,7 @@ from app.services.profile_service import ProfileService
 chat_ai_bp = Blueprint("chat_ai", __name__)
 
 chat_ai_service = ChatAIService()
+chat_analysis_service = ChatAnalysisService()
 chat_message_service = ChatMessageService()
 chat_session_service = ChatSessionService()
 profile_service = ProfileService()
@@ -51,6 +53,22 @@ def serialize_session(session):
     }
 
 
+def serialize_analysis(analysis):
+    if analysis is None:
+        return None
+
+    return {
+        "analysis_id": getattr(analysis, "analysis_id", None),
+        "session_id": getattr(analysis, "session_id", None),
+        "profile_id": getattr(analysis, "profile_id", None),
+        "current_topic": getattr(analysis, "current_topic", None),
+        "topic_complete": getattr(analysis, "topic_complete", False),
+        "show_topic_choices": getattr(analysis, "show_topic_choices", False),
+        "suggested_topics": getattr(analysis, "suggested_topics", None) or [],
+        "created_at": analysis.created_at.isoformat() if getattr(analysis, "created_at", None) else None,
+    }
+
+
 def json_error(message, status_code=400, details=None):
     payload = {"error": message}
     if details:
@@ -73,11 +91,13 @@ def get_ai_session_messages(session_id):
             return json_error("Chat session not found", 404)
 
         messages = chat_message_service.get_messages_by_session_id(session_id) or []
+        latest_analysis = chat_analysis_service.get_latest_by_session_id(session_id)
 
         return jsonify(
             {
                 "session": serialize_session(session),
                 "messages": [serialize_message(msg) for msg in messages],
+                "latest_analysis": serialize_analysis(latest_analysis),
             }
         ), 200
 
@@ -115,6 +135,9 @@ def send_ai_message(session_id):
 
         profile = profile_service.get_profile_by_id(profile_id)
         if not profile:
+            return json_error("Profile not found", 404)
+
+        if getattr(profile, "owner_id", None) is not None and str(profile.owner_id) != str(user_id):
             return json_error("Profile not found", 404)
 
         existing_messages = chat_message_service.get_messages_by_session_id(session_id) or []
@@ -161,6 +184,9 @@ def send_ai_message(session_id):
 
         ai_result = chat_ai_service.generate_reply(ai_messages, profile=profile)
 
+        if not isinstance(ai_result, dict):
+            return json_error("AI service returned invalid result format", 500)
+
         assistant_reply = str(ai_result.get("reply") or "").strip()
         if not assistant_reply:
             return json_error("AI service returned an empty response", 500)
@@ -179,6 +205,17 @@ def send_ai_message(session_id):
         if not assistant_message:
             return json_error("Failed to save assistant message", 500)
 
+        analysis_entry = chat_analysis_service.create_analysis(
+            {
+                "session_id": session_id,
+                "profile_id": profile_id,
+                "current_topic": ai_result.get("current_topic"),
+                "topic_complete": ai_result.get("topic_complete", False),
+                "show_topic_choices": ai_result.get("show_topic_choices", False),
+                "suggested_topics": ai_result.get("suggested_topics") or [],
+            }
+        )
+
         final_messages = chat_message_service.get_messages_by_session_id(session_id) or []
 
         assistant_ui = {
@@ -195,6 +232,7 @@ def send_ai_message(session_id):
                 "user_message": serialize_message(user_message),
                 "assistant_message": serialize_message(assistant_message),
                 "assistant_ui": assistant_ui,
+                "latest_analysis": serialize_analysis(analysis_entry),
                 "messages": [serialize_message(msg) for msg in final_messages],
             }
         ), 200
