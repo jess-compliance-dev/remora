@@ -841,7 +841,7 @@ select.input:focus {
     gap: 4px;
     padding: 8px 4px;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     text-align: center;
 }
@@ -856,7 +856,7 @@ select.input:focus {
 }
 
 .nav-icon {
-    font-size: 17px;
+    font-size: 26px;
 }
 
 /* ================= PROFILE HERO ================= */
