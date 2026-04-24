@@ -812,6 +812,8 @@ select.input:focus {
 
 /* ================= MOBILE NAV ================= */
 
+/* ================= MOBILE NAV ================= */
+
 .bottom-nav {
     position: fixed;
     left: 0;
@@ -819,31 +821,43 @@ select.input:focus {
     bottom: 0;
     background: #ffffff;
     border-top: 1px solid #e7e9f4;
-    box-shadow: 0 -6px 20px rgba(86, 97, 160, 0.06);
     z-index: 1000;
 }
 
 .bottom-nav-inner {
-    max-width: 420px;
+    max-width: 520px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    padding: 10px 8px 12px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    padding: 7px 4px 6px;
 }
 
 .nav-item {
+    min-width: 0;
+    padding: 5px 2px 4px;
+    text-align: center;
     text-decoration: none;
     color: #8b90b3;
+    line-height: 1.1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    padding: 8px 4px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
+    white-space: nowrap;
+}
+
+.nav-icon {
+    font-size: 30px;
+    line-height: 1;
+}
+
+/* This controls the text under the icon */
+.nav-item > div:not(.nav-icon) {
+    font-size: 13px !important;
+    font-weight: 600;
+    line-height: 1.1;
 }
 
 .nav-item.active {
@@ -855,8 +869,26 @@ select.input:focus {
     color: var(--primary-dark);
 }
 
-.nav-icon {
-    font-size: 26px;
+@media (max-width: 560px) {
+    .bottom-nav-inner {
+        max-width: 100%;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .nav-icon {
+        font-size: 29px;
+    }
+
+    .nav-item {
+        padding-left: 1px;
+        padding-right: 1px;
+        gap: 3px;
+    }
+
+    .nav-item > div:not(.nav-icon) {
+        font-size: 12px !important;
+    }
 }
 
 /* ================= PROFILE HERO ================= */

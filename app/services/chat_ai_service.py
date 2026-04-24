@@ -5,16 +5,40 @@ from openai import OpenAI
 
 class ChatAIService:
     TOPICS = {
-        "childhood": ["childhood", "kid", "early life"],
-        "daily_life": ["daily", "routine", "everyday"],
-        "personality": ["personality", "character"],
-        "values": ["values", "beliefs"],
-        "humor": ["humor", "funny", "laugh"],
-        "friendship": ["friends", "relationship"],
-        "family": ["family", "house", "home"],
-        "hobbies": ["hobbies", "interests"],
-        "achievements": ["achievement", "proud"],
-        "loss": ["loss", "last", "goodbye"],
+        "childhood": [
+            "childhood", "kid", "early life", "youth", "school", "growing up"
+        ],
+        "daily_life": [
+            "daily", "routine", "everyday", "habit", "morning", "evening"
+        ],
+        "personality": [
+            "personality", "character", "kind", "strict", "gentle", "quiet", "loud"
+        ],
+        "values": [
+            "values", "beliefs", "principles", "faith", "lesson", "advice"
+        ],
+        "humor": [
+            "humor", "funny", "laugh", "joke", "playful"
+        ],
+        "friendship": [
+            "friends", "friendship", "relationship", "relationships",
+            "family bond", "neighbor", "community"
+        ],
+        "family": [
+            "family", "house", "home", "mother", "father", "grandmother",
+            "grandfather", "sibling", "parent", "child"
+        ],
+        "hobbies": [
+            "hobbies", "interests", "music", "sports", "garden", "cooking",
+            "reading", "travel"
+        ],
+        "achievements": [
+            "achievement", "proud", "success", "career", "work", "award",
+            "accomplishment"
+        ],
+        "loss": [
+            "loss", "last", "goodbye", "grief", "farewell", "miss"
+        ],
     }
 
     TOPIC_LABELS = {
@@ -30,22 +54,33 @@ class ChatAIService:
         "loss": "Loss",
     }
 
-    NEXT_WORDS = {"next", "skip", "continue", "weiter"}
+    NEXT_WORDS = {
+        "next",
+        "skip",
+        "continue",
+        "another topic",
+        "new topic",
+        "move on",
+    }
 
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
-        self.model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        self.model = os.getenv("OPENAI_MODEL", "gpt-5.4")
         self.client = OpenAI(api_key=self.api_key) if self.api_key else None
 
+
+    # Message formatting
     def _format_messages(self, messages):
         result = []
 
         for msg in messages or []:
             content = str(msg.get("content") or "").strip()
+
             if not content:
                 continue
 
             role = msg.get("role", "user")
+
             if role not in {"user", "assistant"}:
                 role = "user"
 
@@ -62,23 +97,36 @@ class ChatAIService:
         for msg in reversed(messages or []):
             if msg.get("role") == "user":
                 return str(msg.get("content") or "").strip()
+
         return ""
 
     def _is_next(self, text):
-        return text.strip().lower() in self.NEXT_WORDS if text else False
+        if not text:
+            return False
+
+        normalized = text.strip().lower()
+        return normalized in self.NEXT_WORDS
+
+    # Topic helpers
 
     def _normalize_topic(self, topic):
         topic = str(topic or "").strip().lower()
+
+        if topic == "unknown":
+            return None
+
         return topic if topic in self.TOPICS else None
 
     def _detect_explicit_topic(self, text):
         text = str(text or "").strip().lower()
+
         if not text:
             return None
 
         for topic, keywords in self.TOPICS.items():
             if text in {topic, topic.replace("_", " ")}:
                 return topic
+
             if any(keyword in text for keyword in keywords):
                 return topic
 
@@ -90,7 +138,14 @@ class ChatAIService:
 
         for topic in topics or []:
             topic = self._normalize_topic(topic)
-            if not topic or topic == current_topic or topic in seen:
+
+            if not topic:
+                continue
+
+            if topic == current_topic:
+                continue
+
+            if topic in seen:
                 continue
 
             cleaned.append(topic)
@@ -102,94 +157,166 @@ class ChatAIService:
         return cleaned
 
     def _fallback_suggested_topics(self, current_topic=None):
-        return [topic for topic in self.TOPICS if topic != current_topic][:4]
+        result = []
 
+        for topic in self.TOPICS.keys():
+            if topic != current_topic:
+                result.append(topic)
+
+            if len(result) == 4:
+                break
+
+        return result
+
+
+    # Fallbacks
+    def _fallback_chat_reply(self, messages, profile=None):
+        name = getattr(profile, "full_name", None) or "this person"
+
+        return (
+            f"Thank you for sharing that about {name}. "
+            "What is one small detail from that memory that still feels vivid to you?"
+        )
+
+    def _fallback_analysis_result(self, messages):
+        last_user_message = self._get_last_user_message(messages)
+        current_topic = self._detect_explicit_topic(last_user_message)
+
+        return {
+            "show_topic_choices": False,
+            "suggested_topics": [],
+            "current_topic": current_topic,
+            "topic_complete": False,
+            "topic_summary": "",
+            "facts_count": 0,
+        }
+
+
+    # Prompts
     def build_chat_prompt(self, profile=None):
         name = getattr(profile, "full_name", None) or "this person"
         relationship = getattr(profile, "relationship", None) or "someone important"
         description = getattr(profile, "short_description", None) or ""
 
         return f"""
-        You are Remora, a calm and emotionally sensitive memory companion who collects information about a person being remembered.
+        You are Remora, a calm and emotionally sensitive memory companion.
         
         You are helping a user remember {name}, who is {relationship} to them.
-        Context: {description}
+        Context about {name}: {description}
         
-        - Be warm, natural and concise (2–4 sentences)
-        - Ask only one follow-up question
-        - Stay grounded in the latest user message
-        - Do not invent details
-        - Collect meaningful memories and details
-        - Do not sound like a therapist
-        - If enough detail has already been gathered for the current topic, gently mention that you can also move to another topic if the user wants
-        - If the user says "next", gently move on.
-        - If the user names a topic, guide them into it naturally.
-        - When guiding to a new topic, make sure that the topic is connected with the person being remembered.
+        Your job:
+        - Write a warm, natural chat reply.
+        - Help the user remember concrete moments, habits, places, feelings, quotes and relationships.
+        - Ask only one follow-up question.
+        - Stay grounded in what the user actually said.
+        - Do not invent facts.
+        - Do not sound like a therapist.
+        - Keep the reply concise, usually 2 to 4 sentences.
+        - If the user wants to move to another topic, gently guide them to a new memory topic.
+        - If the user chooses a topic, connect that topic to {name}.
+        # Dont't write a , before 'and' and 'or'
         """.strip()
 
-    def build_analysis_prompt(self, profile=None):
+    def build_analysis_instructions(self, profile=None):
         name = getattr(profile, "full_name", None) or "this person"
+        relationship = getattr(profile, "relationship", None) or "someone important"
         topics = ", ".join(self.TOPICS.keys())
 
         return f"""
-    Analyze a memorial conversation about {name}.
-    
-    Available topics:
-    {topics}
-    
-    Your task:
-    - detect the current topic
-    - decide whether the topic already contains enough material for a future story
-    - count how many meaningful facts or details have already been mentioned for the current topic
-    - write a short summary of what has been shared in the current topic
-    - suggest 2 to 4 next topics if moving on would make sense
-    
-    Rules:
-    - a meaningful fact is a concrete detail, action, memory, feeling, habit, or relationship detail
-    - facts_count should be a small integer
-    - topic_summary should be short, clear, and factual
-    - if no current topic is clear, use null for current_topic
-    - if not enough has been shared, use an empty summary
-    - if the user explicitly says "next", still return possible next topics
-    - return ONLY valid JSON
-    
-    Return ONLY JSON in exactly this shape:
-    {{
-      "show_topic_choices": false,
-      "suggested_topics": ["childhood", "values"],
-      "current_topic": "daily_life",
-      "topic_complete": false,
-      "topic_summary": "The user described a joyful birthday celebration and the surprise party.",
-      "facts_count": 2
-    }}
-    """.strip()
+        Analyze the current Remora memory conversation.
+        
+        Person being remembered:
+        - Name: {name}
+        - Relationship: {relationship}
+        
+        Available topics:
+        {topics}
+        
+        Your job:
+        - Analyze the chat state in the background.
+        - Detect the current topic.
+        - Count meaningful facts for the current topic.
+        - Decide whether the topic has enough material for a future life story.
+        - Write a short factual summary of the current topic.
+        - Suggest 2 to 4 next topics when moving on makes sense.
+        
+        Important rules:
+        - Do not invent facts.
+        - A meaningful fact can be a concrete memory, action, habit, place, feeling, relationship detail, quote, tradition, repeated behavior, event, or life detail.
+        - facts_count should be a small integer.
+        - topic_summary must be factual and short.
+        - If no topic is clear, use "unknown" as current_topic.
+        - If not enough was shared, use an empty string for topic_summary.
+        - If the user says "next", "skip", "continue", "another topic", or asks to change topic, suggest next topics.
+        - Do not write a normal assistant reply in this analysis step.
+        - Use the function tool to return the structured analysis.
+        """.strip()
 
-    def _parse_response_json(self, text):
-        text = (text or "").strip()
-        if not text:
-            return None
+    # Function Calling Tool
+    def _chat_state_analysis_tool(self):
+        topic_values = list(self.TOPICS.keys())
 
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            start = text.find("{")
-            end = text.rfind("}")
-            if start != -1 and end != -1:
-                try:
-                    return json.loads(text[start:end + 1])
-                except json.JSONDecodeError:
-                    pass
-        return None
+        return {
+            "type": "function",
+            "name": "analyze_chat_state",
+            "description": (
+                "Analyze the Remora chat state. This tool returns structured "
+                "background data for topic tracking, suggested topics, fact counting, "
+                "and future life story preparation."
+            ),
+            "strict": True,
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "show_topic_choices": {
+                        "type": "boolean",
+                        "description": "Whether the UI should show topic choice buttons.",
+                    },
+                    "suggested_topics": {
+                        "type": "array",
+                        "description": "Two to three next topics that would make sense if the user moves on.",
+                        "items": {
+                            "type": "string",
+                            "enum": topic_values,
+                        },
+                    },
+                    "current_topic": {
+                        "type": "string",
+                        "description": "The current conversation topic. Use 'unknown' if unclear.",
+                        "enum": topic_values + ["unknown"],
+                    },
+                    "topic_complete": {
+                        "type": "boolean",
+                        "description": "Whether enough material has been gathered for the current topic.",
+                    },
+                    "topic_summary": {
+                        "type": "string",
+                        "description": "Short factual summary of what has been shared for the current topic.",
+                    },
+                    "facts_count": {
+                        "type": "integer",
+                        "description": "Number of meaningful facts or details gathered for the current topic.",
+                    },
+                },
+                "required": [
+                    "show_topic_choices",
+                    "suggested_topics",
+                    "current_topic",
+                    "topic_complete",
+                    "topic_summary",
+                    "facts_count",
+                ],
+                "additionalProperties": False,
+            },
+        }
 
 
+    # Validation
     def _validate_analysis_result(self, result, messages):
         if not isinstance(result, dict):
             return self._fallback_analysis_result(messages)
 
         current_topic = self._normalize_topic(result.get("current_topic"))
-        topic_complete = bool(result.get("topic_complete"))
-
-        topic_summary = str(result.get("topic_summary") or "").strip()
 
         try:
             facts_count = int(result.get("facts_count", 0) or 0)
@@ -198,6 +325,9 @@ class ChatAIService:
 
         if facts_count < 0:
             facts_count = 0
+
+        topic_summary = str(result.get("topic_summary") or "").strip()
+        topic_complete = bool(result.get("topic_complete"))
 
         suggested_topics = self._normalize_topics(
             result.get("suggested_topics"),
@@ -211,16 +341,30 @@ class ChatAIService:
 
         if facts_count >= 2:
             show_topic_choices = True
-        elif requested_show_choices and self._is_next(last_user_message):
+
+        if requested_show_choices and self._is_next(last_user_message):
+            show_topic_choices = True
+
+        if self._is_next(last_user_message):
             show_topic_choices = True
 
         if show_topic_choices and not suggested_topics:
             suggested_topics = self._fallback_suggested_topics(current_topic)
-        elif not show_topic_choices:
+
+        if not show_topic_choices:
             suggested_topics = []
 
         if facts_count >= 2:
             topic_complete = True
+
+        if not current_topic and not self._is_next(last_user_message):
+            detected_topic = self._detect_explicit_topic(last_user_message)
+
+            if detected_topic:
+                current_topic = detected_topic
+
+        if facts_count < 1:
+            topic_summary = ""
 
         return {
             "show_topic_choices": show_topic_choices,
@@ -231,7 +375,8 @@ class ChatAIService:
             "facts_count": facts_count,
         }
 
-    def _call_model(self, instructions, messages):
+    # OpenAI calls
+    def _call_text_model(self, instructions, messages):
         if not self.client:
             return None
 
@@ -241,42 +386,102 @@ class ChatAIService:
                 instructions=instructions,
                 input=messages,
             )
+
             return (response.output_text or "").strip()
-        except Exception:
+
+        except Exception as error:
+            print("OPENAI CHAT TEXT ERROR:", repr(error))
             return None
+
+    def _call_analysis_function(self, messages, profile=None):
+        if not self.client:
+            return None
+
+        try:
+            response = self.client.responses.create(
+                model=self.model,
+                instructions=self.build_analysis_instructions(profile),
+                input=messages,
+                tools=[
+                    self._chat_state_analysis_tool()
+                ],
+                tool_choice={
+                    "type": "function",
+                    "name": "analyze_chat_state",
+                },
+                parallel_tool_calls=False,
+            )
+
+            for item in response.output:
+                if getattr(item, "type", None) != "function_call":
+                    continue
+
+                if getattr(item, "name", None) != "analyze_chat_state":
+                    continue
+
+                raw_arguments = getattr(item, "arguments", "{}") or "{}"
+
+                return json.loads(raw_arguments)
+
+            return None
+
+        except Exception as error:
+            print("OPENAI CHAT ANALYSIS FUNCTION ERROR:", repr(error))
+            return None
+
+    # -------------------------------------------------------------------------
+    # Public methods
+    # -------------------------------------------------------------------------
 
     def generate_chat_reply(self, messages, profile=None):
         messages = self._format_messages(messages)
-        if not messages:
-            messages = [{"role": "user", "content": "Help me start remembering this person."}]
 
-        last = self._get_last_user_message(messages)
+        if not messages:
+            messages = [
+                {
+                    "role": "user",
+                    "content": "Help me start remembering this person.",
+                }
+            ]
+
+        last_user_message = self._get_last_user_message(messages)
         instructions = self.build_chat_prompt(profile)
 
-        if self._is_next(last):
-            instructions += "\nThe user wants to move on."
+        if self._is_next(last_user_message):
+            instructions += "\nThe user wants to move to another topic."
         else:
-            topic = self._detect_explicit_topic(last)
-            if topic:
-                instructions += f"\nThe user chose the topic '{topic}'."
+            explicit_topic = self._detect_explicit_topic(last_user_message)
 
-        reply = self._call_model(instructions, messages)
+            if explicit_topic:
+                instructions += f"\nThe user chose the topic '{explicit_topic}'."
+
+        reply = self._call_text_model(instructions, messages)
+
         return reply or self._fallback_chat_reply(messages, profile)
 
     def analyze_conversation_state(self, messages, profile=None):
         messages = self._format_messages(messages)
 
-        output = self._call_model(self.build_analysis_prompt(profile), messages)
-        parsed = self._parse_response_json(output)
-        return self._validate_analysis_result(parsed, messages)
+        if not messages:
+            return self._fallback_analysis_result(messages)
+
+        result = self._call_analysis_function(messages, profile)
+
+        return self._validate_analysis_result(result, messages)
 
     def generate_reply(self, messages, profile=None):
         messages = self._format_messages(messages)
-        analysis = self.analyze_conversation_state(messages, profile)
 
+        analysis = self.analyze_conversation_state(messages, profile)
         reply = self.generate_chat_reply(messages, profile)
 
-        if analysis["facts_count"] >= 2 and not self._is_next(self._get_last_user_message(messages)):
+        last_user_message = self._get_last_user_message(messages)
+
+        if (
+            analysis["facts_count"] >= 2
+            and not self._is_next(last_user_message)
+            and analysis["show_topic_choices"]
+        ):
             reply = (
                 f"{reply} "
                 "We can stay with this a little longer, or gently move to another topic if you’d like."

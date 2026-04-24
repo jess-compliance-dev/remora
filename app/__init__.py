@@ -13,6 +13,7 @@ from app.extensions.mail import mail
 from app.api.routes import register_blueprints
 from app.ui.routes import ui_bp
 
+
 from app import models
 
 

@@ -36,9 +36,10 @@ class ChatSessionService:
             db.session.commit()
             return session
 
-        except Exception:
+        except Exception as e:
             db.session.rollback()
-            return None
+            print("Create session error:", repr(e))
+            raise
 
     def update_session(self, session_id, data):
         session = self.get_session_by_id(session_id)

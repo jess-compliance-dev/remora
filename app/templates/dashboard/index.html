@@ -65,11 +65,7 @@
         </div>
     </div>
 
-    <div style="
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 18px;
-    ">
+    <div class="dashboard-grid">
 
         <a id="start-chat-link" href="#" class="dashboard-card">
             <div class="icon">💬</div>
@@ -85,8 +81,8 @@
 
         <a id="life-story-link" href="#" class="dashboard-card">
             <div class="icon">🌱</div>
-            <div class="title">Create life story</div>
-            <div class="text">Bring together chats and memories into a coherent life story.</div>
+            <div class="title">Life stories</div>
+            <div class="text">Read and create complete stories from saved chats and memories.</div>
         </a>
 
         <a href="/ui/time-capsule" class="dashboard-card">
@@ -101,12 +97,6 @@
             <div class="text">Revisit and reflect on saved moments.</div>
         </a>
 
-        <a href="/ui/life-stories" class="dashboard-card">
-            <div class="icon">📖</div>
-            <div class="title">View life stories</div>
-            <div class="text">Read and revisit complete life stories.</div>
-        </a>
-
         <a id="profile-settings-link" href="#" class="dashboard-card">
             <div class="icon">⚙️</div>
             <div class="title">Profile settings</div>
@@ -117,6 +107,12 @@
 </div>
 
 <style>
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
 .dashboard-card {
     text-decoration: none;
     color: inherit;
@@ -159,14 +155,14 @@
 }
 
 @media (max-width: 860px) {
-    div[style*="grid-template-columns: repeat(3, 1fr)"] {
-        grid-template-columns: repeat(2, 1fr) !important;
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 560px) {
-    div[style*="grid-template-columns: repeat(3, 1fr)"] {
-        grid-template-columns: 1fr !important;
+    .dashboard-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
@@ -188,7 +184,7 @@
 
         if (image) {
             document.getElementById("profile-avatar").innerHTML =
-                `<img src="${image}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                `<img src="${image}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="${name || "Profile"}">`;
         }
 
         document.getElementById("start-chat-link").href =
@@ -197,11 +193,11 @@
         document.getElementById("add-memory-link").href =
             `/ui/memories/add?profile_id=${profileId}`;
 
+        document.getElementById("life-story-link").href =
+            `/ui/stories/profile/${profileId}`;
+
         document.getElementById("view-memories-link").href =
             `/ui/memories?profile_id=${profileId}`;
-
-        document.getElementById("life-story-link").href =
-            `/ui/chat/start?profile_id=${profileId}`;
 
         document.getElementById("profile-settings-link").href =
             `/ui/profiles/${profileId}`;

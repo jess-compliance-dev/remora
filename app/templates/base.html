@@ -47,6 +47,11 @@
                 <div>Memories</div>
             </a>
 
+            <a id="bottom-nav-life-stories" href="/ui/stories" class="nav-item {% if active_tab == 'life_stories' %}active{% endif %}">
+                <div class="nav-icon">🌱</div>
+                <div>Life Story</div>
+            </a>
+
             <a href="/ui/time-capsule" class="nav-item {% if active_tab == 'time_capsule' %}active{% endif %}">
                 <div class="nav-icon">🕰️</div>
                 <div>Time Capsule</div>
@@ -72,6 +77,7 @@
 
         const chatLink = document.getElementById("bottom-nav-chat");
         const memoriesLink = document.getElementById("bottom-nav-memories");
+        const lifeStoriesLink = document.getElementById("bottom-nav-life-stories");
         const profileLink = document.getElementById("bottom-nav-profile");
 
         if (!profileId) {
@@ -81,6 +87,10 @@
 
             if (memoriesLink) {
                 memoriesLink.href = "/ui/select-profiles";
+            }
+
+            if (lifeStoriesLink) {
+                lifeStoriesLink.href = "/ui/select-profiles";
             }
 
             if (profileLink) {
@@ -96,6 +106,10 @@
 
         if (memoriesLink) {
             memoriesLink.href = `/ui/memories?profile_id=${profileId}`;
+        }
+
+        if (lifeStoriesLink) {
+            lifeStoriesLink.href = `/ui/stories/profile/${profileId}`;
         }
 
         if (profileLink) {

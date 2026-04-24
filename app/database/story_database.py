@@ -5,36 +5,71 @@ from app.models.life_story import LifeStory
 class StoryDatabase:
     """
     Database layer for life stories.
+    This class only talks to the database.
     """
 
     def get_all(self):
-        """Return all life stories."""
-        return LifeStory.query.all()
+        return (
+            LifeStory.query
+            .order_by(LifeStory.created_at.desc())
+            .all()
+        )
 
     def get_by_id(self, story_id: int):
-        """Return a story by ID."""
         return LifeStory.query.get(story_id)
 
     def get_by_profile_id(self, profile_id: int):
-        """Return stories for a profile."""
-        return LifeStory.query.filter_by(profile_id=profile_id).all()
+        return (
+            LifeStory.query
+            .filter_by(profile_id=profile_id)
+            .order_by(LifeStory.created_at.desc())
+            .all()
+        )
+
+    def get_by_session_id(self, session_id: int):
+        return (
+            LifeStory.query
+            .filter_by(source_session_id=session_id)
+            .order_by(LifeStory.created_at.desc())
+            .first()
+        )
 
     def create(self, data: dict):
-        """Create new life story."""
-        story = LifeStory(**data)
-        db.session.add(story)
-        db.session.commit()
-        return story
+        try:
+            story = LifeStory(**data)
+
+            db.session.add(story)
+            db.session.commit()
+
+            return story
+
+        except Exception as error:
+            db.session.rollback()
+            print("CREATE LIFE STORY ERROR:", repr(error))
+            return None
 
     def update(self, story, data: dict):
-        """Update existing story."""
-        for key, value in data.items():
-            setattr(story, key, value)
+        try:
+            for key, value in data.items():
+                if hasattr(story, key):
+                    setattr(story, key, value)
 
-        db.session.commit()
-        return story
+            db.session.commit()
+
+            return story
+
+        except Exception as error:
+            db.session.rollback()
+            print("UPDATE LIFE STORY ERROR:", repr(error))
+            return None
 
     def delete(self, story):
-        """Delete story."""
-        db.session.delete(story)
-        db.session.commit()
+        try:
+            db.session.delete(story)
+            db.session.commit()
+            return True
+
+        except Exception as error:
+            db.session.rollback()
+            print("DELETE LIFE STORY ERROR:", repr(error))
+            return False

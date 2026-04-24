@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+{% block title %}Life Stories | Remora{% endblock %}
+
+{% block head %}
+<style>
+    .stories-page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px 20px 56px;
+    }
+
+    .stories-panel {
+        background: #ffffff;
+        border: 1px solid #e7e9f4;
+        border-radius: 28px;
+        padding: 28px;
+        box-shadow: 0 10px 30px rgba(86, 97, 160, 0.08);
+    }
+
+    .stories-topbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stories-back {
+        width: 42px;
+        height: 42px;
+        border: none;
+        background: #eef0ff;
+        color: #5c63d6;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .stories-back:hover {
+        background: #e3e6ff;
+    }
+
+    .stories-back svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .stories-title {
+        margin: 0;
+        font-size: 34px;
+        color: #2f355c;
+        line-height: 1.1;
+    }
+
+    .stories-subtitle {
+        margin: 10px 0 0;
+        color: #8b90b3;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .stories-actions {
+        margin-top: 24px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .stories-create-btn {
+        width: auto;
+        min-width: 210px;
+    }
+
+    .stories-status {
+        margin-top: 18px;
+        font-size: 14px;
+        color: #7d84a6;
+        min-height: 22px;
+    }
+
+    .stories-status.is-error {
+        color: #c23d4b;
+    }
+
+    .stories-status.is-success {
+        color: #15803d;
+    }
+
+    .stories-status.is-loading {
+        color: #5c63d6;
+    }
+
+    .stories-list {
+        display: grid;
+        gap: 14px;
+        margin-top: 24px;
+    }
+
+    .story-card {
+        border: 1px solid #e7e9f4;
+        border-radius: 22px;
+        padding: 20px;
+        background: #ffffff;
+        box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
+    }
+
+    .story-card h2 {
+        margin: 0;
+        color: #2f355c;
+        font-size: 22px;
+    }
+
+    .story-card p {
+        margin: 10px 0 0;
+        color: #7d84a6;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .story-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .story-pill {
+        background: #eef0ff;
+        color: #5c63d6;
+        border-radius: 999px;
+        padding: 7px 11px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .story-card-actions {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .empty-state {
+        margin-top: 24px;
+        border: 1px solid #e7e9f4;
+        border-radius: 22px;
+        padding: 24px;
+        background: #f7f8ff;
+        color: #7d84a6;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+        .stories-panel {
+            padding: 20px;
+            border-radius: 24px;
+        }
+
+        .stories-title {
+            font-size: 28px;
+        }
+
+        .stories-actions {
+            flex-direction: column;
+        }
+
+        .stories-create-btn {
+            width: 100%;
+        }
+
+        .story-card-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stories-page">
+    <div class="stories-panel">
+
+        <div class="stories-topbar">
+            <button
+                class="stories-back"
+                type="button"
+                aria-label="Go back"
+                onclick="window.location.href='/ui/dashboard'"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6"></path>
+                </svg>
+            </button>
+
+            <div>
+                <h1 class="stories-title">Life Stories</h1>
+
+                {% if profile %}
+                    <p class="stories-subtitle">
+                        Saved stories about {{ profile.full_name }}.
+                    </p>
+                {% else %}
+                    <p class="stories-subtitle">
+                        Saved memories and life stories.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="stories-actions">
+            <button id="create-stories-btn" class="btn btn-primary stories-create-btn" type="button">
+                Create Life Stories
+            </button>
+        </div>
+
+        <div id="stories-status" class="stories-status" hidden></div>
+
+        <div id="stories-list" class="stories-list">
+            {% if stories %}
+                {% for story in stories %}
+                    <div class="story-card">
+                        <h2>{{ story.title or "Untitled Life Story" }}</h2>
+
+                        {% if story.summary %}
+                            <p>{{ story.summary }}</p>
+                        {% elif story.story_text %}
+                            <p>
+                                {{ story.story_text[:180] }}{% if story.story_text|length > 180 %}...{% endif %}
+                            </p>
+                        {% endif %}
+
+                        <div class="story-meta">
+                            {% if story.theme %}
+                                <span class="story-pill">{{ story.theme }}</span>
+                            {% endif %}
+
+                            {% if story.emotion_tag %}
+                                <span class="story-pill">{{ story.emotion_tag }}</span>
+                            {% endif %}
+
+                            {% if story.life_period %}
+                                <span class="story-pill">{{ story.life_period }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="story-card-actions">
+                            <button
+                                class="btn btn-primary"
+                                type="button"
+                                onclick="window.location.href='/ui/stories/{{ story.story_id }}'"
+                            >
+                                View Story
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div id="empty-state" class="empty-state" {% if stories %}hidden{% endif %}>
+            No life stories have been created yet. Continue a memory chat first, then return here and create life stories.
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const profileId = {{ profile_id|tojson }};
+    const createButton = document.getElementById("create-stories-btn");
+    const statusEl = document.getElementById("stories-status");
+    const storiesListEl = document.getElementById("stories-list");
+    const emptyStateEl = document.getElementById("empty-state");
+
+    function getToken() {
+        const token =
+            localStorage.getItem("access_token") ||
+            localStorage.getItem("jwt") ||
+            localStorage.getItem("token");
+
+        if (!token || token === "null" || token === "undefined") {
+            return null;
+        }
+
+        return token;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text || "";
+        return div.innerHTML;
+    }
+
+    function showStatus(message, type) {
+        statusEl.textContent = message;
+        statusEl.className = "stories-status";
+
+        if (type === "error") {
+            statusEl.classList.add("is-error");
+        }
+
+        if (type === "success") {
+            statusEl.classList.add("is-success");
+        }
+
+        if (type === "loading") {
+            statusEl.classList.add("is-loading");
+        }
+
+        statusEl.hidden = false;
+    }
+
+    function clearStatus() {
+        statusEl.textContent = "";
+        statusEl.className = "stories-status";
+        statusEl.hidden = true;
+    }
+
+    async function readJson(response) {
+        const text = await response.text();
+
+        if (!text) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return { error: text };
+        }
+    }
+
+    function createStoryCard(story) {
+        const card = document.createElement("div");
+        card.className = "story-card";
+
+        const title = story.title || "Untitled Life Story";
+        const summary = story.summary || story.story_text || "";
+
+        card.innerHTML = `
+            <h2>${escapeHtml(title)}</h2>
+
+            ${
+                summary
+                    ? `<p>${escapeHtml(summary.length > 180 ? summary.slice(0, 180) + "..." : summary)}</p>`
+                    : ""
+            }
+
+            <div class="story-meta">
+                ${story.theme ? `<span class="story-pill">${escapeHtml(story.theme)}</span>` : ""}
+                ${story.emotion_tag ? `<span class="story-pill">${escapeHtml(story.emotion_tag)}</span>` : ""}
+                ${story.life_period ? `<span class="story-pill">${escapeHtml(story.life_period)}</span>` : ""}
+            </div>
+
+            <div class="story-card-actions">
+                <button class="btn btn-primary" type="button">
+                    View Story
+                </button>
+            </div>
+        `;
+
+        const button = card.querySelector("button");
+        button.addEventListener("click", () => {
+            window.location.href = `/ui/stories/${story.story_id}`;
+        });
+
+        return card;
+    }
+
+    function renderStories(stories) {
+        storiesListEl.innerHTML = "";
+
+        if (!stories || stories.length === 0) {
+            emptyStateEl.hidden = false;
+            return;
+        }
+
+        emptyStateEl.hidden = true;
+
+        stories.forEach((story) => {
+            storiesListEl.appendChild(createStoryCard(story));
+        });
+    }
+
+    createButton.addEventListener("click", async () => {
+        clearStatus();
+
+        const token = getToken();
+
+        if (!token) {
+            showStatus("No auth token found. Please log in again.", "error");
+            return;
+        }
+
+        createButton.disabled = true;
+        createButton.textContent = "Creating...";
+
+        showStatus("Creating life stories from saved chats...", "loading");
+
+        try {
+            const response = await fetch(`/api/stories/auto-create/profile/${profileId}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const data = await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to create life stories.");
+            }
+
+            renderStories(data.stories || []);
+
+            if (data.stories && data.stories.length > 0) {
+                showStatus("Life stories are ready.", "success");
+            } else {
+                showStatus("No chat messages found yet. Start a chat first, then come back here.", "error");
+            }
+
+        } catch (error) {
+            showStatus(error.message, "error");
+        } finally {
+            createButton.disabled = false;
+            createButton.textContent = "Create Life Stories";
+        }
+    });
+</script>
+{% endblock %}
