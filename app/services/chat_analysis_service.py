@@ -11,6 +11,10 @@ class ChatAnalysisService:
             topic_complete=bool(data.get("topic_complete", False)),
             show_topic_choices=bool(data.get("show_topic_choices", False)),
             suggested_topics=data.get("suggested_topics") or [],
+
+            # ✅ NEU
+            topic_summary=data.get("topic_summary"),
+            facts_count=int(data.get("facts_count", 0) or 0),
         )
 
         db.session.add(analysis)

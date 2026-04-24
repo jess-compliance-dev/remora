@@ -65,6 +65,8 @@ def serialize_analysis(analysis):
         "topic_complete": getattr(analysis, "topic_complete", False),
         "show_topic_choices": getattr(analysis, "show_topic_choices", False),
         "suggested_topics": getattr(analysis, "suggested_topics", None) or [],
+        "topic_summary": getattr(analysis, "topic_summary", "") or "",
+        "facts_count": getattr(analysis, "facts_count", 0),
         "created_at": analysis.created_at.isoformat() if getattr(analysis, "created_at", None) else None,
     }
 
@@ -213,6 +215,8 @@ def send_ai_message(session_id):
                 "topic_complete": ai_result.get("topic_complete", False),
                 "show_topic_choices": ai_result.get("show_topic_choices", False),
                 "suggested_topics": ai_result.get("suggested_topics") or [],
+                "topic_summary": ai_result.get("topic_summary") or "",
+                "facts_count": ai_result.get("facts_count", 0),
             }
         )
 
@@ -223,6 +227,8 @@ def send_ai_message(session_id):
             "suggested_topics": ai_result.get("suggested_topics") or [],
             "current_topic": ai_result.get("current_topic"),
             "topic_complete": bool(ai_result.get("topic_complete")),
+            "topic_summary": ai_result.get("topic_summary") or "",
+            "facts_count": ai_result.get("facts_count", 0),
             "assistant_message_id": getattr(assistant_message, "message_id", None),
         }
 

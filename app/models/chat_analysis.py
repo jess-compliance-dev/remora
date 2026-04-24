@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from app.extensions.db import db
 
 
@@ -26,6 +25,10 @@ class ChatAnalysis(db.Model):
     topic_complete = db.Column(db.Boolean, nullable=False, default=False)
     show_topic_choices = db.Column(db.Boolean, nullable=False, default=False)
     suggested_topics = db.Column(db.JSON, nullable=True)
+
+    # ✅ NEU
+    topic_summary = db.Column(db.Text, nullable=True)
+    facts_count = db.Column(db.Integer, nullable=False, default=0)
 
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 

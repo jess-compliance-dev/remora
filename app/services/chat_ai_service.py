@@ -110,60 +110,59 @@ class ChatAIService:
         description = getattr(profile, "short_description", None) or ""
 
         return f"""
-You are Remora, a calm and emotionally sensitive memory companion who collects information about a person being remembered.
-
-You are helping a user remember {name}, who is {relationship} to them.
-Context: {description}
-
-- Be warm, natural and concise (2–4 sentences)
-- Ask only one follow-up question
-- Stay grounded in the latest user message
-- Do not invent details
-- Collect meaningful memories and details
-- Do not sound like a therapist
-- If enough detail has already been gathered for the current topic, gently mention that you can also move to another topic if the user wants
-
-If the user says "next", gently move on.
-If the user names a topic, guide them into it naturally.
-When guiding to a new topic, make sure that the topic is connected with the person being remembered.
-""".strip()
+        You are Remora, a calm and emotionally sensitive memory companion who collects information about a person being remembered.
+        
+        You are helping a user remember {name}, who is {relationship} to them.
+        Context: {description}
+        
+        - Be warm, natural and concise (2–4 sentences)
+        - Ask only one follow-up question
+        - Stay grounded in the latest user message
+        - Do not invent details
+        - Collect meaningful memories and details
+        - Do not sound like a therapist
+        - If enough detail has already been gathered for the current topic, gently mention that you can also move to another topic if the user wants
+        - If the user says "next", gently move on.
+        - If the user names a topic, guide them into it naturally.
+        - When guiding to a new topic, make sure that the topic is connected with the person being remembered.
+        """.strip()
 
     def build_analysis_prompt(self, profile=None):
         name = getattr(profile, "full_name", None) or "this person"
         topics = ", ".join(self.TOPICS.keys())
 
         return f"""
-Analyze a memorial conversation about {name}.
-
-Available topics:
-{topics}
-
-Your task:
-- detect the current topic
-- decide whether the topic already contains enough material for a future story
-- count how many meaningful facts or details have already been mentioned for the current topic
-- write a short summary of what has been shared in the current topic
-- suggest 2 to 4 next topics if moving on would make sense
-
-Rules:
-- a meaningful fact is a concrete detail, action, memory, feeling, habit, or relationship detail
-- facts_count should be a small integer
-- topic_summary should be short, clear, and factual
-- if no current topic is clear, use null for current_topic
-- if not enough has been shared, use an empty summary
-- if the user explicitly says "next", still return possible next topics
-- return ONLY valid JSON
-
-Return ONLY JSON in exactly this shape:
-{{
-  "show_topic_choices": false,
-  "suggested_topics": ["childhood", "values"],
-  "current_topic": "daily_life",
-  "topic_complete": false,
-  "topic_summary": "The user described a joyful birthday celebration and the surprise party.",
-  "facts_count": 2
-}}
-""".strip()
+    Analyze a memorial conversation about {name}.
+    
+    Available topics:
+    {topics}
+    
+    Your task:
+    - detect the current topic
+    - decide whether the topic already contains enough material for a future story
+    - count how many meaningful facts or details have already been mentioned for the current topic
+    - write a short summary of what has been shared in the current topic
+    - suggest 2 to 4 next topics if moving on would make sense
+    
+    Rules:
+    - a meaningful fact is a concrete detail, action, memory, feeling, habit, or relationship detail
+    - facts_count should be a small integer
+    - topic_summary should be short, clear, and factual
+    - if no current topic is clear, use null for current_topic
+    - if not enough has been shared, use an empty summary
+    - if the user explicitly says "next", still return possible next topics
+    - return ONLY valid JSON
+    
+    Return ONLY JSON in exactly this shape:
+    {{
+      "show_topic_choices": false,
+      "suggested_topics": ["childhood", "values"],
+      "current_topic": "daily_life",
+      "topic_complete": false,
+      "topic_summary": "The user described a joyful birthday celebration and the surprise party.",
+      "facts_count": 2
+    }}
+    """.strip()
 
     def _parse_response_json(self, text):
         text = (text or "").strip()
@@ -182,52 +181,6 @@ Return ONLY JSON in exactly this shape:
                     pass
         return None
 
-    def _fallback_chat_reply(self, messages, profile=None):
-        last = self._get_last_user_message(messages)
-        topic = self._detect_explicit_topic(last)
-
-        if self._is_next(last):
-            return "We can move to another part of their life. What would you like to talk about next?"
-
-        if topic:
-            label = self.TOPIC_LABELS.get(topic, topic)
-            return f"Let’s stay with {label.lower()} for a moment. What comes to your mind first?"
-
-        name = getattr(profile, "full_name", None) or "this person"
-        return f"What is one moment with {name} that comes to your mind first?"
-
-    def _fallback_analysis_result(self, messages):
-        last = self._get_last_user_message(messages)
-        topic = self._detect_explicit_topic(last)
-
-        if self._is_next(last):
-            return {
-                "show_topic_choices": True,
-                "suggested_topics": self._fallback_suggested_topics(),
-                "current_topic": None,
-                "topic_complete": True,
-                "topic_summary": "",
-                "facts_count": 0,
-            }
-
-        if topic:
-            return {
-                "show_topic_choices": False,
-                "suggested_topics": [],
-                "current_topic": topic,
-                "topic_complete": False,
-                "topic_summary": last if last else "",
-                "facts_count": 1 if last else 0,
-            }
-
-        return {
-            "show_topic_choices": False,
-            "suggested_topics": [],
-            "current_topic": None,
-            "topic_complete": False,
-            "topic_summary": "",
-            "facts_count": 0,
-        }
 
     def _validate_analysis_result(self, result, messages):
         if not isinstance(result, dict):
