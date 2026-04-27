@@ -18,8 +18,10 @@ def render_ui(template_name, *, active_tab=None, show_bottom_nav=False, **contex
     )
 
 
-
+# -----------------------------------------------------------------------------
 # Auth pages
+# -----------------------------------------------------------------------------
+
 @ui_bp.route("/ui/login")
 def login():
     return render_ui(
@@ -54,16 +56,12 @@ def email_confirmed():
     )
 
 
-
+# -----------------------------------------------------------------------------
 # Profile selection and dashboard
+# -----------------------------------------------------------------------------
+
 @ui_bp.route("/ui/select-profiles")
 def select_profiles():
-    """
-    Start page after login:
-    - create a new memorial profile
-    - select an existing profile
-    """
-
     return render_ui(
         "profiles/select.html",
         active_tab=None,
@@ -73,11 +71,6 @@ def select_profiles():
 
 @ui_bp.route("/ui/dashboard")
 def dashboard():
-    """
-    Dashboard is only meaningful after a profile was selected.
-    The selected profile is handled client-side via localStorage.
-    """
-
     return render_ui(
         "dashboard/index.html",
         show_bottom_nav=False
@@ -86,11 +79,6 @@ def dashboard():
 
 @ui_bp.route("/ui/profiles")
 def profiles():
-    """
-    Backward-compatible route.
-    Redirect old 'View Profiles' URL to the new profile selection page.
-    """
-
     return redirect(url_for("ui.select_profiles"))
 
 
@@ -112,8 +100,10 @@ def profile_detail(profile_id):
     )
 
 
-
+# -----------------------------------------------------------------------------
 # Chat pages
+# -----------------------------------------------------------------------------
+
 @ui_bp.route("/ui/chat-home")
 def chat_home():
     return render_ui(
@@ -159,17 +149,16 @@ def chat(session_id):
     )
 
 
+# -----------------------------------------------------------------------------
 # Life story pages
+# -----------------------------------------------------------------------------
+
 @ui_bp.route("/ui/life-stories")
 def life_stories_legacy():
     """
-    Backward-compatible route.
-
-    The new story page is profile-based:
-    /ui/stories/profile/<profile_id>
-
-    If profile_id is provided as query parameter, redirect there.
-    Otherwise go back to dashboard, where the active profile is selected client-side.
+    Old route.
+    If profile_id is provided, redirect to the new profile-specific Life Stories page.
+    Otherwise return to dashboard.
     """
 
     profile_id = request.args.get("profile_id", type=int)
@@ -183,10 +172,7 @@ def life_stories_legacy():
 @ui_bp.route("/ui/stories")
 def stories_home():
     """
-    Fallback route for stories.
-
-    If profile_id is provided, redirect to the profile-specific story list.
-    Otherwise go back to dashboard.
+    Fallback route for Life Stories.
     """
 
     profile_id = request.args.get("profile_id", type=int)
@@ -200,14 +186,14 @@ def stories_home():
 @ui_bp.route("/ui/stories/profile/<int:profile_id>")
 def profile_life_stories(profile_id):
     """
-    Show all life stories for one memorial profile.
+    Life Stories overview page for one profile.
 
-    This page is used by the dashboard tiles:
-    - Create life story
-    - View life stories
+    Template:
+    stories/index.html
 
-    The template can also call the API to automatically create missing stories
-    from saved chat sessions.
+    This page can:
+    - show existing Life Stories
+    - create Life Stories from saved chat sessions via the button
     """
 
     profile = profile_service.get_profile_by_id(profile_id)
@@ -222,7 +208,7 @@ def profile_life_stories(profile_id):
         profile=profile,
         profile_id=profile_id,
         stories=stories,
-        active_tab="memories",
+        active_tab="life_stories",
         show_bottom_nav=True
     )
 
@@ -230,7 +216,10 @@ def profile_life_stories(profile_id):
 @ui_bp.route("/ui/stories/<int:story_id>")
 def story_detail(story_id):
     """
-    Show one saved life story.
+    Single Life Story detail page.
+
+    Template:
+    stories/view_story.html
     """
 
     story = story_service.get_story_by_id(story_id)
@@ -244,7 +233,7 @@ def story_detail(story_id):
         "stories/view_story.html",
         story=story,
         profile=profile,
-        active_tab="memories",
+        active_tab="life_stories",
         show_bottom_nav=True
     )
 
@@ -252,14 +241,17 @@ def story_detail(story_id):
 @ui_bp.route("/ui/story/<int:story_id>")
 def story_legacy(story_id):
     """
-    Backward-compatible old story detail route.
-    Redirects to the new story detail route.
+    Old route for one story.
+    Redirects to the new Life Story detail route.
     """
 
     return redirect(url_for("ui.story_detail", story_id=story_id))
 
 
+# -----------------------------------------------------------------------------
 # Memory pages
+# -----------------------------------------------------------------------------
+
 @ui_bp.route("/ui/memories")
 def memories():
     profile_id = request.args.get("profile_id", type=int)
@@ -334,11 +326,6 @@ def add_memory():
 
 @ui_bp.route("/ui/memories/<int:memory_id>")
 def memory_detail(memory_id):
-    """
-    Memory detail page with story-focused presentation.
-    For now this renders the detail screen with the memory id.
-    """
-
     return render_ui(
         "memories/profile_setting.html",
         memory_id=memory_id,
@@ -347,7 +334,10 @@ def memory_detail(memory_id):
     )
 
 
+# -----------------------------------------------------------------------------
 # Time capsule
+# -----------------------------------------------------------------------------
+
 @ui_bp.route("/ui/time-capsule")
 def time_capsule():
     return render_ui(

@@ -12,7 +12,12 @@ class StoryAIService:
 
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
+
+        # Important:
+        # Do not use a model here that your OpenAI project cannot access.
+        # If OPENAI_MODEL is not set, this safe default is used.
         self.model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
         self.client = OpenAI(api_key=self.api_key) if self.api_key else None
 
     def _life_story_tool(self):
@@ -20,9 +25,7 @@ class StoryAIService:
             "type": "function",
             "function": {
                 "name": "create_life_story",
-                "description": (
-                    "Create a structured Remora life story from a memory conversation."
-                ),
+                "description": "Create a structured Remora life story from a memory conversation.",
                 "strict": True,
                 "parameters": {
                     "type": "object",
@@ -148,6 +151,7 @@ Rules:
         for message in chat_messages:
             if getattr(message, "role", None) == "user":
                 text = getattr(message, "message_text", "") or ""
+
                 if text.strip():
                     user_texts.append(text.strip())
 
@@ -166,8 +170,29 @@ Rules:
             "theme": "memory",
             "emotion_tag": "reflective",
             "life_period": "unknown",
-            "location": "",
-            "happened_at": "",
+            "location": None,
+            "happened_at": None,
+        }
+
+    def _clean_story_data(self, data):
+        """
+        Make sure the data can safely be saved to PostgreSQL.
+        Especially important for date fields.
+        """
+
+        if not data:
+            return None
+
+        return {
+            "title": data.get("title") or "Untitled Life Story",
+            "prompt_question": data.get("prompt_question") or "",
+            "story_text": data.get("story_text") or "",
+            "summary": data.get("summary") or "",
+            "theme": data.get("theme") or "memory",
+            "emotion_tag": data.get("emotion_tag") or "reflective",
+            "life_period": data.get("life_period") or "unknown",
+            "location": data.get("location") or None,
+            "happened_at": self._parse_date(data.get("happened_at")),
         }
 
     def generate_life_story_from_chat(self, chat_messages, profile):
@@ -205,19 +230,8 @@ Rules:
                 if tool_call.function.name != "create_life_story":
                     continue
 
-                data = json.loads(tool_call.function.arguments)
-
-                return {
-                    "title": data.get("title"),
-                    "prompt_question": data.get("prompt_question"),
-                    "story_text": data.get("story_text"),
-                    "summary": data.get("summary"),
-                    "theme": data.get("theme"),
-                    "emotion_tag": data.get("emotion_tag"),
-                    "life_period": data.get("life_period"),
-                    "location": data.get("location") or None,
-                    "happened_at": self._parse_date(data.get("happened_at")),
-                }
+                raw_data = json.loads(tool_call.function.arguments)
+                return self._clean_story_data(raw_data)
 
             return self._fallback_story_data(chat_messages, profile)
 
