@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Life Stories | Remora{% endblock %}
+{% block title %}Life Story | Remora{% endblock %}
 
 {% block head %}
 <style>
@@ -66,11 +66,12 @@
         display: flex;
         justify-content: flex-end;
         gap: 12px;
+        flex-wrap: wrap;
     }
 
     .stories-create-btn {
         width: auto;
-        min-width: 210px;
+        min-width: 220px;
     }
 
     .stories-status {
@@ -94,51 +95,111 @@
 
     .stories-list {
         display: grid;
-        gap: 14px;
+        gap: 22px;
         margin-top: 24px;
     }
 
     .story-card {
         border: 1px solid #e7e9f4;
         border-radius: 22px;
-        padding: 20px;
+        padding: 28px;
         background: #ffffff;
         box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
     }
 
     .story-card h2 {
         margin: 0;
-        color: #2f355c;
-        font-size: 22px;
+        color: #1e2b5c;
+        font-size: 28px;
+        line-height: 1.25;
     }
 
-    .story-card p {
-        margin: 10px 0 0;
+    .story-summary {
+        margin: 16px 0 0;
         color: #7d84a6;
-        font-size: 15px;
-        line-height: 1.6;
+        font-size: 18px;
+        line-height: 1.7;
     }
 
-    .story-meta {
+    .story-video-section {
+        margin-top: 26px;
+        padding-top: 22px;
+        border-top: 1px solid #eef0ff;
+    }
+
+    .story-video-header {
         display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 14px;
+    }
+
+    .story-video-title {
+        margin: 0;
+        color: #1e2b5c;
+        font-size: 22px;
+        font-weight: 900;
+    }
+
+    .video-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .video-card {
+        background: #f7f8ff;
+        border: 1px solid #e7e9f4;
+        border-radius: 22px;
+        padding: 20px;
+    }
+
+    .video-ready-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
         flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 14px;
     }
 
-    .story-pill {
-        background: #eef0ff;
-        color: #5c63d6;
-        border-radius: 999px;
-        padding: 7px 11px;
-        font-size: 13px;
-        font-weight: 700;
+    .video-message {
+        color: #7d84a6;
+        font-size: 17px;
+        line-height: 1.6;
+        margin: 0;
     }
 
-    .story-card-actions {
-        margin-top: 16px;
+    .loading-row {
         display: flex;
-        justify-content: flex-end;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .loading-spinner {
+        width: 22px;
+        height: 22px;
+        border: 3px solid #e3e6ff;
+        border-top-color: #5c63d6;
+        border-radius: 999px;
+        animation: spin 0.9s linear infinite;
+        flex-shrink: 0;
+    }
+
+    .loading-dots::after {
+        content: "";
+        display: inline-block;
+        width: 28px;
+        text-align: left;
+        animation: dots 1.3s steps(4, end) infinite;
+    }
+
+    .video-player {
+        width: 100%;
+        max-height: 420px;
+        border-radius: 16px;
+        background: #000000;
+        display: block;
+        margin-top: 16px;
     }
 
     .empty-state {
@@ -151,6 +212,34 @@
         line-height: 1.6;
     }
 
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes dots {
+        0% {
+            content: "";
+        }
+
+        25% {
+            content: ".";
+        }
+
+        50% {
+            content: "..";
+        }
+
+        75% {
+            content: "...";
+        }
+
+        100% {
+            content: "";
+        }
+    }
+
     @media (max-width: 640px) {
         .stories-panel {
             padding: 20px;
@@ -161,6 +250,18 @@
             font-size: 28px;
         }
 
+        .story-card {
+            padding: 22px;
+        }
+
+        .story-card h2 {
+            font-size: 24px;
+        }
+
+        .story-summary {
+            font-size: 16px;
+        }
+
         .stories-actions {
             flex-direction: column;
         }
@@ -169,7 +270,13 @@
             width: 100%;
         }
 
-        .story-card-actions .btn {
+        .story-video-header,
+        .video-ready-row {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .video-ready-row .btn {
             width: 100%;
         }
     }
@@ -194,72 +301,37 @@
             </button>
 
             <div>
-                <h1 class="stories-title">Life Stories</h1>
+                <h1 class="stories-title">Life Story</h1>
 
                 {% if profile %}
                     <p class="stories-subtitle">
-                        Saved stories about {{ profile.full_name }}.
+                        Create one connected life story for {{ profile.full_name }}, bringing together all your memories and turning them
+                        into a meaningful story.
                     </p>
                 {% else %}
                     <p class="stories-subtitle">
-                        Saved memories and life stories.
+                        Create one connected life story from saved chats.
                     </p>
                 {% endif %}
             </div>
         </div>
 
         <div class="stories-actions">
-            <button id="create-stories-btn" class="btn btn-primary stories-create-btn" type="button">
-                Create Life Stories
+            <button id="create-story-video-btn" class="btn btn-primary stories-create-btn" type="button">
+                Create Life Story
+            </button>
+
+            <button id="update-life-story-btn" class="btn btn-secondary stories-create-btn" type="button" hidden>
+                Update Life Story
             </button>
         </div>
 
         <div id="stories-status" class="stories-status" hidden></div>
 
-        <div id="stories-list" class="stories-list">
-            {% if stories %}
-                {% for story in stories %}
-                    <div class="story-card">
-                        <h2>{{ story.title or "Untitled Life Story" }}</h2>
+        <div id="stories-list" class="stories-list"></div>
 
-                        {% if story.summary %}
-                            <p>{{ story.summary }}</p>
-                        {% elif story.story_text %}
-                            <p>
-                                {{ story.story_text[:180] }}{% if story.story_text|length > 180 %}...{% endif %}
-                            </p>
-                        {% endif %}
-
-                        <div class="story-meta">
-                            {% if story.theme %}
-                                <span class="story-pill">{{ story.theme }}</span>
-                            {% endif %}
-
-                            {% if story.emotion_tag %}
-                                <span class="story-pill">{{ story.emotion_tag }}</span>
-                            {% endif %}
-
-                            {% if story.life_period %}
-                                <span class="story-pill">{{ story.life_period }}</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="story-card-actions">
-                            <button
-                                class="btn btn-primary"
-                                type="button"
-                                onclick="window.location.href='/ui/stories/{{ story.story_id }}'"
-                            >
-                                View Story
-                            </button>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-
-        <div id="empty-state" class="empty-state" {% if stories %}hidden{% endif %}>
-            No life stories have been created yet. Continue a memory chat first, then return here and create life stories.
+        <div id="empty-state" class="empty-state">
+            No life story has been created yet. Click Create Life Story to build one.
         </div>
 
     </div>
@@ -269,10 +341,16 @@
 {% block scripts %}
 <script>
     const profileId = {{ profile_id|tojson }};
-    const createButton = document.getElementById("create-stories-btn");
+
+    const createButton = document.getElementById("create-story-video-btn");
+    const updateButton = document.getElementById("update-life-story-btn");
     const statusEl = document.getElementById("stories-status");
     const storiesListEl = document.getElementById("stories-list");
     const emptyStateEl = document.getElementById("empty-state");
+
+    const pollingTimers = new Map();
+    const maxPollingAttempts = 60;
+    const pollingIntervalMs = 5000;
 
     function getToken() {
         const token =
@@ -285,6 +363,19 @@
         }
 
         return token;
+    }
+
+    function getAuthHeaders() {
+        const token = getToken();
+
+        if (!token) {
+            throw new Error("No auth token found. Please log in again.");
+        }
+
+        return {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+        };
     }
 
     function escapeHtml(text) {
@@ -332,9 +423,140 @@
         }
     }
 
+    function getStoryIdsFromPage() {
+        return Array.from(document.querySelectorAll(".story-card[data-story-id]"))
+            .map((element) => element.dataset.storyId)
+            .filter(Boolean);
+    }
+
+    function hasStoryOnPage() {
+        return getStoryIdsFromPage().length > 0;
+    }
+
+    function syncPageState() {
+        const hasStory = hasStoryOnPage();
+
+        emptyStateEl.hidden = hasStory;
+        updateButton.hidden = !hasStory;
+    }
+
+    function createEmptyVideoCard() {
+        const card = document.createElement("div");
+        card.className = "video-card";
+
+        card.innerHTML = `
+            <p class="video-message">
+                No memory video has been created yet.
+            </p>
+        `;
+
+        return card;
+    }
+
+    function createLoadingVideoCard(message) {
+        const card = document.createElement("div");
+        card.className = "video-card";
+
+        card.innerHTML = `
+            <div class="loading-row">
+                <span class="loading-spinner" aria-hidden="true"></span>
+                <p class="video-message">
+                    ${escapeHtml(message || "Life Story is being built")}<span class="loading-dots"></span> Wait a moment.
+                </p>
+            </div>
+        `;
+
+        return card;
+    }
+
+    function createCompletedVideoCard(video) {
+        const card = document.createElement("div");
+        card.className = "video-card";
+
+        const videoUrl = video.video_url || "";
+
+        card.innerHTML = `
+            <div class="video-ready-row">
+                <p class="video-message">Your Life Story Video is ready.</p>
+                <a class="btn btn-primary" href="${escapeHtml(videoUrl)}" target="_blank" rel="noopener noreferrer">
+                    Open Video
+                </a>
+            </div>
+
+            <video class="video-player" src="${escapeHtml(videoUrl)}" controls playsinline></video>
+        `;
+
+        return card;
+    }
+
+    function createFailedVideoCard(video) {
+        const card = document.createElement("div");
+        card.className = "video-card";
+
+        card.innerHTML = `
+            <p class="video-message">
+                The Life Story Video could not be created right now.
+                ${video && video.error_message ? escapeHtml(video.error_message) : ""}
+            </p>
+        `;
+
+        return card;
+    }
+
+    function renderVideos(storyId, videos) {
+        const videoListEl = document.getElementById(`video-list-${storyId}`);
+
+        if (!videoListEl) {
+            return;
+        }
+
+        videoListEl.innerHTML = "";
+
+        if (!videos || videos.length === 0) {
+            videoListEl.appendChild(createEmptyVideoCard());
+            return;
+        }
+
+        const video = videos[0];
+
+        if (video.status === "completed" && video.video_url) {
+            stopPolling(video.video_id);
+            videoListEl.appendChild(createCompletedVideoCard(video));
+            return;
+        }
+
+        if (video.status === "failed") {
+            stopPolling(video.video_id);
+            videoListEl.appendChild(createFailedVideoCard(video));
+            return;
+        }
+
+        videoListEl.appendChild(
+            createLoadingVideoCard("Life Story is being built")
+        );
+
+        if (video.video_id) {
+            startPollingVideo(video.video_id, storyId);
+        }
+    }
+
+    function setVideoLoadingState(storyId) {
+        const videoListEl = document.getElementById(`video-list-${storyId}`);
+
+        if (!videoListEl) {
+            return;
+        }
+
+        videoListEl.innerHTML = "";
+        videoListEl.appendChild(
+            createLoadingVideoCard("Life Story is being built")
+        );
+    }
+
     function createStoryCard(story) {
         const card = document.createElement("div");
         card.className = "story-card";
+        card.dataset.storyId = story.story_id;
 
         const title = story.title || "Untitled Life Story";
         const summary = story.summary || story.story_text || "";
@@ -342,92 +564,241 @@
         card.innerHTML = `
             <h2>${escapeHtml(title)}</h2>
 
-            ${
-                summary
-                    ? `<p>${escapeHtml(summary.length > 180 ? summary.slice(0, 180) + "..." : summary)}</p>`
-                    : ""
-            }
+            ${summary ? `<p class="story-summary">${escapeHtml(summary)}</p>` : ""}
 
-            <div class="story-meta">
-                ${story.theme ? `<span class="story-pill">${escapeHtml(story.theme)}</span>` : ""}
-                ${story.emotion_tag ? `<span class="story-pill">${escapeHtml(story.emotion_tag)}</span>` : ""}
-                ${story.life_period ? `<span class="story-pill">${escapeHtml(story.life_period)}</span>` : ""}
-            </div>
+            <div class="story-video-section">
+                <div class="story-video-header">
+                    <h3 class="story-video-title">Memory Video</h3>
+                </div>
 
-            <div class="story-card-actions">
-                <button class="btn btn-primary" type="button">
-                    View Story
-                </button>
+                <div class="video-list" id="video-list-${story.story_id}"></div>
             </div>
         `;
 
-        const button = card.querySelector("button");
-        button.addEventListener("click", () => {
-            window.location.href = `/ui/stories/${story.story_id}`;
-        });
+        const videoList = card.querySelector(`#video-list-${story.story_id}`);
+        videoList.appendChild(createEmptyVideoCard());
 
         return card;
     }
 
-    function renderStories(stories) {
+    function renderSingleStory(story) {
         storiesListEl.innerHTML = "";
 
-        if (!stories || stories.length === 0) {
-            emptyStateEl.hidden = false;
+        if (!story || !story.story_id) {
+            syncPageState();
             return;
         }
 
-        emptyStateEl.hidden = true;
+        storiesListEl.appendChild(createStoryCard(story));
+        syncPageState();
+    }
 
-        stories.forEach((story) => {
-            storiesListEl.appendChild(createStoryCard(story));
+    async function fetchVideosForStory(storyId) {
+        const response = await fetch(`/api/memory-videos/story/${storyId}`, {
+            method: "GET",
+            headers: getAuthHeaders(),
         });
+
+        const data = await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(data.error || "Unable to load memory video.");
+        }
+
+        renderVideos(storyId, data || []);
+
+        return data || [];
+    }
+
+    async function createVideoForStory(storyId) {
+        showStatus("Creating memory video...", "loading");
+
+        const response = await fetch(`/api/memory-videos/from-story/${storyId}`, {
+            method: "POST",
+            headers: getAuthHeaders(),
+        });
+
+        const data = await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(data.error || "Unable to create memory video.");
+        }
+
+        const video = data.video;
+
+        if (!video || !video.video_id) {
+            throw new Error("Memory video could not be started.");
+        }
+
+        setVideoLoadingState(storyId);
+
+        await fetchVideosForStory(storyId);
+
+        if (video.status !== "completed") {
+            startPollingVideo(video.video_id, storyId);
+        }
+
+        return video;
+    }
+
+    async function refreshVideoStatus(videoId, storyId) {
+        const response = await fetch(`/api/memory-videos/${videoId}/refresh-status`, {
+            method: "POST",
+            headers: getAuthHeaders(),
+        });
+
+        const data = await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(data.error || "Unable to refresh memory video.");
+        }
+
+        const video = data.video;
+
+        if (video && video.story_id) {
+            await fetchVideosForStory(video.story_id);
+        } else if (storyId) {
+            await fetchVideosForStory(storyId);
+        }
+
+        return video;
+    }
+
+    function startPollingVideo(videoId, storyId) {
+        if (!videoId || pollingTimers.has(String(videoId))) {
+            return;
+        }
+
+        let attempts = 0;
+
+        const timerId = window.setInterval(async () => {
+            attempts += 1;
+
+            if (attempts > maxPollingAttempts) {
+                stopPolling(videoId);
+                showStatus("The video is still being created. Please check again in a few minutes.", "loading");
+                return;
+            }
+
+            try {
+                const video = await refreshVideoStatus(videoId, storyId);
+
+                if (video && video.status === "completed" && video.video_url) {
+                    stopPolling(videoId);
+                    showStatus("Life Story Video is ready.", "success");
+                }
+
+                if (video && video.status === "failed") {
+                    stopPolling(videoId);
+                    showStatus("The Life Story Video could not be created right now.", "error");
+                }
+            } catch (error) {
+                console.error("Polling error:", error);
+            }
+        }, pollingIntervalMs);
+
+        pollingTimers.set(String(videoId), timerId);
+    }
+
+    function stopPolling(videoId) {
+        const key = String(videoId);
+        const timerId = pollingTimers.get(key);
+
+        if (timerId) {
+            window.clearInterval(timerId);
+            pollingTimers.delete(key);
+        }
     }
 
     createButton.addEventListener("click", async () => {
         clearStatus();
 
-        const token = getToken();
-
-        if (!token) {
-            showStatus("No auth token found. Please log in again.", "error");
-            return;
-        }
-
         createButton.disabled = true;
+        updateButton.disabled = true;
         createButton.textContent = "Creating...";
 
-        showStatus("Creating life stories from saved chats...", "loading");
+        showStatus("Creating one connected life story from all saved chats...", "loading");
 
         try {
-            const response = await fetch(`/api/stories/auto-create/profile/${profileId}`, {
+            const storyResponse = await fetch(`/api/stories/create-combined/profile/${profileId}`, {
                 method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                }
+                headers: getAuthHeaders(),
             });
 
-            const data = await readJson(response);
+            const storyData = await readJson(storyResponse);
 
-            if (!response.ok) {
-                throw new Error(data.error || "Unable to create life stories.");
+            if (!storyResponse.ok) {
+                throw new Error(storyData.error || "Unable to create life story.");
             }
 
-            renderStories(data.stories || []);
+            const story = storyData.story;
 
-            if (data.stories && data.stories.length > 0) {
-                showStatus("Life stories are ready.", "success");
+            if (!story || !story.story_id) {
+                throw new Error("Life story was created but no story ID was returned.");
+            }
+
+            renderSingleStory(story);
+
+            showStatus("Life story created. Building memory video...", "loading");
+
+            const video = await createVideoForStory(story.story_id);
+
+            if (video && video.status === "completed" && video.video_url) {
+                showStatus("Life Story Video is ready.", "success");
             } else {
-                showStatus("No chat messages found yet. Start a chat first, then come back here.", "error");
+                showStatus("Life Story is being built. Wait a moment.", "loading");
             }
 
         } catch (error) {
             showStatus(error.message, "error");
         } finally {
             createButton.disabled = false;
-            createButton.textContent = "Create Life Stories";
+            updateButton.disabled = false;
+            createButton.textContent = "Create Life Story Video";
+            syncPageState();
         }
+    });
+
+    updateButton.addEventListener("click", async () => {
+        clearStatus();
+
+        updateButton.disabled = true;
+        createButton.disabled = true;
+        updateButton.textContent = "Updating...";
+
+        showStatus("Updating story...", "loading");
+
+        try {
+            const response = await fetch(`/api/stories/update-combined/profile/${profileId}`, {
+                method: "POST",
+                headers: getAuthHeaders(),
+            });
+
+            const data = await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to update life story.");
+            }
+
+            if (data.story) {
+                renderSingleStory(data.story);
+                await fetchVideosForStory(data.story.story_id);
+            }
+
+            showStatus(data.message || "Life story updated", "success");
+
+        } catch (error) {
+            showStatus(error.message, "error");
+        } finally {
+            updateButton.disabled = false;
+            createButton.disabled = false;
+            updateButton.textContent = "Update Life Story";
+            syncPageState();
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        syncPageState();
     });
 </script>
 {% endblock %}

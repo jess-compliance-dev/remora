@@ -7,13 +7,13 @@ from app.services.story_ai_service import StoryAIService
 
 class StoryService:
     """
-    Service layer for life story business logic.
+    Service layer for life stories.
     """
 
     def __init__(self):
         self.story_db = StoryDatabase()
-        self.story_ai = StoryAIService()
         self.profile_service = ProfileService()
+        self.story_ai_service = StoryAIService()
 
     def get_stories(self):
         return self.story_db.get_all()
@@ -25,7 +25,41 @@ class StoryService:
         return self.story_db.get_by_profile_id(profile_id)
 
     def create_story(self, data):
-        return self.story_db.create(data)
+        allowed_fields = {
+            "profile_id",
+            "created_by",
+            "source_session_id",
+            "title",
+            "prompt_question",
+            "story_text",
+            "source_type",
+            "audio_url",
+            "summary",
+            "summary_json",
+            "theme",
+            "emotion_tag",
+            "life_period",
+            "location",
+            "happened_at",
+            "is_featured",
+        }
+
+        clean_data = {
+            key: value
+            for key, value in (data or {}).items()
+            if key in allowed_fields
+        }
+
+        if not clean_data.get("profile_id"):
+            return None
+
+        if not clean_data.get("title"):
+            return None
+
+        if not clean_data.get("story_text"):
+            return None
+
+        return self.story_db.create(clean_data)
 
     def update_story(self, story_id, data):
         story = self.story_db.get_by_id(story_id)
@@ -33,7 +67,29 @@ class StoryService:
         if not story:
             return None
 
-        return self.story_db.update(story, data)
+        allowed_fields = {
+            "title",
+            "prompt_question",
+            "story_text",
+            "source_type",
+            "audio_url",
+            "summary",
+            "summary_json",
+            "theme",
+            "emotion_tag",
+            "life_period",
+            "location",
+            "happened_at",
+            "is_featured",
+        }
+
+        clean_data = {
+            key: value
+            for key, value in (data or {}).items()
+            if key in allowed_fields
+        }
+
+        return self.story_db.update(story, clean_data)
 
     def delete_story(self, story_id):
         story = self.story_db.get_by_id(story_id)
@@ -43,46 +99,115 @@ class StoryService:
 
         return self.story_db.delete(story)
 
-    def create_story_from_chat_session(self, session_id, user_id):
-        """
-        Create one automatic life story from one specific chat session.
-        """
+    def _user_owns_profile(self, profile, user_id):
+        if not profile:
+            return False
 
+        return str(getattr(profile, "owner_id", None)) == str(user_id)
+
+    def _get_profile_or_error(self, profile_id, user_id):
+        profile = self.profile_service.get_profile_by_id(profile_id)
+
+        if not profile:
+            return None, "Profile not found"
+
+        if not self._user_owns_profile(profile, user_id):
+            return None, "Forbidden"
+
+        return profile, None
+
+    def _get_all_messages_for_profile(self, profile_id):
+        sessions = (
+            ChatSession.query
+            .filter_by(profile_id=profile_id)
+            .order_by(ChatSession.started_at.asc(), ChatSession.created_at.asc())
+            .all()
+        )
+
+        if not sessions:
+            return []
+
+        session_ids = [
+            session.session_id
+            for session in sessions
+            if getattr(session, "session_id", None) is not None
+        ]
+
+        if not session_ids:
+            return []
+
+        return (
+            ChatMessage.query
+            .filter(ChatMessage.session_id.in_(session_ids))
+            .order_by(
+                ChatMessage.created_at.asc(),
+                ChatMessage.session_id.asc(),
+                ChatMessage.message_order.asc(),
+            )
+            .all()
+        )
+
+    def _has_new_messages_since_story_update(self, story, messages):
+        if not story or not messages:
+            return False
+
+        story_updated_at = getattr(story, "updated_at", None)
+
+        if not story_updated_at:
+            return True
+
+        for message in messages:
+            message_created_at = getattr(message, "created_at", None)
+
+            if message_created_at and message_created_at > story_updated_at:
+                return True
+
+        return False
+
+    def create_story_from_chat_session(self, session_id, user_id):
         session = ChatSession.query.get(session_id)
 
         if not session:
             return None, "Chat session not found"
 
-        if str(session.user_id) != str(user_id):
-            return None, "Forbidden"
+        profile, error = self._get_profile_or_error(session.profile_id, user_id)
 
-        profile = self.profile_service.get_profile_by_id(session.profile_id)
-
-        if not profile:
-            return None, "Profile not found"
-
-        if str(profile.owner_id) != str(user_id):
-            return None, "Forbidden"
+        if error:
+            return None, error
 
         existing_story = self.story_db.get_by_session_id(session_id)
 
         if existing_story:
             return existing_story, None
 
-        messages = self._get_messages_for_session(session_id)
+        messages = (
+            ChatMessage.query
+            .filter_by(session_id=session_id)
+            .order_by(ChatMessage.message_order.asc(), ChatMessage.created_at.asc())
+            .all()
+        )
 
         if not messages:
-            return None, "No chat messages found"
+            return None, "No chat messages found for this session"
 
-        if not self._has_enough_user_content(messages):
-            return None, "Not enough chat content to create a life story"
-
-        story = self._create_story_from_messages(
-            session=session,
+        story_data = self.story_ai_service.generate_life_story_from_chat(
+            chat_messages=messages,
             profile=profile,
-            messages=messages,
-            user_id=user_id,
         )
+
+        if not story_data:
+            return None, "Unable to generate life story"
+
+        story_data.update(
+            {
+                "profile_id": session.profile_id,
+                "created_by": int(user_id) if user_id is not None else None,
+                "source_session_id": session.session_id,
+                "source_type": "chat",
+            }
+        )
+
+        story = self.create_story(story_data)
 
         if not story:
             return None, "Unable to save life story"
@@ -90,112 +215,139 @@ class StoryService:
         return story, None
 
     def auto_create_stories_for_profile(self, profile_id, user_id):
-        """
-        Create missing life stories from all chat sessions for one profile.
+        profile, error = self._get_profile_or_error(profile_id, user_id)
 
-        This is used by the Life Stories page button.
-        It does not create duplicates:
-        if a chat session already has a story, it is skipped.
-        """
-
-        profile = self.profile_service.get_profile_by_id(profile_id)
-
-        if not profile:
-            return None, "Profile not found"
-
-        if str(profile.owner_id) != str(user_id):
-            return None, "Forbidden"
+        if error:
+            return None, error
 
         sessions = (
             ChatSession.query
-            .filter_by(profile_id=profile_id, user_id=int(user_id))
-            .order_by(ChatSession.started_at.desc())
+            .filter_by(profile_id=profile_id)
+            .order_by(ChatSession.started_at.asc(), ChatSession.created_at.asc())
             .all()
         )
 
         if not sessions:
-            return self.get_stories_by_profile_id(profile_id), None
+            return [], None
+
+        stories = []
 
         for session in sessions:
-            existing_story = self.story_db.get_by_session_id(session.session_id)
-
-            if existing_story:
-                continue
-
-            messages = self._get_messages_for_session(session.session_id)
-
-            if not messages:
-                continue
-
-            if not self._has_enough_user_content(messages):
-                continue
-
-            self._create_story_from_messages(
-                session=session,
-                profile=profile,
-                messages=messages,
+            story, story_error = self.create_story_from_chat_session(
+                session_id=session.session_id,
                 user_id=user_id,
             )
 
-        stories = self.get_stories_by_profile_id(profile_id)
+            if story:
+                stories.append(story)
+            elif story_error:
+                print("AUTO CREATE STORY ERROR:", story_error)
 
         return stories, None
 
-    def _get_messages_for_session(self, session_id):
+    def create_combined_story_for_profile(self, profile_id, user_id):
         """
-        Return all messages for a chat session in the correct order.
-        """
-
-        return (
-            ChatMessage.query
-            .filter_by(session_id=session_id)
-            .order_by(ChatMessage.message_order.asc(), ChatMessage.created_at.asc())
-            .all()
-        )
-
-    def _has_enough_user_content(self, messages):
-        """
-        Avoid creating stories from empty or very short chats.
+        Create ONE connected life story from all chat sessions/messages
+        connected to one memorial profile.
         """
 
-        user_messages = []
+        profile, error = self._get_profile_or_error(profile_id, user_id)
 
-        for message in messages:
-            if message.role != "user":
-                continue
+        if error:
+            return None, error
 
-            text = (message.message_text or "").strip()
+        existing_story = self.story_db.get_combined_story_by_profile_id(profile_id)
 
-            if text:
-                user_messages.append(text)
+        if existing_story:
+            return existing_story, None
 
-        combined_text = " ".join(user_messages).strip()
+        messages = self._get_all_messages_for_profile(profile_id)
 
-        if len(user_messages) < 2:
-            return False
+        if not messages:
+            return None, "No chat messages found for this profile"
 
-        if len(combined_text) < 80:
-            return False
-
-        return True
-
-    def _create_story_from_messages(self, session, profile, messages, user_id):
-        """
-        Generate story data with AI and save it into life_stories.
-        """
-
-        story_data = self.story_ai.generate_life_story_from_chat(
+        story_data = self.story_ai_service.generate_combined_life_story_from_messages(
             chat_messages=messages,
             profile=profile,
         )
 
         if not story_data:
-            return None
+            return None, "Unable to generate combined life story"
 
-        story_data["profile_id"] = session.profile_id
-        story_data["created_by"] = int(user_id)
-        story_data["source_session_id"] = session.session_id
-        story_data["source_type"] = "chat"
-        story_data["is_featured"] = False
+        story_data.update(
+            {
+                "profile_id": profile_id,
+                "created_by": int(user_id) if user_id is not None else None,
+                "source_session_id": None,
+                "source_type": "combined_chat",
+            }
+        )
 
-        return self.story_db.create(story_data)
+        story = self.create_story(story_data)
+
+        if not story:
+            return None, "Unable to save combined life story"
+
+        return story, None
+
+    def update_combined_story_for_profile(self, profile_id, user_id):
+        """
+        Update the existing combined life story if new chat messages exist.
+
+        Returns:
+        - story
+        - error
+        - update_status: "updated" or "no_changes"
+        """
+
+        profile, error = self._get_profile_or_error(profile_id, user_id)
+
+        if error:
+            return None, error, None
+
+        existing_story = self.story_db.get_combined_story_by_profile_id(profile_id)
+
+        if not existing_story:
+            return None, "Combined life story not found", None
+
+        messages = self._get_all_messages_for_profile(profile_id)
+
+        if not messages:
+            return None, "No chat messages found for this profile", None
+
+        has_new_messages = self._has_new_messages_since_story_update(
+            story=existing_story,
+            messages=messages,
+        )
+
+        if not has_new_messages:
+            return existing_story, None, "no_changes"
+
+        story_data = self.story_ai_service.generate_combined_life_story_from_messages(
+            chat_messages=messages,
+            profile=profile,
+        )
+
+        if not story_data:
+            return None, "Unable to update combined life story", None
+
+        updated_story = self.story_db.update(
+            existing_story,
+            {
+                "title": story_data.get("title"),
+                "prompt_question": story_data.get("prompt_question"),
+                "story_text": story_data.get("story_text"),
+                "summary": story_data.get("summary"),
+                "summary_json": story_data.get("summary_json"),
+                "theme": story_data.get("theme"),
+                "emotion_tag": story_data.get("emotion_tag"),
+                "life_period": story_data.get("life_period"),
+                "location": story_data.get("location"),
+                "happened_at": story_data.get("happened_at"),
+            },
+        )
+
+        if not updated_story:
+            return None, "Unable to save updated life story", None
+
+        return updated_story, None, "updated"

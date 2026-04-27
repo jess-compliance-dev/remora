@@ -13,7 +13,6 @@ from app.extensions.mail import mail
 from app.api.routes import register_blueprints
 from app.ui.routes import ui_bp
 
-
 from app import models
 
 
@@ -24,8 +23,10 @@ load_dotenv(dotenv_path=env_path)
 
 def require_env(name: str) -> str:
     value = os.getenv(name)
+
     if not value:
         raise RuntimeError(f"Missing required environment variable: {name}")
+
     return value
 
 
@@ -37,8 +38,10 @@ def create_app():
     app = Flask(
         __name__,
         template_folder="templates",
-        static_folder="static"
+        static_folder="static",
     )
+
+    project_root = Path(__file__).resolve().parent.parent
 
     # DATABASE
     app.config["SQLALCHEMY_DATABASE_URI"] = require_env("DATABASE_URL")
@@ -48,6 +51,35 @@ def create_app():
     app.config["SECRET_KEY"] = require_env("SECRET_KEY")
     app.config["JWT_SECRET_KEY"] = require_env("JWT_SECRET_KEY")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=72)
+
+    # UPLOADS
+    # Local upload directory:
+    # remora/app/static/uploads/memories/photo/...
+    # remora/app/static/uploads/memories/video/...
+    # remora/app/static/uploads/memories/voice/...
+    #
+    # Flask serves these files publicly under:
+    # /static/uploads/memories/photo/...
+    # /static/uploads/memories/video/...
+    #
+    # Example local URL:
+    # http://127.0.0.1:5000/static/uploads/memories/photo/example.jpg
+    #
+    # Example public/ngrok URL for Creatomate:
+    # https://your-ngrok-url.ngrok-free.app/static/uploads/memories/photo/example.jpg
+    upload_folder_env = os.getenv("UPLOAD_FOLDER")
+
+    if upload_folder_env:
+        upload_folder_path = Path(upload_folder_env)
+
+        if not upload_folder_path.is_absolute():
+            upload_folder_path = project_root / upload_folder_path
+    else:
+        upload_folder_path = project_root / "app" / "static" / "uploads"
+
+    app.config["UPLOAD_FOLDER"] = str(upload_folder_path.resolve())
+
+    print("CONFIG UPLOAD_FOLDER:", app.config["UPLOAD_FOLDER"])
 
     # EMAIL CONFIG
     app.config["MAIL_SERVER"] = "smtp.gmail.com"

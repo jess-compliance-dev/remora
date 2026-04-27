@@ -6,4 +6,5 @@ from app.models.chat_session import ChatSession
 from app.models.chat_message import ChatMessage
 from app.models.memory import Memory
 from app.models.chat_analysis import ChatAnalysis
-
+from app.models.memory_video import MemoryVideo
+from app.models.story_media import StoryMedia

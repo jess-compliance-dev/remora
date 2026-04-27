@@ -3,14 +3,18 @@ from datetime import UTC, datetime
 from app.extensions.db import db
 
 
-class LifeStory(db.Model):
+class MemoryVideo(db.Model):
     """
-    Database model for life stories connected to a memorial profile.
+    Database model for generated memory videos.
+
+    A MemoryVideo is generated from a LifeStory and its StoryMedia.
+    It stores the generated storyboard, music metadata, Creatomate render ID,
+    final video URL and processing status.
     """
 
-    __tablename__ = "life_stories"
+    __tablename__ = "memory_videos"
 
-    story_id = db.Column(
+    video_id = db.Column(
         db.Integer,
         primary_key=True,
     )
@@ -22,6 +26,13 @@ class LifeStory(db.Model):
         index=True,
     )
 
+    story_id = db.Column(
+        db.Integer,
+        db.ForeignKey("life_stories.story_id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     created_by = db.Column(
         db.Integer,
         db.ForeignKey("users.user_id", ondelete="SET NULL"),
@@ -29,80 +40,53 @@ class LifeStory(db.Model):
         index=True,
     )
 
-    source_session_id = db.Column(
-        db.Integer,
-        db.ForeignKey("chat_sessions.session_id", ondelete="SET NULL"),
+    title = db.Column(
+        db.String(255),
         nullable=True,
+    )
+
+    status = db.Column(
+        db.String(50),
+        nullable=False,
+        default="pending",
+        server_default="pending",
         index=True,
     )
 
-    title = db.Column(
-        db.String(255),
-        nullable=False,
-    )
-
-    prompt_question = db.Column(
-        db.Text,
-        nullable=True,
-    )
-
-    story_text = db.Column(
-        db.Text,
-        nullable=False,
-    )
-
-    source_type = db.Column(
-        db.String(50),
-        nullable=False,
-        default="chat",
-        server_default="chat",
-    )
-
-    audio_url = db.Column(
-        db.Text,
-        nullable=True,
-    )
-
-    summary = db.Column(
-        db.Text,
-        nullable=True,
-    )
-
-    summary_json = db.Column(
+    storyboard_json = db.Column(
         db.JSON,
         nullable=True,
     )
 
-    theme = db.Column(
-        db.String(100),
+    music_prompt = db.Column(
+        db.Text,
         nullable=True,
     )
 
-    emotion_tag = db.Column(
-        db.String(100),
+    music_url = db.Column(
+        db.Text,
         nullable=True,
     )
 
-    life_period = db.Column(
-        db.String(100),
-        nullable=True,
-    )
-
-    location = db.Column(
+    mubert_track_id = db.Column(
         db.String(255),
         nullable=True,
     )
 
-    happened_at = db.Column(
-        db.Date,
+    creatomate_render_id = db.Column(
+        db.String(255),
+        nullable=True,
+        index=True,
+    )
+
+    video_url = db.Column(
+        db.Text,
         nullable=True,
     )
 
-    is_featured = db.Column(
-        db.Boolean,
-        nullable=False,
-        default=False,
-        server_default=db.text("false"),
+    error_message = db.Column(
+        db.Text,
+        nullable=True,
     )
 
     created_at = db.Column(
@@ -122,9 +106,8 @@ class LifeStory(db.Model):
 
     def __repr__(self):
         return (
-            f"<LifeStory "
+            f"<MemoryVideo "
+            f"video_id={self.video_id} "
             f"story_id={self.story_id} "
-            f"profile_id={self.profile_id} "
-            f"title={self.title!r}>"
+            f"status={self.status!r}>"
         )
-    
