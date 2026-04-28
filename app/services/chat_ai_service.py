@@ -63,11 +63,61 @@ class ChatAIService:
         "move on",
     }
 
+    CRISIS_KEYWORDS = {
+        "suicide",
+        "suicidal",
+        "self harm",
+        "self-harm",
+        "kill myself",
+        "killing myself",
+        "i want to die",
+        "want to die",
+        "i wanna die",
+        "i don't want to live",
+        "i dont want to live",
+        "don't want to live",
+        "dont want to live",
+        "i do not want to live",
+        "end my life",
+        "ending my life",
+        "take my life",
+        "taking my life",
+        "hurt myself",
+        "harming myself",
+        "harm myself",
+        "i can't go on",
+        "i cant go on",
+        "can't go on",
+        "cant go on",
+        "i cannot go on",
+        "no reason to live",
+        "no point in living",
+        "life is not worth living",
+        "rather be dead",
+        "better off dead",
+        "wish i was dead",
+        "wish i were dead",
+        "overdose",
+        "hang myself",
+        "jump off",
+        "cut myself",
+    }
+
+    CRISIS_SUPPORT_MESSAGE_DE = (
+        "Es tut mir sehr leid, dass du dich gerade so fühlst. "
+        "Wenn du daran denkst, dir etwas anzutun oder nicht sicher bist, ob du sicher bleiben kannst, "
+        "wende dich bitte sofort an den Notruf 112 oder an eine Person in deiner Nähe.\n\n"
+        "Du kannst außerdem die TelefonSeelsorge in Deutschland kostenlos und anonym erreichen:\n"
+        "0800 1110111\n"
+        "0800 1110222\n"
+        "116 123\n\n"
+        "Du musst da gerade nicht alleine durch."
+    )
+
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
         self.model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
         self.client = OpenAI(api_key=self.api_key) if self.api_key else None
-
 
     # Message formatting
     def _format_messages(self, messages):
@@ -106,6 +156,16 @@ class ChatAIService:
 
         normalized = text.strip().lower()
         return normalized in self.NEXT_WORDS
+
+    def _detect_crisis_risk(self, text):
+        if not text:
+            return False
+
+        normalized = str(text).strip().lower()
+        return any(keyword in normalized for keyword in self.CRISIS_KEYWORDS)
+
+    def _crisis_support_message(self):
+        return self.CRISIS_SUPPORT_MESSAGE_DE
 
     # Topic helpers
 
@@ -168,13 +228,13 @@ class ChatAIService:
 
         return result
 
-
     # Fallbacks
     def _fallback_chat_reply(self, messages, profile=None):
         name = getattr(profile, "full_name", None) or "this person"
 
         return (
-            f"Thank you for sharing that about {name}. "
+            f"I can help you reflect on memories of {name}. "
+            "I’m an AI memory companion, so I may be incomplete or inaccurate. "
             "What is one small detail from that memory that still feels vivid to you?"
         )
 
@@ -191,7 +251,6 @@ class ChatAIService:
             "facts_count": 0,
         }
 
-
     # Prompts
     def build_chat_prompt(self, profile=None):
         name = getattr(profile, "full_name", None) or "this person"
@@ -199,22 +258,32 @@ class ChatAIService:
         description = getattr(profile, "short_description", None) or ""
 
         return f"""
-        You are Remora, a calm and emotionally sensitive memory companion.
-        
+        You are Remora, a calm and emotionally sensitive AI memory companion.
+
         You are helping a user remember {name}, who is {relationship} to them.
         Context about {name}: {description}
-        
+
+        Safety and identity rules:
+        - You are an AI memory companion, not {name}.
+        - Never claim to be {name}.
+        - Never speak as if you are {name}.
+        - Never imply that {name} is actually responding.
+        - Do not invent facts, memories, feelings, quotes, events, preferences, or biographical details.
+        - If something is unknown, say so gently or ask the user to share more.
+        - Avoid making definitive claims about what {name} thought, felt, wanted, believed or would say unless the user clearly provided that information.
+        - If the user mentions self-harm, suicide, wanting to die, or not being able to stay safe, stop the memory-companion style and respond with immediate crisis support.
+        - For users in Germany, mention TelefonSeelsorge: 0800 1110111, 0800 1110222, and 116 123.
+
         Your job:
         - Write a warm, natural chat reply.
         - Help the user remember concrete moments, habits, places, feelings, quotes and relationships.
         - Ask only one follow-up question.
         - Stay grounded in what the user actually said.
-        - Do not invent facts.
         - Do not sound like a therapist.
         - Keep the reply concise, usually 2 to 4 sentences.
         - If the user wants to move to another topic, gently guide them to a new memory topic.
         - If the user chooses a topic, connect that topic to {name}.
-        # Dont't write a , before 'and' and 'or'
+        - Do not write a comma before 'and' or 'or'.
         """.strip()
 
     def build_analysis_instructions(self, profile=None):
@@ -224,14 +293,14 @@ class ChatAIService:
 
         return f"""
         Analyze the current Remora memory conversation.
-        
+
         Person being remembered:
         - Name: {name}
         - Relationship: {relationship}
-        
+
         Available topics:
         {topics}
-        
+
         Your job:
         - Analyze the chat state in the background.
         - Detect the current topic.
@@ -239,7 +308,7 @@ class ChatAIService:
         - Decide whether the topic has enough material for a future life story.
         - Write a short factual summary of the current topic.
         - Suggest 2 to 4 next topics when moving on makes sense.
-        
+
         Important rules:
         - Do not invent facts.
         - A meaningful fact can be a concrete memory, action, habit, place, feeling, relationship detail, quote, tradition, repeated behavior, event, or life detail.
@@ -309,7 +378,6 @@ class ChatAIService:
                 "additionalProperties": False,
             },
         }
-
 
     # Validation
     def _validate_analysis_result(self, result, messages):
@@ -476,21 +544,26 @@ class ChatAIService:
         reply = self.generate_chat_reply(messages, profile)
 
         last_user_message = self._get_last_user_message(messages)
+        crisis_detected = self._detect_crisis_risk(last_user_message)
 
         if (
             analysis["facts_count"] >= 2
             and not self._is_next(last_user_message)
             and analysis["show_topic_choices"]
+            and not crisis_detected
         ):
             reply = (
                 f"{reply} "
                 "We can stay with this a little longer, or gently move to another topic if you’d like."
             ).strip()
 
+        if crisis_detected:
+            reply = self._crisis_support_message()
+
         return {
             "reply": reply,
-            "show_topic_choices": analysis["show_topic_choices"],
-            "suggested_topics": analysis["suggested_topics"],
+            "show_topic_choices": False if crisis_detected else analysis["show_topic_choices"],
+            "suggested_topics": [] if crisis_detected else analysis["suggested_topics"],
             "current_topic": analysis["current_topic"],
             "topic_complete": analysis["topic_complete"],
             "topic_summary": analysis["topic_summary"],
