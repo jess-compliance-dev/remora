@@ -1,6 +1,4 @@
-import traceback
-
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from app.services.chat_ai_service import ChatAIService
@@ -71,11 +69,8 @@ def serialize_analysis(analysis):
     }
 
 
-def json_error(message, status_code=400, details=None):
-    payload = {"error": message}
-    if details:
-        payload["details"] = details
-    return jsonify(payload), status_code
+def json_error(message, status_code=400):
+    return jsonify({"error": message}), status_code
 
 
 @chat_ai_bp.route("/chat/ai/<int:session_id>/messages", methods=["GET"])
@@ -103,9 +98,9 @@ def get_ai_session_messages(session_id):
             }
         ), 200
 
-    except Exception as error:
-        traceback.print_exc()
-        return json_error("Failed to load chat messages", 500, str(error))
+    except Exception:
+        current_app.logger.exception("Failed to load chat messages")
+        return json_error("Failed to load chat messages", 500)
 
 
 @chat_ai_bp.route("/chat/ai/<int:session_id>/message", methods=["POST"])
@@ -243,6 +238,6 @@ def send_ai_message(session_id):
             }
         ), 200
 
-    except Exception as error:
-        traceback.print_exc()
-        return json_error("Internal server error", 500, str(error))
+    except Exception:
+        current_app.logger.exception("Internal chat AI error")
+        return json_error("Internal server error", 500)
