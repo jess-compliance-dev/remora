@@ -87,6 +87,7 @@ def create_app():
     app.config["MAIL_USE_TLS"] = True
     app.config["MAIL_USERNAME"] = require_env("MAIL_USERNAME")
     app.config["MAIL_PASSWORD"] = require_env("MAIL_PASSWORD")
+    app.config["MAIL_SUPPRESS_SEND"] = os.getenv("MAIL_SUPPRESS_SEND", "false").lower() == "true"
 
     # INIT EXTENSIONS
     db.init_app(app)

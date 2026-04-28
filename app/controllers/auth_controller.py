@@ -26,6 +26,12 @@ def serialize_user(user):
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
+    """
+    Register a new user.
+
+    New users are created as inactive by AuthService.
+    They must confirm their email before they can log in.
+    """
     data = request.get_json(silent=True)
 
     if not data:
@@ -47,18 +53,24 @@ def register():
     user, error = auth_service.register_user({
         "username": username,
         "email": email,
-        "password": password
+        "password": password,
     })
 
     if error:
         return jsonify({"error": error}), 400
 
-    user.is_active = True
-    db.session.commit()
+    confirmation_token = generate_confirmation_token(user.email)
+    confirm_url = url_for(
+        "api.auth.confirm_email",
+        token=confirmation_token,
+        _external=True,
+    )
+
+    send_confirmation_email(user.email, confirm_url)
 
     return jsonify({
-        "message": "User created successfully.",
-        "user": serialize_user(user)
+        "message": "User created successfully. Please confirm your email before logging in.",
+        "user": serialize_user(user),
     }), 201
 
 
@@ -88,6 +100,8 @@ def confirm_email(token):
 def login():
     """
     Log in a user and return a JWT access token.
+
+    AuthService is responsible for rejecting inactive users.
     """
     data = request.get_json(silent=True)
 
@@ -102,7 +116,7 @@ def login():
 
     user, error = auth_service.login_user({
         "email": email,
-        "password": password
+        "password": password,
     })
 
     if error:

@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from app.extensions.db import db
 from app.models.memory import Memory
 from app.services.profile_service import ProfileService
+from app.utils.uploads import detect_mime_from_file_storage, is_allowed_mime
 
 memory_bp = Blueprint("memories", __name__)
 profile_service = ProfileService()
@@ -25,6 +26,19 @@ def allowed_memory_file(filename, memory_type):
 
     extension = filename.rsplit(".", 1)[1].lower()
     return extension in ALLOWED_MEMORY_EXTENSIONS.get(memory_type, set())
+
+
+def memory_type_to_mime_category(memory_type):
+    if memory_type == "photo":
+        return "image"
+
+    if memory_type == "video":
+        return "video"
+
+    if memory_type == "voice":
+        return "audio"
+
+    return None
 
 
 def serialize_memory(memory):
@@ -102,6 +116,12 @@ def upload_memory():
 
     if not allowed_memory_file(file.filename, memory_type):
         return jsonify({"error": "Invalid file type for memory_type"}), 400
+
+    mime_category = memory_type_to_mime_category(memory_type)
+    mime_type = detect_mime_from_file_storage(file)
+
+    if not is_allowed_mime(mime_type, mime_category):
+        return jsonify({"error": "Invalid file MIME type for memory_type"}), 400
 
     profile = None
     parsed_profile_id = None

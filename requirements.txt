@@ -8,3 +8,5 @@ itsdangerous
 openai
 psycopg2-binary
 requests
+python-magic-bin
+pytest
