@@ -159,7 +159,12 @@ class CreatomateService:
             or ""
         )
 
-        return str(date_text).strip()
+        date_text = str(date_text).strip()
+
+        if date_text.lower() in {"mixed", "unknown", "none", "n/a"}:
+            return ""
+
+        return date_text
 
     def _build_text_modifications(self, storyboard):
         storyboard = storyboard or {}
@@ -167,6 +172,11 @@ class CreatomateService:
         title = self._safe_string(
             storyboard.get("title"),
             "Memory Story",
+        )
+
+        memorial_name = self._safe_string(
+            storyboard.get("memorial_name"),
+            title,
         )
 
         scene_texts = self._get_scene_texts(storyboard)
@@ -205,7 +215,7 @@ class CreatomateService:
 
         short_name = self._safe_string(
             storyboard.get("short_name"),
-            title.split(" ")[0] if title else "Memory",
+            memorial_name.split(" ")[0] if memorial_name else "Memory",
         )
 
         return {
@@ -220,18 +230,18 @@ class CreatomateService:
                 "",
             ),
             "ID-Name.text": self._limit_text(
-                title,
+                memorial_name,
                 80,
                 "Memory Story",
             ),
             "1PC-Caption.text": self._limit_text(
                 caption_text,
-                180,
+                360,
                 "A life remembered with love.",
             ),
             "FM-Text.text": self._limit_text(
                 final_message,
-                260,
+                420,
                 "A memory to keep close forever.",
             ),
             "FT-Name.text": self._limit_text(

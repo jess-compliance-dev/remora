@@ -22,13 +22,14 @@ class MemoryVideoService:
         -> StoryboardAIService
         -> CreatomateService with template background music
         -> MemoryVideo
+        -> Profile information
 
     Media sources:
     1. StoryMedia rows linked to the story/profile
     2. Local files in app/static/uploads/memories/photo
 
     Only photos/images are allowed.
-    Videos and voice/audio files are intentionally ignored.
+    Videos and voice/audio files are intentionally ignored (for beta version)
     """
 
     ACTIVE_OR_DONE_STATUSES = {
@@ -348,6 +349,7 @@ class MemoryVideoService:
             storyboard = self.storyboard_ai.generate_storyboard(
                 story=story,
                 media_items=media_items,
+                profile=profile,
             )
 
             if not storyboard:

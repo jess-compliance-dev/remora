@@ -104,14 +104,14 @@ class ChatAIService:
     }
 
     CRISIS_SUPPORT_MESSAGE_DE = (
-        "Es tut mir sehr leid, dass du dich gerade so fühlst. "
-        "Wenn du daran denkst, dir etwas anzutun oder nicht sicher bist, ob du sicher bleiben kannst, "
-        "wende dich bitte sofort an den Notruf 112 oder an eine Person in deiner Nähe.\n\n"
-        "Du kannst außerdem die TelefonSeelsorge in Deutschland kostenlos und anonym erreichen:\n"
+        "I’m very sorry that you’re feeling this way right now. "
+        "If you are thinking about hurting yourself or you are not sure you can stay safe, "
+        "please contact emergency services at 112 immediately or reach out to someone near you.\n\n"
+        "You can also contact Telefon-Seelsorge in Germany for free and anonymously:\n"
         "0800 1110111\n"
         "0800 1110222\n"
         "116 123\n\n"
-        "Du musst da gerade nicht alleine durch."
+        "You do not have to go through this alone."
     )
 
     def __init__(self):
@@ -272,7 +272,7 @@ class ChatAIService:
         - If something is unknown, say so gently or ask the user to share more.
         - Avoid making definitive claims about what {name} thought, felt, wanted, believed or would say unless the user clearly provided that information.
         - If the user mentions self-harm, suicide, wanting to die, or not being able to stay safe, stop the memory-companion style and respond with immediate crisis support.
-        - For users in Germany, mention TelefonSeelsorge: 0800 1110111, 0800 1110222, and 116 123.
+        - Mention Telefon-Seelsorge: 0800 1110111, 0800 1110222 and 116 123.
 
         Your job:
         - Write a warm, natural chat reply.
