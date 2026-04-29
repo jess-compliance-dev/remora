@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
@@ -160,7 +160,7 @@ def test_auth_service_rejects_inactive_login(monkeypatch):
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
-def story_app(monkeypatch):
+def story_app():
     from app.controllers.story_controller import story_bp
 
     app = make_test_app()
@@ -252,6 +252,10 @@ def test_get_story_returns_own_story(story_app, monkeypatch):
 def test_get_stories_by_profile_filters_to_current_user(story_app, monkeypatch):
     from app.controllers import story_controller
 
+    class FakeProfileService:
+        def get_profile_by_id(self, profile_id):
+            return make_profile(profile_id=profile_id, owner_id=1)
+
     class FakeStoryService:
         def get_stories_by_profile_id(self, profile_id):
             return [
@@ -259,6 +263,11 @@ def test_get_stories_by_profile_filters_to_current_user(story_app, monkeypatch):
                 make_story(story_id=2, profile_id=profile_id, created_by=2),
             ]
 
+    monkeypatch.setattr(
+        story_controller,
+        "profile_service",
+        FakeProfileService(),
+    )
     monkeypatch.setattr(
         story_controller,
         "story_service",
@@ -279,10 +288,51 @@ def test_get_stories_by_profile_filters_to_current_user(story_app, monkeypatch):
     assert data[0]["created_by"] == 1
 
 
+def test_get_stories_by_profile_rejects_other_users_profile(story_app, monkeypatch):
+    from app.controllers import story_controller
+
+    get_stories_called = False
+
+    class FakeProfileService:
+        def get_profile_by_id(self, profile_id):
+            return make_profile(profile_id=profile_id, owner_id=2)
+
+    class FakeStoryService:
+        def get_stories_by_profile_id(self, profile_id):
+            nonlocal get_stories_called
+            get_stories_called = True
+            return []
+
+    monkeypatch.setattr(
+        story_controller,
+        "profile_service",
+        FakeProfileService(),
+    )
+    monkeypatch.setattr(
+        story_controller,
+        "story_service",
+        FakeStoryService(),
+    )
+
+    client = story_app.test_client()
+    response = client.get(
+        "/stories/profile/10",
+        headers=make_auth_header(story_app, user_id=1),
+    )
+
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "Profile not found"}
+    assert get_stories_called is False
+
+
 def test_create_story_sets_created_by_to_current_user(story_app, monkeypatch):
     from app.controllers import story_controller
 
     captured_payload = {}
+
+    class FakeProfileService:
+        def get_profile_by_id(self, profile_id):
+            return make_profile(profile_id=profile_id, owner_id=1)
 
     class FakeStoryService:
         def create_story(self, data):
@@ -295,6 +345,11 @@ def test_create_story_sets_created_by_to_current_user(story_app, monkeypatch):
                 title=data.get("title", "Created Story"),
             )
 
+    monkeypatch.setattr(
+        story_controller,
+        "profile_service",
+        FakeProfileService(),
+    )
     monkeypatch.setattr(
         story_controller,
         "story_service",
@@ -314,10 +369,75 @@ def test_create_story_sets_created_by_to_current_user(story_app, monkeypatch):
     )
 
     assert response.status_code == 201
+    assert captured_payload["profile_id"] == 10
     assert captured_payload["created_by"] == 1
 
     data = response.get_json()
+    assert data["profile_id"] == 10
     assert data["created_by"] == 1
+
+
+def test_create_story_rejects_other_users_profile(story_app, monkeypatch):
+    from app.controllers import story_controller
+
+    create_called = False
+
+    class FakeProfileService:
+        def get_profile_by_id(self, profile_id):
+            return make_profile(profile_id=profile_id, owner_id=2)
+
+    class FakeStoryService:
+        def create_story(self, data):
+            nonlocal create_called
+            create_called = True
+
+            return make_story(
+                story_id=1,
+                profile_id=data["profile_id"],
+                created_by=data["created_by"],
+            )
+
+    monkeypatch.setattr(
+        story_controller,
+        "profile_service",
+        FakeProfileService(),
+    )
+    monkeypatch.setattr(
+        story_controller,
+        "story_service",
+        FakeStoryService(),
+    )
+
+    client = story_app.test_client()
+    response = client.post(
+        "/stories",
+        json={
+            "profile_id": 10,
+            "title": "Should not create",
+            "story_text": "Hello",
+        },
+        headers=make_auth_header(story_app, user_id=1),
+    )
+
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "Profile not found"}
+    assert create_called is False
+
+
+def test_create_story_requires_profile_id(story_app):
+    client = story_app.test_client()
+
+    response = client.post(
+        "/stories",
+        json={
+            "title": "Missing profile",
+            "story_text": "Hello",
+        },
+        headers=make_auth_header(story_app, user_id=1),
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "profile_id is required"}
 
 
 def test_update_story_returns_404_for_other_users_story(story_app, monkeypatch):
@@ -462,7 +582,7 @@ def test_delete_story_deletes_own_story(story_app, monkeypatch):
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
-def chat_session_app(monkeypatch):
+def chat_session_app():
     from app.controllers.chat_session_controller import chat_session_bp
 
     app = make_test_app()
