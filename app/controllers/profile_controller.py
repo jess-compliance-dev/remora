@@ -54,7 +54,7 @@ def get_profile(profile_id):
         return jsonify({"error": "Profile not found"}), 404
 
     if profile.owner_id != user_id:
-        return jsonify({"error": "Forbidden"}), 403
+        return jsonify({"error": "Forbidden"}), 404
 
     return jsonify(serialize_profile(profile)), 200
 

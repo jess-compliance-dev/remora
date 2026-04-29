@@ -2,9 +2,11 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from app.services.chat_session_service import ChatSessionService
+from app.services.profile_service import ProfileService
 
 chat_session_bp = Blueprint("chat_sessions", __name__)
 chat_session_service = ChatSessionService()
+profile_service = ProfileService()
 
 
 def serialize_session(session):
@@ -19,8 +21,12 @@ def serialize_session(session):
         "status": session.status,
         "started_at": session.started_at.isoformat() if session.started_at else None,
         "ended_at": session.ended_at.isoformat() if session.ended_at else None,
-        "created_at": session.created_at.isoformat() if getattr(session, "created_at", None) else None,
-        "updated_at": session.updated_at.isoformat() if getattr(session, "updated_at", None) else None,
+        "created_at": session.created_at.isoformat()
+        if getattr(session, "created_at", None)
+        else None,
+        "updated_at": session.updated_at.isoformat()
+        if getattr(session, "updated_at", None)
+        else None,
         "is_active": session.status == "active",
     }
 
@@ -32,21 +38,56 @@ def json_error(message, status_code=400, details=None):
     return jsonify(payload), status_code
 
 
+def current_user_id():
+    return str(get_jwt_identity())
+
+
 def is_owner(session, user_id):
     if session is None:
         return False
+
     return str(session.user_id) == str(user_id)
+
+
+def profile_belongs_to_user(profile_id, user_id):
+    profile = profile_service.get_profile_by_id(profile_id)
+
+    if profile is None:
+        return False
+
+    return str(profile.owner_id) == str(user_id)
+
+
+def sanitize_session_payload(data):
+    """
+    Prevent clients from changing ownership/system-managed fields.
+    """
+    sanitized = dict(data)
+
+    protected_fields = {
+        "session_id",
+        "user_id",
+        "created_at",
+        "updated_at",
+        "started_at",
+        "ended_at",
+    }
+
+    for field in protected_fields:
+        sanitized.pop(field, None)
+
+    return sanitized
 
 
 @chat_session_bp.route("", methods=["GET"])
 @jwt_required()
 def get_sessions():
-    user_id = get_jwt_identity()
+    user_id = current_user_id()
     sessions = chat_session_service.get_sessions()
 
     own_sessions = [
         session for session in sessions
-        if str(session.user_id) == str(user_id)
+        if str(session.user_id) == user_id
     ]
 
     return jsonify([serialize_session(session) for session in own_sessions]), 200
@@ -55,10 +96,10 @@ def get_sessions():
 @chat_session_bp.route("/<int:session_id>", methods=["GET"])
 @jwt_required()
 def get_session(session_id):
-    user_id = get_jwt_identity()
+    user_id = current_user_id()
 
     session = chat_session_service.get_session_by_id(session_id)
-    if not session or not is_owner(session, user_id):
+    if not is_owner(session, user_id):
         return json_error("Session not found", 404)
 
     return jsonify(serialize_session(session)), 200
@@ -77,10 +118,13 @@ def create_session():
     if profile_id is None:
         return json_error("profile_id is required", 400)
 
-    user_id = get_jwt_identity()
+    user_id = current_user_id()
+
+    if not profile_belongs_to_user(profile_id, user_id):
+        return json_error("Profile not found", 404)
 
     payload = {
-        "profile_id": profile_id,
+        "profile_id": int(profile_id),
         "category": category,
         "status": "active",
         "user_id": int(user_id),
@@ -96,35 +140,39 @@ def create_session():
 @chat_session_bp.route("/<int:session_id>", methods=["PUT"])
 @jwt_required()
 def update_session(session_id):
-    user_id = get_jwt_identity()
+    user_id = current_user_id()
 
     existing_session = chat_session_service.get_session_by_id(session_id)
-    if not existing_session or not is_owner(existing_session, user_id):
+    if not is_owner(existing_session, user_id):
         return json_error("Session not found", 404)
 
     data = request.get_json(silent=True)
     if data is None:
         return json_error("Request body must be valid JSON", 400)
 
-    # Schutz: Session-Status nicht beliebig von außen manipulieren
-    data.pop("user_id", None)
-    data.pop("session_id", None)
-    data.pop("created_at", None)
-    data.pop("updated_at", None)
-    data.pop("started_at", None)
-    data.pop("ended_at", None)
+    data = sanitize_session_payload(data)
 
-    # Falls beendet, nicht wieder normal bearbeitbar machen
+    # Do not allow moving a session to another user's profile.
+    if "profile_id" in data:
+        if not profile_belongs_to_user(data["profile_id"], user_id):
+            return json_error("Profile not found", 404)
+
+        data["profile_id"] = int(data["profile_id"])
+
+    # If ended, do not make it normally editable again.
     if existing_session.status == "ended":
         allowed_fields = {"category"}
         data = {key: value for key, value in data.items() if key in allowed_fields}
 
-    # Status nur auf erlaubte Werte setzen
+    # Status only accepts known values.
     if "status" in data and data["status"] not in ["active", "ended"]:
         return json_error("status must be 'active' or 'ended'", 400)
 
     session = chat_session_service.update_session(session_id, data)
     if not session:
+        return json_error("Session not found", 404)
+
+    if not is_owner(session, user_id):
         return json_error("Session not found", 404)
 
     return jsonify(serialize_session(session)), 200
@@ -133,10 +181,10 @@ def update_session(session_id):
 @chat_session_bp.route("/<int:session_id>", methods=["DELETE"])
 @jwt_required()
 def delete_session(session_id):
-    user_id = get_jwt_identity()
+    user_id = current_user_id()
 
     existing_session = chat_session_service.get_session_by_id(session_id)
-    if not existing_session or not is_owner(existing_session, user_id):
+    if not is_owner(existing_session, user_id):
         return json_error("Session not found", 404)
 
     deleted = chat_session_service.delete_session(session_id)
@@ -149,12 +197,15 @@ def delete_session(session_id):
 @chat_session_bp.route("/profile/<int:profile_id>", methods=["GET"])
 @jwt_required()
 def get_sessions_by_profile(profile_id):
-    user_id = get_jwt_identity()
+    user_id = current_user_id()
+
+    if not profile_belongs_to_user(profile_id, user_id):
+        return json_error("Profile not found", 404)
 
     sessions = chat_session_service.get_sessions_by_profile_id(profile_id)
     own_sessions = [
         session for session in sessions
-        if str(session.user_id) == str(user_id)
+        if str(session.user_id) == user_id
     ]
 
     return jsonify([serialize_session(session) for session in own_sessions]), 200
@@ -163,10 +214,13 @@ def get_sessions_by_profile(profile_id):
 @chat_session_bp.route("/<int:session_id>/generate-story", methods=["POST"])
 @jwt_required()
 def generate_story(session_id):
-    user_id = get_jwt_identity()
+    user_id = current_user_id()
 
     session = chat_session_service.get_session_by_id(session_id)
-    if not session or not is_owner(session, user_id):
+    if not is_owner(session, user_id):
+        return json_error("Session not found", 404)
+
+    if not profile_belongs_to_user(session.profile_id, user_id):
         return json_error("Session not found", 404)
 
     story = chat_session_service.generate_story_from_session(session_id)
@@ -179,3 +233,4 @@ def generate_story(session_id):
             "story_id": story.story_id,
         }
     ), 201
+

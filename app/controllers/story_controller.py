@@ -38,11 +38,55 @@ def json_error(message, status_code=400):
     return jsonify({"error": message}), status_code
 
 
+def current_user_id():
+    return str(get_jwt_identity())
+
+
+def story_belongs_to_current_user(story):
+    if story is None:
+        return False
+
+    return str(story.created_by) == current_user_id()
+
+
+def sanitize_story_payload(data, *, allow_profile_id=False):
+    """
+    Prevent clients from changing ownership/system-managed fields.
+
+    allow_profile_id=True is only intended for create_story(), where the client
+    may need to provide the profile the story belongs to.
+    """
+    sanitized = dict(data)
+
+    protected_fields = {
+        "story_id",
+        "created_by",
+        "source_session_id",
+        "created_at",
+        "updated_at",
+    }
+
+    if not allow_profile_id:
+        protected_fields.add("profile_id")
+
+    for field in protected_fields:
+        sanitized.pop(field, None)
+
+    return sanitized
+
+
 @story_bp.route("", methods=["GET"])
 @jwt_required()
 def get_stories():
+    user_id = current_user_id()
+
     stories = story_service.get_stories()
-    return jsonify([serialize_story(story) for story in stories]), 200
+    user_stories = [
+        story for story in stories
+        if str(story.created_by) == user_id
+    ]
+
+    return jsonify([serialize_story(story) for story in user_stories]), 200
 
 
 @story_bp.route("/<int:story_id>", methods=["GET"])
@@ -50,7 +94,7 @@ def get_stories():
 def get_story(story_id):
     story = story_service.get_story_by_id(story_id)
 
-    if not story:
+    if not story_belongs_to_current_user(story):
         return json_error("Story not found", 404)
 
     return jsonify(serialize_story(story)), 200
@@ -59,8 +103,15 @@ def get_story(story_id):
 @story_bp.route("/profile/<int:profile_id>", methods=["GET"])
 @jwt_required()
 def get_stories_by_profile(profile_id):
+    user_id = current_user_id()
+
     stories = story_service.get_stories_by_profile_id(profile_id)
-    return jsonify([serialize_story(story) for story in stories]), 200
+    user_stories = [
+        story for story in stories
+        if str(story.created_by) == user_id
+    ]
+
+    return jsonify([serialize_story(story) for story in user_stories]), 200
 
 
 @story_bp.route("", methods=["POST"])
@@ -71,9 +122,16 @@ def create_story():
     if data is None:
         return json_error("Request body must be valid JSON", 400)
 
-    story = story_service.create_story(data)
+    user_id = current_user_id()
+    payload = sanitize_story_payload(data, allow_profile_id=True)
+    payload["created_by"] = int(user_id)
+
+    story = story_service.create_story(payload)
 
     if not story:
+        return json_error("Unable to create story", 400)
+
+    if not story_belongs_to_current_user(story):
         return json_error("Unable to create story", 400)
 
     return jsonify(serialize_story(story)), 201
@@ -91,7 +149,7 @@ def create_story_from_chat_session(session_id):
 
     if error:
         if error == "Forbidden":
-            return json_error(error, 403)
+            return json_error("Story not found", 404)
 
         if "not found" in error.lower():
             return json_error(error, 404)
@@ -118,7 +176,7 @@ def auto_create_stories_for_profile(profile_id):
 
     if error:
         if error == "Forbidden":
-            return json_error(error, 403)
+            return json_error("Profile not found", 404)
 
         if "not found" in error.lower():
             return json_error(error, 404)
@@ -145,7 +203,7 @@ def create_combined_story_for_profile(profile_id):
 
     if error:
         if error == "Forbidden":
-            return json_error(error, 403)
+            return json_error("Profile not found", 404)
 
         if "not found" in error.lower():
             return json_error(error, 404)
@@ -172,7 +230,7 @@ def update_combined_story_for_profile(profile_id):
 
     if error:
         if error == "Forbidden":
-            return json_error(error, 403)
+            return json_error("Profile not found", 404)
 
         if "not found" in error.lower():
             return json_error(error, 404)
@@ -196,14 +254,24 @@ def update_combined_story_for_profile(profile_id):
 @story_bp.route("/<int:story_id>", methods=["PUT"])
 @jwt_required()
 def update_story(story_id):
+    existing_story = story_service.get_story_by_id(story_id)
+
+    if not story_belongs_to_current_user(existing_story):
+        return json_error("Story not found", 404)
+
     data = request.get_json(silent=True)
 
     if data is None:
         return json_error("Request body must be valid JSON", 400)
 
-    story = story_service.update_story(story_id, data)
+    payload = sanitize_story_payload(data, allow_profile_id=False)
+
+    story = story_service.update_story(story_id, payload)
 
     if not story:
+        return json_error("Story not found", 404)
+
+    if not story_belongs_to_current_user(story):
         return json_error("Story not found", 404)
 
     return jsonify(serialize_story(story)), 200
@@ -212,6 +280,11 @@ def update_story(story_id):
 @story_bp.route("/<int:story_id>", methods=["DELETE"])
 @jwt_required()
 def delete_story(story_id):
+    existing_story = story_service.get_story_by_id(story_id)
+
+    if not story_belongs_to_current_user(existing_story):
+        return json_error("Story not found", 404)
+
     deleted = story_service.delete_story(story_id)
 
     if not deleted:
