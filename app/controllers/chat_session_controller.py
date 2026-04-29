@@ -33,8 +33,10 @@ def serialize_session(session):
 
 def json_error(message, status_code=400, details=None):
     payload = {"error": message}
+
     if details:
         payload["details"] = details
+
     return jsonify(payload), status_code
 
 
@@ -87,7 +89,7 @@ def get_sessions():
 
     own_sessions = [
         session for session in sessions
-        if str(session.user_id) == user_id
+        if is_owner(session, user_id)
     ]
 
     return jsonify([serialize_session(session) for session in own_sessions]), 200
@@ -99,6 +101,7 @@ def get_session(session_id):
     user_id = current_user_id()
 
     session = chat_session_service.get_session_by_id(session_id)
+
     if not is_owner(session, user_id):
         return json_error("Session not found", 404)
 
@@ -109,6 +112,7 @@ def get_session(session_id):
 @jwt_required()
 def create_session():
     data = request.get_json(silent=True)
+
     if data is None:
         return json_error("Request body must be valid JSON", 400)
 
@@ -131,6 +135,7 @@ def create_session():
     }
 
     session = chat_session_service.create_session(payload)
+
     if not session:
         return json_error("Unable to create session", 400)
 
@@ -143,10 +148,12 @@ def update_session(session_id):
     user_id = current_user_id()
 
     existing_session = chat_session_service.get_session_by_id(session_id)
+
     if not is_owner(existing_session, user_id):
         return json_error("Session not found", 404)
 
     data = request.get_json(silent=True)
+
     if data is None:
         return json_error("Request body must be valid JSON", 400)
 
@@ -169,6 +176,7 @@ def update_session(session_id):
         return json_error("status must be 'active' or 'ended'", 400)
 
     session = chat_session_service.update_session(session_id, data)
+
     if not session:
         return json_error("Session not found", 404)
 
@@ -184,10 +192,12 @@ def delete_session(session_id):
     user_id = current_user_id()
 
     existing_session = chat_session_service.get_session_by_id(session_id)
+
     if not is_owner(existing_session, user_id):
         return json_error("Session not found", 404)
 
     deleted = chat_session_service.delete_session(session_id)
+
     if not deleted:
         return json_error("Session not found", 404)
 
@@ -205,7 +215,7 @@ def get_sessions_by_profile(profile_id):
     sessions = chat_session_service.get_sessions_by_profile_id(profile_id)
     own_sessions = [
         session for session in sessions
-        if str(session.user_id) == user_id
+        if is_owner(session, user_id)
     ]
 
     return jsonify([serialize_session(session) for session in own_sessions]), 200
@@ -217,6 +227,7 @@ def generate_story(session_id):
     user_id = current_user_id()
 
     session = chat_session_service.get_session_by_id(session_id)
+
     if not is_owner(session, user_id):
         return json_error("Session not found", 404)
 
@@ -224,6 +235,7 @@ def generate_story(session_id):
         return json_error("Session not found", 404)
 
     story = chat_session_service.generate_story_from_session(session_id)
+
     if not story:
         return json_error("Unable to generate story", 400)
 
@@ -233,4 +245,3 @@ def generate_story(session_id):
             "story_id": story.story_id,
         }
     ), 201
-
