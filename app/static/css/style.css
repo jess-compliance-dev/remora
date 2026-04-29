@@ -83,6 +83,27 @@ p {
     display: block;
 }
 
+.topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logout-button {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: #5b5ce2;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    opacity: 0.9;
+}
+
 /* ================= GENERIC LAYOUT ================= */
 
 .screen {

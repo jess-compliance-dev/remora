@@ -25,6 +25,10 @@
                     class="brand-logo"
                 >
             </a>
+
+            <button type="button" id="logout-button" class="logout-button">
+                Logout
+            </button>
         </div>
     </header>
     {% endif %}
@@ -69,6 +73,27 @@
 </div>
 
 {% block scripts %}{% endblock %}
+
+{% if show_topbar != False %}
+<script>
+    (function () {
+        const logoutButton = document.getElementById("logout-button");
+
+        if (!logoutButton) {
+            return;
+        }
+
+        logoutButton.addEventListener("click", function () {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("active_profile_id");
+            localStorage.removeItem("active_profile_name");
+            localStorage.removeItem("active_session_id");
+
+            window.location.href = "/ui/login";
+        });
+    })();
+</script>
+{% endif %}
 
 {% if show_bottom_nav %}
 <script>
