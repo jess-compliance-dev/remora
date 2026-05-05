@@ -31,7 +31,9 @@ def serialize_message(message):
         "audio_url": getattr(message, "audio_url", None),
         "related_story_id": getattr(message, "related_story_id", None),
         "message_order": getattr(message, "message_order", None),
-        "created_at": message.created_at.isoformat() if getattr(message, "created_at", None) else None,
+        "created_at": message.created_at.isoformat()
+        if getattr(message, "created_at", None)
+        else None,
     }
 
 
@@ -44,10 +46,18 @@ def serialize_session(session):
         "user_id": getattr(session, "user_id", None),
         "profile_id": getattr(session, "profile_id", None),
         "title": getattr(session, "title", None),
-        "is_active": session.is_active(),
-        "started_at": session.started_at.isoformat() if getattr(session, "started_at", None) else None,
-        "ended_at": session.ended_at.isoformat() if getattr(session, "ended_at", None) else None,
-        "created_at": session.created_at.isoformat() if getattr(session, "created_at", None) else None,
+        "is_active": session.is_active()
+        if callable(getattr(session, "is_active", None))
+        else getattr(session, "is_active", None),
+        "started_at": session.started_at.isoformat()
+        if getattr(session, "started_at", None)
+        else None,
+        "ended_at": session.ended_at.isoformat()
+        if getattr(session, "ended_at", None)
+        else None,
+        "created_at": session.created_at.isoformat()
+        if getattr(session, "created_at", None)
+        else None,
     }
 
 
@@ -65,7 +75,9 @@ def serialize_analysis(analysis):
         "suggested_topics": getattr(analysis, "suggested_topics", None) or [],
         "topic_summary": getattr(analysis, "topic_summary", "") or "",
         "facts_count": getattr(analysis, "facts_count", 0),
-        "created_at": analysis.created_at.isoformat() if getattr(analysis, "created_at", None) else None,
+        "created_at": analysis.created_at.isoformat()
+        if getattr(analysis, "created_at", None)
+        else None,
     }
 
 
@@ -73,18 +85,61 @@ def json_error(message, status_code=400):
     return jsonify({"error": message}), status_code
 
 
+def current_user_id():
+    return str(get_jwt_identity())
+
+
+def session_belongs_to_user(session, user_id):
+    if session is None:
+        return False
+
+    session_user_id = getattr(session, "user_id", None)
+
+    if session_user_id is None:
+        return False
+
+    return str(session_user_id) == str(user_id)
+
+
+def profile_belongs_to_user(profile, user_id):
+    if profile is None:
+        return False
+
+    owner_id = getattr(profile, "owner_id", None)
+
+    if owner_id is None:
+        return False
+
+    return str(owner_id) == str(user_id)
+
+
+def session_matches_profile(session, profile_id):
+    if session is None:
+        return False
+
+    session_profile_id = getattr(session, "profile_id", None)
+
+    if session_profile_id is None:
+        return False
+
+    return str(session_profile_id) == str(profile_id)
+
+
+def parse_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 @chat_ai_bp.route("/chat/ai/<int:session_id>/messages", methods=["GET"])
 @jwt_required()
 def get_ai_session_messages(session_id):
     try:
-        user_id = get_jwt_identity()
+        user_id = current_user_id()
 
         session = chat_session_service.get_session_by_id(session_id)
-        if not session:
-            return json_error("Chat session not found", 404)
-
-        session_user_id = getattr(session, "user_id", None)
-        if session_user_id is not None and str(session_user_id) != str(user_id):
+        if not session_belongs_to_user(session, user_id):
             return json_error("Chat session not found", 404)
 
         messages = chat_message_service.get_messages_by_session_id(session_id) or []
@@ -107,7 +162,7 @@ def get_ai_session_messages(session_id):
 @jwt_required()
 def send_ai_message(session_id):
     try:
-        user_id = get_jwt_identity()
+        user_id = current_user_id()
 
         data = request.get_json(silent=True)
         if data is None:
@@ -116,39 +171,36 @@ def send_ai_message(session_id):
         profile_id = data.get("profile_id")
         message_text = (data.get("message_text") or "").strip()
 
-        if not profile_id:
+        if profile_id is None:
             return json_error("profile_id is required", 400)
+
+        parsed_profile_id = parse_int(profile_id)
+        if parsed_profile_id is None:
+            return json_error("profile_id must be an integer", 400)
 
         if not message_text:
             return json_error("message_text is required", 400)
 
         session = chat_session_service.get_session_by_id(session_id)
-        if not session:
+        if not session_belongs_to_user(session, user_id):
             return json_error("Chat session not found", 404)
 
-        session_user_id = getattr(session, "user_id", None)
-        if session_user_id is not None and str(session_user_id) != str(user_id):
-            return json_error("Chat session not found", 404)
+        if not session_matches_profile(session, parsed_profile_id):
+            return json_error("Profile does not match chat session", 400)
 
-        profile = profile_service.get_profile_by_id(profile_id)
-        if not profile:
-            return json_error("Profile not found", 404)
-
-        if getattr(profile, "owner_id", None) is not None and str(profile.owner_id) != str(user_id):
+        profile = profile_service.get_profile_by_id(parsed_profile_id)
+        if not profile_belongs_to_user(profile, user_id):
             return json_error("Profile not found", 404)
 
         existing_messages = chat_message_service.get_messages_by_session_id(session_id) or []
         next_order = len(existing_messages) + 1
 
-        try:
-            parsed_user_id = int(user_id) if user_id is not None else None
-        except (TypeError, ValueError):
-            parsed_user_id = None
+        parsed_user_id = parse_int(user_id)
 
         user_message = chat_message_service.create_message(
             {
                 "session_id": session_id,
-                "profile_id": profile_id,
+                "profile_id": parsed_profile_id,
                 "user_id": parsed_user_id,
                 "role": "user",
                 "message_text": message_text,
@@ -191,7 +243,7 @@ def send_ai_message(session_id):
         assistant_message = chat_message_service.create_message(
             {
                 "session_id": session_id,
-                "profile_id": profile_id,
+                "profile_id": parsed_profile_id,
                 "user_id": None,
                 "role": "assistant",
                 "message_text": assistant_reply,
@@ -205,7 +257,7 @@ def send_ai_message(session_id):
         analysis_entry = chat_analysis_service.create_analysis(
             {
                 "session_id": session_id,
-                "profile_id": profile_id,
+                "profile_id": parsed_profile_id,
                 "current_topic": ai_result.get("current_topic"),
                 "topic_complete": ai_result.get("topic_complete", False),
                 "show_topic_choices": ai_result.get("show_topic_choices", False),

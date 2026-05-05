@@ -79,8 +79,6 @@ def create_app():
 
     app.config["UPLOAD_FOLDER"] = str(upload_folder_path.resolve())
 
-    print("CONFIG UPLOAD_FOLDER:", app.config["UPLOAD_FOLDER"])
-
     # EMAIL CONFIG
     app.config["MAIL_SERVER"] = "smtp.gmail.com"
     app.config["MAIL_PORT"] = 587

@@ -38,9 +38,6 @@ class StoryService:
             "summary_json",
             "theme",
             "emotion_tag",
-            "life_period",
-            "location",
-            "happened_at",
             "is_featured",
         }
 
@@ -77,9 +74,6 @@ class StoryService:
             "summary_json",
             "theme",
             "emotion_tag",
-            "life_period",
-            "location",
-            "happened_at",
             "is_featured",
         }
 
@@ -247,10 +241,9 @@ class StoryService:
 
     def create_combined_story_for_profile(self, profile_id, user_id):
         """
-        Create ONE connected life story from all chat sessions/messages
-        connected to one memorial profile.
+        Create ONE connected life story from all chat sessions/messages connected
+        to one memorial profile.
         """
-
         profile, error = self._get_profile_or_error(profile_id, user_id)
 
         if error:
@@ -299,7 +292,6 @@ class StoryService:
         - error
         - update_status: "updated" or "no_changes"
         """
-
         profile, error = self._get_profile_or_error(profile_id, user_id)
 
         if error:
@@ -341,9 +333,6 @@ class StoryService:
                 "summary_json": story_data.get("summary_json"),
                 "theme": story_data.get("theme"),
                 "emotion_tag": story_data.get("emotion_tag"),
-                "life_period": story_data.get("life_period"),
-                "location": story_data.get("location"),
-                "happened_at": story_data.get("happened_at"),
             },
         )
 

@@ -22,11 +22,11 @@ class ChatAIService:
         ],
         "friendship": [
             "friends", "friendship", "relationship", "relationships",
-            "family bond", "neighbor", "community"
+            "neighbor", "community"
         ],
         "family": [
             "family", "house", "home", "mother", "father", "grandmother",
-            "grandfather", "sibling", "parent", "child"
+            "grandfather", "sibling", "parent", "child", "family-bond",
         ],
         "hobbies": [
             "hobbies", "interests", "music", "sports", "garden", "cooking",

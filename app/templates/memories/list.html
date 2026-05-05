@@ -304,23 +304,67 @@
     }
 
     .memory-card-body {
-        padding: 14px 16px 16px;
+        padding: 12px;
+        display: grid;
+        gap: 8px;
+        background: #ffffff;
     }
 
-    .memory-card-title {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 700;
+    .memory-meta-input,
+    .memory-meta-select {
+        width: 100%;
+        min-width: 0;
+        border: 1px solid #e7e9f4;
+        background: #fbfbff;
         color: #2f355c;
-        line-height: 1.35;
-        word-break: break-word;
+        border-radius: 12px;
+        padding: 9px 10px;
+        font-size: 13px;
+        line-height: 1.25;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
 
-    .memory-card-date {
-        margin-top: 6px;
+    .memory-meta-input::placeholder {
+        color: #a4a9c2;
+    }
+
+    .memory-meta-input:focus,
+    .memory-meta-select:focus {
+        border-color: #7c84d7;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(124, 132, 215, 0.10);
+    }
+
+    .memory-meta-select {
+        appearance: auto;
+        cursor: pointer;
+    }
+
+    .memory-meta-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .memory-save-state {
+        min-height: 15px;
+        font-size: 11px;
         color: #8b90b3;
-        font-size: 13px;
-        line-height: 1.4;
+        padding-left: 2px;
+    }
+
+    .memory-save-state.is-saving {
+        color: #5c63d6;
+    }
+
+    .memory-save-state.is-saved {
+        color: #1f7a4c;
+    }
+
+    .memory-save-state.is-error {
+        color: #c23d4b;
     }
 
     .memories-empty {
@@ -374,15 +418,15 @@
         }
 
         .memory-card-body {
-            padding: 12px 14px 14px;
+            padding: 10px;
+            gap: 7px;
         }
 
-        .memory-card-title {
-            font-size: 15px;
-        }
-
-        .memory-card-date {
+        .memory-meta-input,
+        .memory-meta-select {
+            padding: 8px 9px;
             font-size: 12px;
+            border-radius: 11px;
         }
 
         .memories-add-menu {
@@ -405,7 +449,8 @@
                 aria-label="Go back"
                 onclick="window.history.back()"
             >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M15 18l-6-6 6-6"></path>
                 </svg>
             </button>
@@ -413,7 +458,7 @@
             <div class="memories-header-copy">
                 <h1 class="memories-title">Memories</h1>
                 <p class="memories-subtitle">
-                    Browse all uploaded memories for {{ profile.full_name if profile else "this profile" }}.
+                    Browse all uploaded media files for {{ profile.full_name if profile else "this profile" }}.
                 </p>
             </div>
 
@@ -469,12 +514,27 @@
     const quickPhotoInput = document.getElementById("quick-photo-input");
     const quickVideoInput = document.getElementById("quick-video-input");
 
+    const topicOptions = [
+        { id: "", label: "No topic" },
+        { id: "childhood", label: "Childhood" },
+        { id: "daily_life", label: "Daily Life" },
+        { id: "personality", label: "Personality" },
+        { id: "values", label: "Values" },
+        { id: "humor", label: "Humor" },
+        { id: "friendship", label: "Friendship" },
+        { id: "family", label: "Family" },
+        { id: "hobbies", label: "Hobbies" },
+        { id: "achievements", label: "Achievements" },
+        { id: "loss", label: "Loss" },
+    ];
+
     let allMemories = [];
     let activeFilter = "all";
     let mediaRecorder = null;
     let mediaStream = null;
     let recordedChunks = [];
     let isRecording = false;
+    let saveTimers = new Map();
 
     function getAccessToken() {
         return (
@@ -493,16 +553,6 @@
         }
     }
 
-    function formatDate(value) {
-        if (!value) return "";
-        const date = new Date(value);
-        return new Intl.DateTimeFormat("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric"
-        }).format(date);
-    }
-
     function escapeHtml(value) {
         return String(value ?? "")
             .replaceAll("&", "&amp;")
@@ -512,28 +562,23 @@
             .replaceAll("'", "&#039;");
     }
 
-    function getMemoryTitle(memory) {
-        const originalFilename = memory.original_filename || "";
-        if (originalFilename) {
-            const cleaned = originalFilename.replace(/\.[^/.]+$/, "");
-            return cleaned || "Untitled";
-        }
-
-        if (memory.memory_type === "photo") return "Photo Memory";
-        if (memory.memory_type === "video") return "Video Memory";
-        if (memory.memory_type === "voice") return "Voice Note";
-        return "Memory";
+    function renderTopicOptions(selectedTopic) {
+        return topicOptions.map((topic) => {
+            const selected = topic.id === (selectedTopic || "") ? "selected" : "";
+            return `<option value="${escapeHtml(topic.id)}" ${selected}>${escapeHtml(topic.label)}</option>`;
+        }).join("");
     }
 
-    function renderDeleteButton(memoryId, title) {
+    function renderDeleteButton(memoryId) {
         return `
             <button
                 class="memory-card-delete"
                 type="button"
-                aria-label="Delete ${title}"
+                aria-label="Delete memory"
                 data-delete-memory-id="${memoryId}"
             >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M3 6h18"></path>
                     <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path>
                     <path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"></path>
@@ -547,9 +592,10 @@
     function renderMemoryCard(memory) {
         const type = memory.memory_type;
         const fileUrl = escapeHtml(memory.file_url);
-        const title = escapeHtml(getMemoryTitle(memory));
-        const createdAt = formatDate(memory.created_at);
-        const deleteButton = renderDeleteButton(memory.memory_id, title);
+        const title = escapeHtml(memory.title || "");
+        const memoryDate = escapeHtml(memory.memory_date || "");
+        const topic = escapeHtml(memory.topic || "");
+        const deleteButton = renderDeleteButton(memory.memory_id);
 
         let mediaMarkup = "";
 
@@ -557,7 +603,7 @@
             mediaMarkup = `
                 <div class="memory-card-media">
                     ${deleteButton}
-                    <img src="${fileUrl}" alt="${title}" loading="lazy">
+                    <img src="${fileUrl}" alt="${title || "Memory photo"}" loading="lazy">
                 </div>
             `;
         } else if (type === "video") {
@@ -575,7 +621,8 @@
                     ${deleteButton}
                     <div class="memory-card-audio-inner">
                         <div class="memory-card-audio-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                 stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M12 14a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v4a3 3 0 0 0 3 3Z"></path>
                                 <path d="M19 11a7 7 0 0 1-14 0"></path>
                                 <path d="M12 18v3"></path>
@@ -593,11 +640,46 @@
         }
 
         return `
-            <article class="memory-card">
+            <article class="memory-card" data-memory-card="${memory.memory_id}">
                 ${mediaMarkup}
+
                 <div class="memory-card-body">
-                    <h3 class="memory-card-title">${title}</h3>
-                    <div class="memory-card-date">${createdAt}</div>
+                    <input
+                        class="memory-meta-input"
+                        type="text"
+                        value="${title}"
+                        placeholder="Title"
+                        aria-label="Memory title"
+                        data-memory-input
+                        data-memory-id="${memory.memory_id}"
+                        data-field="title"
+                    >
+
+                    <input
+                        class="memory-meta-input"
+                        type="date"
+                        value="${memoryDate}"
+                        aria-label="Memory date"
+                        data-memory-input
+                        data-memory-id="${memory.memory_id}"
+                        data-field="memory_date"
+                    >
+
+                    <select
+                        class="memory-meta-select"
+                        aria-label="Memory topic"
+                        data-memory-input
+                        data-memory-id="${memory.memory_id}"
+                        data-field="topic"
+                    >
+                        ${renderTopicOptions(topic)}
+                    </select>
+
+                    <div
+                        class="memory-save-state"
+                        data-save-state="${memory.memory_id}"
+                        aria-live="polite"
+                    ></div>
                 </div>
             </article>
         `;
@@ -619,6 +701,7 @@
 
         memoriesGrid.innerHTML = filtered.map(renderMemoryCard).join("");
         bindDeleteButtons();
+        bindMemoryInputs();
     }
 
     function closeAddMenu() {
@@ -788,16 +871,113 @@
         setStatus("Finishing recording...", "is-loading");
     }
 
+    function setMemorySaveState(memoryId, message, state = "") {
+        const saveState = document.querySelector(`[data-save-state="${memoryId}"]`);
+
+        if (!saveState) {
+            return;
+        }
+
+        saveState.textContent = message;
+        saveState.className = "memory-save-state";
+
+        if (state) {
+            saveState.classList.add(state);
+        }
+    }
+
+    function updateLocalMemory(memoryId, data) {
+        allMemories = allMemories.map((memory) => {
+            if (Number(memory.memory_id) !== Number(memoryId)) {
+                return memory;
+            }
+
+            return {
+                ...memory,
+                ...data,
+            };
+        });
+    }
+
+    async function saveMemoryMetadata(memoryId, data) {
+        const token = getAccessToken();
+
+        if (!token) {
+            setMemorySaveState(memoryId, "Not logged in", "is-error");
+            return;
+        }
+
+        setMemorySaveState(memoryId, "Saving...", "is-saving");
+
+        try {
+            const response = await fetch(`/api/memories/${memoryId}`, {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setMemorySaveState(memoryId, result.error || "Could not save", "is-error");
+                return;
+            }
+
+            updateLocalMemory(memoryId, result);
+            setMemorySaveState(memoryId, "Saved", "is-saved");
+
+            window.setTimeout(() => {
+                setMemorySaveState(memoryId, "");
+            }, 1400);
+        } catch (error) {
+            setMemorySaveState(memoryId, "Could not save", "is-error");
+        }
+    }
+
+    function scheduleMemoryMetadataSave(input) {
+        const memoryId = input.dataset.memoryId;
+        const field = input.dataset.field;
+        const value = input.value;
+
+        const existingTimer = saveTimers.get(`${memoryId}:${field}`);
+
+        if (existingTimer) {
+            window.clearTimeout(existingTimer);
+        }
+
+        const timer = window.setTimeout(async () => {
+            await saveMemoryMetadata(memoryId, {
+                [field]: value,
+            });
+        }, field === "title" ? 550 : 0);
+
+        saveTimers.set(`${memoryId}:${field}`, timer);
+    }
+
+    function bindMemoryInputs() {
+        document.querySelectorAll("[data-memory-input]").forEach((input) => {
+            const eventName = input.tagName.toLowerCase() === "select" ? "change" : "input";
+
+            input.addEventListener(eventName, () => {
+                scheduleMemoryMetadataSave(input);
+            });
+
+            if (input.type === "date") {
+                input.addEventListener("change", () => {
+                    scheduleMemoryMetadataSave(input);
+                });
+            }
+        });
+    }
+
     async function deleteMemory(memoryId) {
         const token = getAccessToken();
 
         if (!token) {
             setStatus("You are not logged in.", "is-error");
-            return;
-        }
-
-        const confirmed = window.confirm("Do you really want to delete this memory?");
-        if (!confirmed) {
             return;
         }
 

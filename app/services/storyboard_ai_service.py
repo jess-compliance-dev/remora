@@ -11,6 +11,14 @@ class StoryboardAIService:
 
     The storyboard is based primarily on the curated LifeStory summary
     and summary_json. Raw chat messages should not be used or referenced.
+
+    The life span is referenced from the memorial profile:
+    memorial_profiles.birth_date / memorial_profiles.death_date
+
+    Removed from LifeStory:
+    - life_period
+    - location
+    - happened_at
     """
 
     def __init__(self):
@@ -106,7 +114,8 @@ class StoryboardAIService:
                         "date_text": {
                             "type": "string",
                             "description": (
-                                "Optional date, year, period or location text for the ID-Date.text template field. "
+                                "Optional life span text for the ID-Date.text template field. "
+                                "Use birth and death dates only when provided by memorial_profile. "
                                 "Use an empty string if unknown. "
                                 "Do not use generic values like mixed or unknown. "
                                 "Maximum 35 characters."
@@ -354,34 +363,32 @@ class StoryboardAIService:
 
         return title
 
-    def _build_date_text(self, story):
-        life_period = self._safe_text(getattr(story, "life_period", None))
-        location = self._safe_text(getattr(story, "location", None))
-        happened_at = getattr(story, "happened_at", None)
+    def _format_date(self, value):
+        if not value:
+            return ""
 
-        ignored_values = {
-            "mixed",
-            "unknown",
-            "none",
-            "n/a",
-            "na",
-            "null",
-        }
+        if hasattr(value, "strftime"):
+            return value.strftime("%Y")
 
-        parts = []
+        return self._safe_text(value)
 
-        if life_period and life_period.lower() not in ignored_values:
-            parts.append(life_period)
+    def _build_life_span_text(self, profile=None):
+        birth_date = getattr(profile, "birth_date", None) if profile else None
+        death_date = getattr(profile, "death_date", None) if profile else None
 
-        if location and location.lower() not in ignored_values:
-            parts.append(location)
+        birth_text = self._format_date(birth_date)
+        death_text = self._format_date(death_date)
 
-        if happened_at:
-            parts.append(happened_at.isoformat())
+        if birth_text and death_text:
+            return self._limit_text(f"{birth_text} – {death_text}", 35, "")
 
-        date_text = " · ".join(parts)
+        if birth_text:
+            return self._limit_text(f"Born {birth_text}", 35, "")
 
-        return self._limit_text(date_text, 35, "")
+        if death_text:
+            return self._limit_text(f"Remembered until {death_text}", 35, "")
+
+        return ""
 
     def _fallback_storyboard(self, story, media_items, profile=None):
         media_ids = [media.media_id for media in media_items]
@@ -402,7 +409,7 @@ class StoryboardAIService:
             or f"This memory keeps {fallback_name} close in a quiet and meaningful way."
         )
 
-        date_text = self._build_date_text(story)
+        date_text = self._build_life_span_text(profile)
 
         caption_text = self._limit_text(
             base_text,
@@ -586,19 +593,29 @@ class StoryboardAIService:
         media_context = self._build_media_context(media_items)
         memorial_name = self._build_memorial_name(profile)
 
+        birth_date = (
+            profile.birth_date.isoformat()
+            if profile and getattr(profile, "birth_date", None)
+            else None
+        )
+        death_date = (
+            profile.death_date.isoformat()
+            if profile and getattr(profile, "death_date", None)
+            else None
+        )
+
         story_payload = {
             "title": story.title,
             "memorial_profile": {
                 "full_name": memorial_name,
+                "birth_date": birth_date,
+                "death_date": death_date,
             },
             "summary_json": story.summary_json,
             "summary": story.summary,
             "story_text": story.story_text,
             "theme": story.theme,
             "emotion_tag": story.emotion_tag,
-            "life_period": story.life_period,
-            "location": story.location,
-            "happened_at": story.happened_at.isoformat() if story.happened_at else None,
         }
 
         system_prompt = """
@@ -610,8 +627,9 @@ Source priority:
 1. Use summary_json as the primary source of truth when available.
 2. Use summary as the next most important source of truth.
 3. Use story_text only as secondary supporting context.
-4. Use theme, emotion_tag, life_period, location and happened_at only when they are present.
-5. Do not use or refer to raw chat messages.
+4. Use theme and emotion_tag only when they are present.
+5. Use memorial_profile.birth_date and memorial_profile.death_date only for date_text when provided.
+6. Do not use or refer to raw chat messages.
 
 Template mapping:
 - intro_text maps to IT-Text.text and must be exactly "In loving memory of".
@@ -667,6 +685,7 @@ Grammar rules:
 Text requirements:
 - intro_text: exactly "In loving memory of".
 - memorial_name: memorial_profile.full_name when available.
+- date_text: use birth and death years when available, for example "1942 – 2021". Use empty string if unavailable.
 - caption_text: 2 to 3 warm complete sentences based mainly on summary_json and summary.
 - final_message: 1 to 2 warm complete closing sentences.
 - scene text: 8 to 16 words per scene, written as one complete sentence.
@@ -726,3 +745,4 @@ Available media:
         except Exception as error:
             print("GENERATE STORYBOARD AI ERROR:", repr(error))
             return self._fallback_storyboard(story, media_items, profile)
+        

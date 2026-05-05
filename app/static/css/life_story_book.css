@@ -1,0 +1,483 @@
+/* ================= LIFE STORY BOOK ================= */
+
+.life-story-book-page {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 20px 56px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.life-story-state,
+.life-story-shell {
+    display: grid;
+    gap: 18px;
+}
+
+.life-story-loading,
+.life-story-error,
+.life-empty-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: 10px;
+}
+
+.life-story-loading h1,
+.life-story-error h1,
+.life-empty-card h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: 34px;
+    line-height: 1.1;
+}
+
+.life-story-loading p,
+.life-story-error p,
+.life-empty-card p {
+    color: var(--muted);
+}
+
+/* ================= TOOLBAR ================= */
+
+.life-story-toolbar {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.life-story-toolbar h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: 34px;
+    line-height: 1.1;
+}
+
+.life-story-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.life-button {
+    display: inline-block;
+    border: 0;
+    border-radius: 16px;
+    padding: 14px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.18s ease;
+    font-family: inherit;
+}
+
+.life-button-primary {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.life-button-primary:hover {
+    background: var(--primary-dark);
+}
+
+.life-button-secondary {
+    background: var(--soft);
+    color: var(--text);
+}
+
+.life-button-secondary:hover {
+    background: #e6e9fa;
+}
+
+.life-eyebrow {
+    margin: 0 0 8px;
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.life-story-view {
+    display: grid;
+    gap: 18px;
+}
+
+/* ================= HERO ================= */
+
+.life-hero,
+.life-video-card,
+.life-video-placeholder,
+.life-intro-card,
+.life-editorial-chapter {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    padding: 28px;
+}
+
+.life-hero {
+    background: linear-gradient(180deg, #ffffff 0%, #f4f6ff 100%);
+    border: 1px solid rgba(124, 132, 215, 0.12);
+}
+
+.editorial-hero {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: center;
+    gap: 20px;
+}
+
+.life-hero-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 999px;
+    background: #d8dae6;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.life-hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    display: block;
+}
+
+.life-hero-placeholder {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: #6f7490;
+    font-size: 42px;
+    font-weight: 700;
+}
+
+.life-hero-copy {
+    display: grid;
+    gap: 8px;
+}
+
+.life-hero-copy h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: 34px;
+    line-height: 1.1;
+}
+
+.life-hero-copy p,
+.life-intro-card p,
+.life-editorial-chapter p,
+.life-video-placeholder p,
+.life-empty-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.life-date-range {
+    color: var(--primary-dark) !important;
+    font-size: 14px !important;
+    font-weight: 600;
+}
+
+/* ================= VIDEO ================= */
+
+.life-video-card {
+    display: grid;
+    gap: 16px;
+}
+
+.life-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.life-section-head h2,
+.life-intro-card h2,
+.life-editorial-chapter h2,
+.life-video-placeholder h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 24px;
+    line-height: 1.25;
+}
+
+.life-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(124, 132, 215, 0.12);
+    color: var(--primary-dark);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.life-video-card video {
+    width: 100%;
+    max-height: 420px;
+    border-radius: 16px;
+    background: #000000;
+    display: block;
+}
+
+.life-video-placeholder {
+    display: grid;
+    gap: 8px;
+    text-align: center;
+    background: var(--soft);
+}
+
+/* ================= INTRO ================= */
+
+.life-intro-card {
+    display: grid;
+    gap: 12px;
+}
+
+/* ================= EDITORIAL CHAPTERS ================= */
+
+.life-editorial-chapters {
+    display: grid;
+    gap: 18px;
+}
+
+.life-editorial-chapter {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 16px;
+}
+
+.life-chapter-number {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: var(--soft);
+    color: var(--primary-dark);
+    display: grid;
+    place-items: center;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.life-chapter-body {
+    display: grid;
+    gap: 12px;
+}
+
+.life-chapter-subtitle {
+    color: var(--primary-dark) !important;
+    font-size: 14px !important;
+    font-weight: 600;
+}
+
+/* ================= MEDIA ================= */
+
+.life-media-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.life-media-item {
+    margin: 0;
+    background: var(--soft);
+    border-radius: 18px;
+    padding: 10px;
+    display: grid;
+    gap: 8px;
+}
+
+.life-media-item img,
+.life-media-item video {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 14px;
+    background: #ffffff;
+    display: block;
+}
+
+.life-media-item figcaption {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.life-audio-item {
+    align-content: center;
+}
+
+.life-audio-cover {
+    min-height: 120px;
+    border-radius: 14px;
+    background: #ffffff;
+    color: var(--primary-dark);
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.life-audio-item audio {
+    width: 100%;
+}
+
+/* ================= EMPTY STATE ================= */
+
+.life-empty-card {
+    justify-items: start;
+}
+
+.life-empty-card .life-button {
+    margin-top: 6px;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 760px) {
+    .life-story-book-page {
+        padding: 18px 14px 56px;
+    }
+
+    .life-story-toolbar {
+        display: grid;
+        padding: 22px 20px;
+        border-radius: 24px;
+    }
+
+    .life-story-toolbar h1 {
+        font-size: 28px;
+    }
+
+    .life-story-actions {
+        justify-content: flex-start;
+        flex-direction: column;
+    }
+
+    .life-story-actions .life-button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .life-hero,
+    .life-video-card,
+    .life-video-placeholder,
+    .life-intro-card,
+    .life-editorial-chapter,
+    .life-story-loading,
+    .life-story-error,
+    .life-empty-card {
+        padding: 22px;
+        border-radius: 24px;
+    }
+
+    .editorial-hero {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .life-hero-copy h1,
+    .life-story-loading h1,
+    .life-story-error h1,
+    .life-empty-card h1 {
+        font-size: 28px;
+    }
+
+    .life-hero-image {
+        width: 110px;
+        height: 110px;
+    }
+
+    .life-editorial-chapter {
+        grid-template-columns: 1fr;
+    }
+
+    .life-media-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .life-section-head {
+        flex-direction: column;
+    }
+}
+
+/* ================= PRINT / PDF ================= */
+
+@media print {
+    .topbar,
+    .bottom-nav,
+    .life-story-toolbar {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+    }
+
+    .main-content {
+        padding-bottom: 0 !important;
+    }
+
+    .life-story-book-page {
+        max-width: none;
+        padding: 0;
+    }
+
+    .life-story-view {
+        gap: 14px;
+    }
+
+    .life-hero,
+    .life-video-card,
+    .life-video-placeholder,
+    .life-intro-card,
+    .life-editorial-chapter,
+    .life-empty-card {
+        box-shadow: none;
+        border-color: #dddddd;
+        break-inside: avoid;
+    }
+
+    .life-video-card video,
+    .life-media-item video,
+    .life-audio-item audio {
+        display: none;
+    }
+
+    .life-video-card::after {
+        content: "Video available in the online Remora Life Story.";
+        display: block;
+        color: #555555;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+}

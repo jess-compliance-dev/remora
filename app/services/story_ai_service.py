@@ -1,7 +1,6 @@
 import json
 import os
 import re
-from datetime import datetime
 
 from openai import OpenAI
 
@@ -9,6 +8,15 @@ from openai import OpenAI
 class StoryAIService:
     """
     AI service for creating structured life stories from chat conversations.
+
+    The life span is not stored on life_stories.
+    It is referenced through:
+    life_stories.profile_id -> memorial_profiles.birth_date / death_date
+
+    Removed from life_stories:
+    - life_period
+    - location
+    - happened_at
     """
 
     GENERIC_TITLE_PHRASES = [
@@ -90,18 +98,6 @@ class StoryAIService:
                             "type": "string",
                             "description": "Main emotional tone, for example warm, joyful, reflective, nostalgic.",
                         },
-                        "life_period": {
-                            "type": "string",
-                            "description": "Life period, for example childhood, adulthood, later_life, mixed, unknown.",
-                        },
-                        "location": {
-                            "type": "string",
-                            "description": "Location if known, otherwise empty string.",
-                        },
-                        "happened_at": {
-                            "type": "string",
-                            "description": "Date in YYYY-MM-DD format if known, otherwise empty string.",
-                        },
                         "summary_json": {
                             "type": "object",
                             "description": "Structured summary for video/storyboard generation.",
@@ -179,26 +175,12 @@ class StoryAIService:
                         "summary",
                         "theme",
                         "emotion_tag",
-                        "life_period",
-                        "location",
-                        "happened_at",
                         "summary_json",
                     ],
                     "additionalProperties": False,
                 },
             },
         }
-
-    def _parse_date(self, value):
-        value = (value or "").strip()
-
-        if not value:
-            return None
-
-        try:
-            return datetime.strptime(value, "%Y-%m-%d").date()
-        except ValueError:
-            return None
 
     def _limit_to_five_sentences(self, text):
         text = (text or "").strip()
@@ -350,9 +332,6 @@ class StoryAIService:
             "summary_json": self._fallback_summary_json(combined_text),
             "theme": "memory",
             "emotion_tag": "reflective",
-            "life_period": "mixed" if combined else "unknown",
-            "location": None,
-            "happened_at": None,
         }
 
     def _extract_tool_story_data(self, response, profile):
@@ -401,9 +380,6 @@ class StoryAIService:
                 "summary_json": summary_json,
                 "theme": data.get("theme"),
                 "emotion_tag": data.get("emotion_tag"),
-                "life_period": data.get("life_period"),
-                "location": data.get("location") or None,
-                "happened_at": self._parse_date(data.get("happened_at")),
             }
 
         return None
@@ -412,6 +388,16 @@ class StoryAIService:
         name = getattr(profile, "full_name", None) or "this person"
         relationship = getattr(profile, "relationship", None) or "someone important"
         description = getattr(profile, "short_description", None) or ""
+        birth_date = (
+            profile.birth_date.isoformat()
+            if getattr(profile, "birth_date", None)
+            else "unknown"
+        )
+        death_date = (
+            profile.death_date.isoformat()
+            if getattr(profile, "death_date", None)
+            else "unknown"
+        )
 
         system_prompt = f"""
 You are Remora, a memory-preservation assistant.
@@ -422,6 +408,8 @@ Person being remembered:
 Name: {name}
 Relationship: {relationship}
 Description: {description}
+Birth date: {birth_date}
+Death date: {death_date}
 
 Style rules:
 - Use simple everyday English.
@@ -437,6 +425,9 @@ Style rules:
 Content rules:
 - Use only concrete facts from the user messages.
 - Do not invent names, dates, places, relationships, challenges or events.
+- Birth date and death date are profile context only.
+- Do not output birth_date or death_date as story fields.
+- If birth date or death date are useful, mention them naturally only when provided.
 - If information is limited, write a modest summary instead of exaggerating.
 - The summary must be maximum 5 complete sentences.
 - The summary should describe who the person was, what they enjoyed, how they related to others and how the family remembers them.
@@ -540,6 +531,16 @@ Content rules:
         name = getattr(profile, "full_name", None) or "this person"
         relationship = getattr(profile, "relationship", None) or "someone important"
         description = getattr(profile, "short_description", None) or ""
+        birth_date = (
+            profile.birth_date.isoformat()
+            if getattr(profile, "birth_date", None)
+            else "unknown"
+        )
+        death_date = (
+            profile.death_date.isoformat()
+            if getattr(profile, "death_date", None)
+            else "unknown"
+        )
 
         conversation_items = []
 
@@ -578,6 +579,8 @@ Person being remembered:
 Name: {name}
 Relationship: {relationship}
 Description: {description}
+Birth date: {birth_date}
+Death date: {death_date}
 
 Main goal:
 The result should feel calm, simple and personal. It should not sound like marketing text or a poem.
@@ -596,6 +599,9 @@ Style rules:
 Content rules:
 - Use only concrete facts from the user messages.
 - Do not invent events, dates, personality traits, challenges or relationships.
+- Birth date and death date are profile context only.
+- Do not output birth_date or death_date as story fields.
+- If birth date or death date are useful, mention them naturally only when provided.
 - If the user mentioned concrete things like gardening, cooking, humor, family traditions, places, habits, sayings or small everyday details, include those details.
 - If the information is limited, write a modest and simple summary instead of exaggerating.
 - The result must be one connected life story, not separate stories per chat session.
@@ -650,7 +656,6 @@ Content rules:
 
             if data:
                 data["prompt_question"] = data.get("prompt_question") or "Combined memories"
-                data["life_period"] = data.get("life_period") or "mixed"
                 return data
 
             return self._fallback_story_data(

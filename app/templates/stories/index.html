@@ -71,7 +71,18 @@
 
     .stories-create-btn {
         width: auto;
-        min-width: 220px;
+        min-width: 190px;
+    }
+
+    .stories-danger-btn {
+        width: auto;
+        min-width: 170px;
+        background: #fff0f1;
+        color: #c23d4b;
+    }
+
+    .stories-danger-btn:hover {
+        background: #ffe2e5;
     }
 
     .stories-status {
@@ -93,80 +104,167 @@
         color: #5c63d6;
     }
 
-    .stories-list {
-        display: grid;
-        gap: 22px;
+    .empty-state {
         margin-top: 24px;
-    }
-
-    .story-card {
         border: 1px solid #e7e9f4;
         border-radius: 22px;
-        padding: 28px;
-        background: #ffffff;
-        box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
-    }
-
-    .story-card h2 {
-        margin: 0;
-        color: #1e2b5c;
-        font-size: 28px;
-        line-height: 1.25;
-    }
-
-    .story-summary {
-        margin: 16px 0 0;
+        padding: 24px;
+        background: #f7f8ff;
         color: #7d84a6;
-        font-size: 18px;
-        line-height: 1.7;
+        line-height: 1.6;
     }
 
-    .story-video-section {
-        margin-top: 26px;
-        padding-top: 22px;
-        border-top: 1px solid #eef0ff;
+    .life-story-book {
+        margin-top: 28px;
+        display: grid;
+        gap: 18px;
     }
 
-    .story-video-header {
-        display: flex;
-        justify-content: space-between;
+    .life-book-hero,
+    .life-story-summary-card,
+    .life-video-card,
+    .life-video-placeholder,
+    .life-editorial-chapter,
+    .life-creation-placeholder {
+        background: #ffffff;
+        border: 1px solid #e7e9f4;
+        border-radius: 28px;
+        box-shadow: 0 10px 25px rgba(86, 97, 160, 0.05);
+        padding: 28px;
+    }
+
+    .life-book-hero {
+        background: linear-gradient(180deg, #ffffff 0%, #f4f6ff 100%);
+        border: 1px solid rgba(124, 132, 215, 0.16);
+        display: grid;
+        grid-template-columns: 140px 1fr;
         align-items: center;
-        gap: 16px;
-        margin-bottom: 14px;
+        gap: 20px;
     }
 
-    .story-video-title {
+    .life-hero-image {
+        width: 140px;
+        height: 140px;
+        border-radius: 999px;
+        background: #d8dae6;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+    }
+
+    .life-hero-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: inherit;
+        display: block;
+    }
+
+    .life-hero-placeholder {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        color: #6f7490;
+        font-size: 42px;
+        font-weight: 800;
+    }
+
+    .life-hero-copy {
+        display: grid;
+        gap: 8px;
+    }
+
+    .life-eyebrow {
         margin: 0;
-        color: #1e2b5c;
-        font-size: 22px;
-        font-weight: 900;
+        color: #6972c9;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
     }
 
-    .video-list {
+    .life-hero-copy h2,
+    .life-story-summary-card h2,
+    .life-video-card h2,
+    .life-video-placeholder h2,
+    .life-editorial-chapter h2,
+    .life-creation-placeholder h2 {
+        margin: 0;
+        color: #223055;
+        line-height: 1.2;
+    }
+
+    .life-hero-copy h2 {
+        font-size: 34px;
+    }
+
+    .life-story-summary-card h2,
+    .life-video-card h2,
+    .life-video-placeholder h2,
+    .life-editorial-chapter h2,
+    .life-creation-placeholder h2 {
+        font-size: 24px;
+    }
+
+    .life-hero-copy p,
+    .life-story-summary-card p,
+    .life-video-placeholder p,
+    .life-editorial-chapter p,
+    .life-creation-placeholder p {
+        margin: 0;
+        color: #7e8399;
+        font-size: 16px;
+        line-height: 1.65;
+    }
+
+    .life-date-range {
+        color: #6972c9 !important;
+        font-size: 14px !important;
+        font-weight: 700;
+    }
+
+    .life-story-summary-card {
         display: grid;
         gap: 12px;
     }
 
-    .video-card {
-        background: #f7f8ff;
-        border: 1px solid #e7e9f4;
-        border-radius: 22px;
-        padding: 20px;
+    .life-summary-subtitle {
+        margin: -4px 0 2px;
+        color: #6972c9 !important;
+        font-size: 14px !important;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
     }
 
-    .video-ready-row {
+    .life-section-head {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 16px;
     }
 
-    .video-message {
-        color: #7d84a6;
-        font-size: 17px;
-        line-height: 1.6;
-        margin: 0;
+    .life-video-card {
+        display: grid;
+        gap: 12px;
+    }
+
+    .life-video-card video {
+        width: 100%;
+        max-height: 420px;
+        border-radius: 16px;
+        background: #000000;
+        display: block;
+    }
+
+    .life-video-placeholder,
+    .life-creation-placeholder {
+        background: #f7f8ff;
+        display: grid;
+        gap: 10px;
     }
 
     .loading-row {
@@ -193,23 +291,103 @@
         animation: dots 1.3s steps(4, end) infinite;
     }
 
-    .video-player {
-        width: 100%;
-        max-height: 420px;
-        border-radius: 16px;
-        background: #000000;
-        display: block;
-        margin-top: 16px;
+    .life-editorial-chapters {
+        display: grid;
+        gap: 18px;
     }
 
-    .empty-state {
-        margin-top: 24px;
-        border: 1px solid #e7e9f4;
-        border-radius: 22px;
-        padding: 24px;
-        background: #f7f8ff;
-        color: #7d84a6;
-        line-height: 1.6;
+    .life-editorial-chapter {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: 16px;
+    }
+
+    .life-chapter-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        background: #eef0fb;
+        color: #6972c9;
+        display: grid;
+        place-items: center;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .life-chapter-body {
+        display: grid;
+        gap: 12px;
+    }
+
+    .life-chapter-subtitle {
+        color: #6972c9 !important;
+        font-size: 14px !important;
+        font-weight: 700;
+    }
+
+    .life-media-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 4px;
+    }
+
+    .life-media-item {
+        margin: 0;
+        background: #eef0fb;
+        border-radius: 18px;
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+    }
+
+    .life-media-item img,
+    .life-media-item video {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 14px;
+        background: #ffffff;
+        display: block;
+    }
+
+    .life-media-item figcaption {
+        color: #7e8399;
+        font-size: 13px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+        display: grid;
+        gap: 3px;
+    }
+
+    .life-media-item figcaption strong {
+        color: #223055;
+        font-size: 14px;
+        line-height: 1.3;
+    }
+
+    .life-media-item figcaption span {
+        color: #7e8399;
+        font-size: 13px;
+    }
+
+    .life-audio-item {
+        align-content: center;
+    }
+
+    .life-audio-cover {
+        min-height: 120px;
+        border-radius: 14px;
+        background: #ffffff;
+        color: #6972c9;
+        display: grid;
+        place-items: center;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .life-audio-item audio {
+        width: 100%;
     }
 
     @keyframes spin {
@@ -250,34 +428,50 @@
             font-size: 28px;
         }
 
-        .story-card {
-            padding: 22px;
-        }
-
-        .story-card h2 {
-            font-size: 24px;
-        }
-
-        .story-summary {
-            font-size: 16px;
-        }
-
         .stories-actions {
             flex-direction: column;
         }
 
-        .stories-create-btn {
+        .stories-create-btn,
+        .stories-danger-btn {
             width: 100%;
         }
 
-        .story-video-header,
-        .video-ready-row {
-            align-items: flex-start;
+        .life-book-hero,
+        .life-story-summary-card,
+        .life-video-card,
+        .life-video-placeholder,
+        .life-editorial-chapter,
+        .life-creation-placeholder {
+            padding: 22px;
+            border-radius: 24px;
+        }
+
+        .life-book-hero {
+            grid-template-columns: 1fr;
+            justify-items: center;
+            text-align: center;
+        }
+
+        .life-hero-image {
+            width: 110px;
+            height: 110px;
+        }
+
+        .life-hero-copy h2 {
+            font-size: 28px;
+        }
+
+        .life-section-head {
             flex-direction: column;
         }
 
-        .video-ready-row .btn {
-            width: 100%;
+        .life-editorial-chapter {
+            grid-template-columns: 1fr;
+        }
+
+        .life-media-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -305,8 +499,7 @@
 
                 {% if profile %}
                     <p class="stories-subtitle">
-                        Create one connected life story for {{ profile.full_name }}, bringing together all your memories and turning them
-                        into a meaningful story.
+                        Create one connected life story for {{ profile.full_name }}, bringing together memories, media and saved conversations.
                     </p>
                 {% else %}
                     <p class="stories-subtitle">
@@ -317,18 +510,34 @@
         </div>
 
         <div class="stories-actions">
-            <button id="create-story-video-btn" class="btn btn-primary stories-create-btn" type="button">
+            <button id="create-life-story-btn" class="btn btn-primary stories-create-btn" type="button">
                 Create Life Story
             </button>
 
-            <button id="update-life-story-btn" class="btn btn-secondary stories-create-btn" type="button" hidden>
+            <button
+                id="update-life-story-btn"
+                class="btn btn-secondary stories-create-btn"
+                type="button"
+                hidden
+                style="display: none;"
+            >
                 Update Life Story
+            </button>
+
+            <button
+                id="delete-life-story-btn"
+                class="btn stories-danger-btn"
+                type="button"
+                hidden
+                style="display: none;"
+            >
+                Delete Life Story
             </button>
         </div>
 
         <div id="stories-status" class="stories-status" hidden></div>
 
-        <div id="stories-list" class="stories-list"></div>
+        <div id="life-story-book" class="life-story-book" hidden style="display: none;"></div>
 
         <div id="empty-state" class="empty-state">
             No life story has been created yet. Click Create Life Story to build one.
@@ -342,15 +551,32 @@
 <script>
     const profileId = {{ profile_id|tojson }};
 
-    const createButton = document.getElementById("create-story-video-btn");
+    const createButton = document.getElementById("create-life-story-btn");
     const updateButton = document.getElementById("update-life-story-btn");
+    const deleteButton = document.getElementById("delete-life-story-btn");
     const statusEl = document.getElementById("stories-status");
-    const storiesListEl = document.getElementById("stories-list");
+    const bookEl = document.getElementById("life-story-book");
     const emptyStateEl = document.getElementById("empty-state");
 
     const pollingTimers = new Map();
     const maxPollingAttempts = 60;
     const pollingIntervalMs = 5000;
+
+    let currentStory = null;
+    let currentBookData = null;
+
+    function setElementVisible(element, visible) {
+        if (!element) {
+            return;
+        }
+
+        element.hidden = !visible;
+        element.style.display = visible ? "" : "none";
+    }
+
+    setElementVisible(updateButton, false);
+    setElementVisible(deleteButton, false);
+    setElementVisible(bookEl, false);
 
     function getToken() {
         const token =
@@ -382,6 +608,10 @@
         const div = document.createElement("div");
         div.textContent = text || "";
         return div.innerHTML;
+    }
+
+    function textToHtml(text) {
+        return escapeHtml(text || "").replaceAll("\n", "<br>");
     }
 
     function showStatus(message, type) {
@@ -423,174 +653,306 @@
         }
     }
 
-    function getStoryIdsFromPage() {
-        return Array.from(document.querySelectorAll(".story-card[data-story-id]"))
-            .map((element) => element.dataset.storyId)
-            .filter(Boolean);
-    }
-
-    function hasStoryOnPage() {
-        return getStoryIdsFromPage().length > 0;
-    }
-
     function syncPageState() {
-        const hasStory = hasStoryOnPage();
+        const hasStory = Boolean(currentStory && currentStory.story_id);
 
-        emptyStateEl.hidden = hasStory;
-        updateButton.hidden = !hasStory;
+        setElementVisible(emptyStateEl, !hasStory);
+        setElementVisible(bookEl, hasStory);
+
+        setElementVisible(updateButton, hasStory);
+        setElementVisible(deleteButton, hasStory);
+        setElementVisible(createButton, !hasStory);
     }
 
-    function createEmptyVideoCard() {
-        const card = document.createElement("div");
-        card.className = "video-card";
+    function renderLifeStoryCreationLoading() {
+        setElementVisible(emptyStateEl, false);
+        setElementVisible(bookEl, true);
 
-        card.innerHTML = `
-            <p class="video-message">
-                No memory video has been created yet.
-            </p>
+        bookEl.innerHTML = `
+            <section class="life-creation-placeholder">
+                <p class="life-eyebrow">Creating Life Story</p>
+                <h2>Your Life Story is being created</h2>
+                <div class="loading-row">
+                    <span class="loading-spinner" aria-hidden="true"></span>
+                    <p>Remora is collecting memories and shaping the story<span class="loading-dots"></span></p>
+                </div>
+            </section>
         `;
-
-        return card;
     }
 
-    function createLoadingVideoCard(message) {
-        const card = document.createElement("div");
-        card.className = "video-card";
-
-        card.innerHTML = `
-            <div class="loading-row">
-                <span class="loading-spinner" aria-hidden="true"></span>
-                <p class="video-message">
-                    ${escapeHtml(message || "Life Story is being built")}<span class="loading-dots"></span> Wait a moment.
-                </p>
-            </div>
-        `;
-
-        return card;
-    }
-
-    function createCompletedVideoCard(video) {
-        const card = document.createElement("div");
-        card.className = "video-card";
-
-        const videoUrl = video.video_url || "";
-
-        card.innerHTML = `
-            <div class="video-ready-row">
-                <p class="video-message">Your Life Story Video is ready.</p>
-                <a class="btn btn-primary" href="${escapeHtml(videoUrl)}" target="_blank" rel="noopener noreferrer">
-                    Open Video
-                </a>
-            </div>
-
-            <video class="video-player" src="${escapeHtml(videoUrl)}" controls playsinline></video>
-        `;
-
-        return card;
-    }
-
-    function createFailedVideoCard(video) {
-        const card = document.createElement("div");
-        card.className = "video-card";
-
-        card.innerHTML = `
-            <p class="video-message">
-                The Life Story Video could not be created right now.
-                ${video && video.error_message ? escapeHtml(video.error_message) : ""}
-            </p>
-        `;
-
-        return card;
-    }
-
-    function renderVideos(storyId, videos) {
-        const videoListEl = document.getElementById(`video-list-${storyId}`);
-
-        if (!videoListEl) {
-            return;
+    function formatDisplayDate(value) {
+        if (!value) {
+            return "";
         }
 
-        videoListEl.innerHTML = "";
+        const parts = String(value).split("-");
 
-        if (!videos || videos.length === 0) {
-            videoListEl.appendChild(createEmptyVideoCard());
-            return;
+        if (parts.length !== 3) {
+            return value;
         }
 
-        const video = videos[0];
+        const year = parts[0];
+        const month = parts[1];
+        const day = parts[2];
+
+        return `${day}.${month}.${year}`;
+    }
+
+    function formatDateRange(profile) {
+        const birth = profile && profile.birth_date
+            ? formatDisplayDate(profile.birth_date)
+            : "";
+
+        const death = profile && profile.death_date
+            ? formatDisplayDate(profile.death_date)
+            : "";
+
+        if (birth && death) {
+            return `${birth} - ${death}`;
+        }
+
+        if (birth) {
+            return birth;
+        }
+
+        if (death) {
+            return death;
+        }
+
+        return "";
+    }
+
+    function getMemoryById(memoryId) {
+        const memories = currentBookData && currentBookData.memories
+            ? currentBookData.memories
+            : [];
+
+        return memories.find((memory) => Number(memory.memory_id) === Number(memoryId));
+    }
+
+    function mediaHtml(memory) {
+        if (!memory || !memory.file_url) {
+            return "";
+        }
+
+        const url = escapeHtml(memory.file_url);
+        const title = escapeHtml(memory.title || "");
+        const date = memory.memory_date ? escapeHtml(formatDisplayDate(memory.memory_date)) : "";
+
+        let caption = "";
+
+        if (title || date) {
+            caption = `
+                <figcaption>
+                    ${title ? `<strong>${title}</strong>` : ""}
+                    ${date ? `<span>${date}</span>` : ""}
+                </figcaption>
+            `;
+        }
+
+        if (memory.memory_type === "photo") {
+            return `
+                <figure class="life-media-item">
+                    <img src="${url}" alt="${title || "Memory photo"}">
+                    ${caption}
+                </figure>
+            `;
+        }
+
+        if (memory.memory_type === "video") {
+            return `
+                <figure class="life-media-item">
+                    <video src="${url}" controls preload="metadata"></video>
+                    ${caption}
+                </figure>
+            `;
+        }
+
+        if (memory.memory_type === "voice") {
+            return `
+                <figure class="life-media-item life-audio-item">
+                    <div class="life-audio-cover">♪</div>
+                    <audio src="${url}" controls preload="metadata"></audio>
+                    ${caption}
+                </figure>
+            `;
+        }
+
+        return "";
+    }
+
+    function chapterMediaHtml(chapter) {
+        const memoryIds = chapter.memory_ids || [];
+        const mediaItems = memoryIds
+            .map(getMemoryById)
+            .filter(Boolean)
+            .map(mediaHtml)
+            .join("");
+
+        if (!mediaItems) {
+            return "";
+        }
+
+        return `
+            <div class="life-media-grid">
+                ${mediaItems}
+            </div>
+        `;
+    }
+
+    function renderVideoSection(video) {
+        if (!video) {
+            return `
+                <section class="life-video-placeholder" id="life-video-section">
+                    <p class="life-eyebrow">Life Story Video</p>
+                    <h2>Building video</h2>
+                    <div class="loading-row">
+                        <span class="loading-spinner" aria-hidden="true"></span>
+                        <p>Life Story Video is being created<span class="loading-dots"></span></p>
+                    </div>
+                </section>
+            `;
+        }
 
         if (video.status === "completed" && video.video_url) {
-            stopPolling(video.video_id);
-            videoListEl.appendChild(createCompletedVideoCard(video));
-            return;
+            return `
+                <section class="life-video-card" id="life-video-section">
+                    <div class="life-section-head">
+                        <div>
+                            <p class="life-eyebrow">Life Story Video</p>
+                            <h2>${escapeHtml(video.title || "Generated Memory Video")}</h2>
+                        </div>
+                    </div>
+
+                    <video src="${escapeHtml(video.video_url)}" controls playsinline preload="metadata"></video>
+                </section>
+            `;
         }
 
         if (video.status === "failed") {
-            stopPolling(video.video_id);
-            videoListEl.appendChild(createFailedVideoCard(video));
+            return `
+                <section class="life-video-placeholder" id="life-video-section">
+                    <p class="life-eyebrow">Life Story Video</p>
+                    <h2>Video could not be created</h2>
+                    <p>${escapeHtml(video.error_message || "Please try again later.")}</p>
+                </section>
+            `;
+        }
+
+        return `
+            <section class="life-video-placeholder" id="life-video-section">
+                <p class="life-eyebrow">Life Story Video</p>
+                <h2>Building video</h2>
+                <div class="loading-row">
+                    <span class="loading-spinner" aria-hidden="true"></span>
+                    <p>Life Story Video is being created<span class="loading-dots"></span></p>
+                </div>
+            </section>
+        `;
+    }
+
+    function updateVideoSection(video) {
+        const existingVideoSection = document.getElementById("life-video-section");
+
+        if (!existingVideoSection) {
             return;
         }
 
-        videoListEl.appendChild(
-            createLoadingVideoCard("Life Story is being built")
-        );
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = renderVideoSection(video).trim();
 
-        if (video.video_id) {
-            startPollingVideo(video.video_id, storyId);
+        const newVideoSection = wrapper.firstElementChild;
+
+        if (newVideoSection) {
+            existingVideoSection.replaceWith(newVideoSection);
         }
     }
 
-    function setVideoLoadingState(storyId) {
-        const videoListEl = document.getElementById(`video-list-${storyId}`);
+    function renderBook(data) {
+        currentBookData = data;
 
-        if (!videoListEl) {
-            return;
-        }
+        const profile = data.profile || {};
+        const story = data.story || currentStory || {};
+        const chapters = data.chapters || [];
+        const video = data.video || null;
+        const dateRange = formatDateRange(profile);
 
-        videoListEl.innerHTML = "";
-        videoListEl.appendChild(
-            createLoadingVideoCard("Life Story is being built")
-        );
-    }
+        currentStory = story;
 
-    function createStoryCard(story) {
-        const card = document.createElement("div");
-        card.className = "story-card";
-        card.dataset.storyId = story.story_id;
+        const heroImage = profile.profile_image_url
+            ? `<img src="${escapeHtml(profile.profile_image_url)}" alt="${escapeHtml(profile.full_name || "Profile image")}">`
+            : `<div class="life-hero-placeholder">${escapeHtml((profile.full_name || "R").charAt(0))}</div>`;
 
-        const title = story.title || "Untitled Life Story";
-        const summary = story.summary || story.story_text || "";
+        const chapterHtml = chapters.map((chapter, index) => {
+            return `
+                <article class="life-editorial-chapter" data-topic="${escapeHtml(chapter.id || "")}">
+                    <div class="life-chapter-number">${String(index + 1).padStart(2, "0")}</div>
 
-        card.innerHTML = `
-            <h2>${escapeHtml(title)}</h2>
+                    <div class="life-chapter-body">
+                        <h2>${escapeHtml(chapter.title || "Chapter")}</h2>
 
-            ${summary ? `<p class="story-summary">${escapeHtml(summary)}</p>` : ""}
+                        ${chapter.subtitle ? `<p class="life-chapter-subtitle">${escapeHtml(chapter.subtitle)}</p>` : ""}
 
-            <div class="story-video-section">
-                <div class="story-video-header">
-                    <h3 class="story-video-title">Memory Video</h3>
+                        <p>${textToHtml(chapter.text || "")}</p>
+
+                        ${chapterMediaHtml(chapter)}
+                    </div>
+                </article>
+            `;
+        }).join("");
+
+        bookEl.innerHTML = `
+            <section class="life-book-hero">
+                <div class="life-hero-image">
+                    ${heroImage}
                 </div>
 
-                <div class="video-list" id="video-list-${story.story_id}"></div>
-            </div>
+                <div class="life-hero-copy">
+                    <p class="life-eyebrow">Remora Life Story Book</p>
+                    <h2>${escapeHtml(profile.full_name || story.title || "Life Story")}</h2>
+                    ${dateRange ? `<p class="life-date-range">${escapeHtml(dateRange)}</p>` : ""}
+                    <p>${escapeHtml(profile.short_description || story.summary || "A life remembered through stories, images and moments.")}</p>
+                </div>
+            </section>
+
+            ${renderVideoSection(video)}
+
+            <section class="life-story-summary-card">
+                <h2>Summary</h2>
+                <p class="life-summary-subtitle">Life Story</p>
+                <p>${textToHtml(story.summary || story.story_text || "This story is still being shaped from memories and conversations.")}</p>
+            </section>
+
+            <section class="life-editorial-chapters">
+                ${chapterHtml}
+            </section>
         `;
 
-        const videoList = card.querySelector(`#video-list-${story.story_id}`);
-        videoList.appendChild(createEmptyVideoCard());
-
-        return card;
+        syncPageState();
     }
 
-    function renderSingleStory(story) {
-        storiesListEl.innerHTML = "";
+    async function loadLifeStoryBook() {
+        const response = await fetch(`/api/stories/life-story/profile/${profileId}`, {
+            method: "GET",
+            headers: getAuthHeaders(),
+        });
 
-        if (!story || !story.story_id) {
-            syncPageState();
-            return;
+        const data = await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(data.error || "Unable to load life story.");
         }
 
-        storiesListEl.appendChild(createStoryCard(story));
-        syncPageState();
+        if (!data || data.empty_state || !data.story) {
+            currentStory = null;
+            currentBookData = data || null;
+            bookEl.innerHTML = "";
+            syncPageState();
+            return data;
+        }
+
+        renderBook(data);
+        return data;
     }
 
     async function fetchVideosForStory(storyId) {
@@ -605,13 +967,26 @@
             throw new Error(data.error || "Unable to load memory video.");
         }
 
-        renderVideos(storyId, data || []);
-
         return data || [];
     }
 
     async function createVideoForStory(storyId) {
-        showStatus("Creating memory video...", "loading");
+        const existingVideos = await fetchVideosForStory(storyId);
+
+        if (existingVideos.length > 0) {
+            const existingVideo = existingVideos[0];
+
+            updateVideoSection(existingVideo);
+
+            if (existingVideo.status === "completed" && existingVideo.video_url) {
+                return existingVideo;
+            }
+
+            if (existingVideo.video_id && existingVideo.status !== "failed") {
+                startPollingVideo(existingVideo.video_id, storyId);
+                return existingVideo;
+            }
+        }
 
         const response = await fetch(`/api/memory-videos/from-story/${storyId}`, {
             method: "POST",
@@ -630,9 +1005,7 @@
             throw new Error("Memory video could not be started.");
         }
 
-        setVideoLoadingState(storyId);
-
-        await fetchVideosForStory(storyId);
+        updateVideoSection(video);
 
         if (video.status !== "completed") {
             startPollingVideo(video.video_id, storyId);
@@ -655,10 +1028,8 @@
 
         const video = data.video;
 
-        if (video && video.story_id) {
-            await fetchVideosForStory(video.story_id);
-        } else if (storyId) {
-            await fetchVideosForStory(storyId);
+        if (video) {
+            updateVideoSection(video);
         }
 
         return video;
@@ -714,8 +1085,8 @@
         clearStatus();
 
         createButton.disabled = true;
-        updateButton.disabled = true;
         createButton.textContent = "Creating...";
+        renderLifeStoryCreationLoading();
 
         showStatus("Creating one connected life story from all saved chats...", "loading");
 
@@ -737,24 +1108,27 @@
                 throw new Error("Life story was created but no story ID was returned.");
             }
 
-            renderSingleStory(story);
+            currentStory = story;
+
+            await loadLifeStoryBook();
 
             showStatus("Life story created. Building memory video...", "loading");
 
             const video = await createVideoForStory(story.story_id);
 
             if (video && video.status === "completed" && video.video_url) {
-                showStatus("Life Story Video is ready.", "success");
+                showStatus("Life Story and video are ready.", "success");
             } else {
-                showStatus("Life Story is being built. Wait a moment.", "loading");
+                showStatus("Life Story is ready. Video is being built.", "loading");
             }
 
         } catch (error) {
             showStatus(error.message, "error");
+            currentStory = null;
+            bookEl.innerHTML = "";
         } finally {
             createButton.disabled = false;
-            updateButton.disabled = false;
-            createButton.textContent = "Create Life Story Video";
+            createButton.textContent = "Create Life Story";
             syncPageState();
         }
     });
@@ -763,10 +1137,10 @@
         clearStatus();
 
         updateButton.disabled = true;
-        createButton.disabled = true;
+        deleteButton.disabled = true;
         updateButton.textContent = "Updating...";
 
-        showStatus("Updating story...", "loading");
+        showStatus("Updating Life Story...", "loading");
 
         try {
             const response = await fetch(`/api/stories/update-combined/profile/${profileId}`, {
@@ -781,24 +1155,102 @@
             }
 
             if (data.story) {
-                renderSingleStory(data.story);
-                await fetchVideosForStory(data.story.story_id);
+                currentStory = data.story;
             }
 
-            showStatus(data.message || "Life story updated", "success");
+            await loadLifeStoryBook();
+
+            if (currentStory && currentStory.story_id) {
+                await createVideoForStory(currentStory.story_id);
+            }
+
+            showStatus(data.message || "Life story updated.", "success");
 
         } catch (error) {
             showStatus(error.message, "error");
         } finally {
             updateButton.disabled = false;
-            createButton.disabled = false;
+            deleteButton.disabled = false;
             updateButton.textContent = "Update Life Story";
             syncPageState();
         }
     });
 
-    document.addEventListener("DOMContentLoaded", () => {
-        syncPageState();
+    deleteButton.addEventListener("click", async () => {
+        clearStatus();
+
+        if (!currentStory || !currentStory.story_id) {
+            showStatus("No Life Story selected.", "error");
+            return;
+        }
+
+        const confirmed = window.confirm("Delete this Life Story? This cannot be undone.");
+
+        if (!confirmed) {
+            return;
+        }
+
+        deleteButton.disabled = true;
+        updateButton.disabled = true;
+
+        showStatus("Deleting Life Story...", "loading");
+
+        try {
+            const response = await fetch(`/api/stories/${currentStory.story_id}`, {
+                method: "DELETE",
+                headers: getAuthHeaders(),
+            });
+
+            const data = await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to delete life story.");
+            }
+
+            currentStory = null;
+            currentBookData = null;
+            bookEl.innerHTML = "";
+
+            for (const videoId of pollingTimers.keys()) {
+                stopPolling(videoId);
+            }
+
+            showStatus(data.message || "Life Story deleted successfully.", "success");
+            syncPageState();
+
+        } catch (error) {
+            showStatus(error.message, "error");
+        } finally {
+            deleteButton.disabled = false;
+            updateButton.disabled = false;
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        setElementVisible(updateButton, false);
+        setElementVisible(deleteButton, false);
+        setElementVisible(bookEl, false);
+
+        try {
+            await loadLifeStoryBook();
+
+            if (currentStory && currentStory.story_id) {
+                const videos = await fetchVideosForStory(currentStory.story_id);
+
+                if (videos.length > 0) {
+                    const video = videos[0];
+                    updateVideoSection(video);
+
+                    if (video.video_id && video.status !== "completed" && video.status !== "failed") {
+                        startPollingVideo(video.video_id, currentStory.story_id);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            currentStory = null;
+            syncPageState();
+        }
     });
 </script>
 {% endblock %}

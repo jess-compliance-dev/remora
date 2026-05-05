@@ -83,21 +83,6 @@ class LifeStory(db.Model):
         nullable=True,
     )
 
-    life_period = db.Column(
-        db.String(100),
-        nullable=True,
-    )
-
-    location = db.Column(
-        db.String(255),
-        nullable=True,
-    )
-
-    happened_at = db.Column(
-        db.Date,
-        nullable=True,
-    )
-
     is_featured = db.Column(
         db.Boolean,
         nullable=False,
@@ -121,10 +106,4 @@ class LifeStory(db.Model):
     )
 
     def __repr__(self):
-        return (
-            f"<LifeStory "
-            f"story_id={self.story_id} "
-            f"profile_id={self.profile_id} "
-            f"title={self.title!r}>"
-        )
-    
+        return f"<LifeStory story_id={self.story_id} profile_id={self.profile_id}>"

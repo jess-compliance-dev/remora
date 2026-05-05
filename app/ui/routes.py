@@ -14,7 +14,7 @@ def render_ui(template_name, *, active_tab=None, show_bottom_nav=False, **contex
         template_name,
         active_tab=active_tab,
         show_bottom_nav=show_bottom_nav,
-        **context
+        **context,
     )
 
 
@@ -27,7 +27,7 @@ def login():
     return render_ui(
         "auth/login.html",
         show_bottom_nav=False,
-        show_topbar=False
+        show_topbar=False,
     )
 
 
@@ -36,7 +36,7 @@ def register():
     return render_ui(
         "auth/register.html",
         show_bottom_nav=False,
-        show_topbar=False
+        show_topbar=False,
     )
 
 
@@ -44,7 +44,7 @@ def register():
 def check_email():
     return render_ui(
         "auth/check_email.html",
-        show_bottom_nav=False
+        show_bottom_nav=False,
     )
 
 
@@ -52,7 +52,7 @@ def check_email():
 def email_confirmed():
     return render_ui(
         "auth/email_confirmed.html",
-        show_bottom_nav=False
+        show_bottom_nav=False,
     )
 
 
@@ -65,7 +65,7 @@ def select_profiles():
     return render_ui(
         "profiles/select.html",
         active_tab=None,
-        show_bottom_nav=False
+        show_bottom_nav=False,
     )
 
 
@@ -73,7 +73,7 @@ def select_profiles():
 def dashboard():
     return render_ui(
         "dashboard/index.html",
-        show_bottom_nav=False
+        show_bottom_nav=False,
     )
 
 
@@ -86,7 +86,7 @@ def profiles():
 def create_profile():
     return render_ui(
         "profiles/create.html",
-        show_bottom_nav=False
+        show_bottom_nav=False,
     )
 
 
@@ -96,7 +96,7 @@ def profile_detail(profile_id):
         "profiles/profile_setting.html",
         profile_id=profile_id,
         active_tab="profile",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -109,7 +109,7 @@ def chat_home():
     return render_ui(
         "chat/home.html",
         active_tab="chat",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -130,7 +130,7 @@ def start_chat():
         profile=profile,
         profile_id=profile_id,
         active_tab="chat",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -145,7 +145,7 @@ def chat(session_id):
         profile_id=profile_id,
         profile=profile,
         active_tab="chat",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -157,10 +157,10 @@ def chat(session_id):
 def life_stories_legacy():
     """
     Old route.
-    If profile_id is provided, redirect to the new profile-specific Life Stories page.
-    Otherwise return to dashboard.
-    """
 
+    If profile_id is provided, redirect to the new profile-specific Life Stories
+    page. Otherwise return to dashboard.
+    """
     profile_id = request.args.get("profile_id", type=int)
 
     if profile_id:
@@ -174,7 +174,6 @@ def stories_home():
     """
     Fallback route for Life Stories.
     """
-
     profile_id = request.args.get("profile_id", type=int)
 
     if profile_id:
@@ -188,14 +187,11 @@ def profile_life_stories(profile_id):
     """
     Life Stories overview page for one profile.
 
-    Template:
-    stories/index.html
-
+    Template: stories/index.html
     This page can:
     - show existing Life Stories
     - create Life Stories from saved chat sessions via the button
     """
-
     profile = profile_service.get_profile_by_id(profile_id)
 
     if not profile:
@@ -209,7 +205,7 @@ def profile_life_stories(profile_id):
         profile_id=profile_id,
         stories=stories,
         active_tab="life_stories",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -218,10 +214,8 @@ def story_detail(story_id):
     """
     Single Life Story detail page.
 
-    Template:
-    stories/view_story.html
+    Template: stories/view_story.html
     """
-
     story = story_service.get_story_by_id(story_id)
 
     if not story:
@@ -234,17 +228,43 @@ def story_detail(story_id):
         story=story,
         profile=profile,
         active_tab="life_stories",
-        show_bottom_nav=True
+        show_bottom_nav=True,
+    )
+
+
+@ui_bp.route("/ui/life-story-book")
+def life_story_book():
+    """
+    Experimental Life Story Book page.
+
+    Shows the same Life Story data in two layouts:
+    - Editorial View
+    - Cards View
+    """
+    profile_id = request.args.get("profile_id", type=int)
+
+    if not profile_id:
+        return redirect(url_for("ui.select_profiles"))
+
+    profile = profile_service.get_profile_by_id(profile_id)
+
+    if not profile:
+        return redirect(url_for("ui.select_profiles"))
+
+    return render_ui(
+        "stories/life_story_book.html",
+        profile=profile,
+        profile_id=profile_id,
+        active_tab="life_stories",
+        show_bottom_nav=True,
     )
 
 
 @ui_bp.route("/ui/story/<int:story_id>")
 def story_legacy(story_id):
     """
-    Old route for one story.
-    Redirects to the new Life Story detail route.
+    Old route for one story. Redirects to the new Life Story detail route.
     """
-
     return redirect(url_for("ui.story_detail", story_id=story_id))
 
 
@@ -269,7 +289,7 @@ def memories():
         profile=profile,
         profile_id=profile_id,
         active_tab="memories",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -278,7 +298,7 @@ def select_memory_profile():
     return render_ui(
         "memories/select_profile.html",
         active_tab="memories",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -299,7 +319,7 @@ def create_memory():
         profile=profile,
         profile_id=profile_id,
         active_tab="memories",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -330,7 +350,7 @@ def memory_detail(memory_id):
         "memories/profile_setting.html",
         memory_id=memory_id,
         active_tab="memories",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
 
 
@@ -343,5 +363,5 @@ def time_capsule():
     return render_ui(
         "time_capsule/index.html",
         active_tab="time_capsule",
-        show_bottom_nav=True
+        show_bottom_nav=True,
     )
