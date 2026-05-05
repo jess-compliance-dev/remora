@@ -1,27 +1,247 @@
 {% extends "base.html" %}
-{% block title %}Create Memorial Profile | Remora{% endblock %}
+{% block title %}Create Profile | Remora{% endblock %}
 
-{% block content %}
-<div style="max-width: 860px; margin: 0 auto; padding: 28px 20px 56px;">
+{% block head %}
+<style>
+    .create-profile-page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 28px 20px 56px;
+    }
 
-    <div style="margin-bottom: 22px;">
-        <a href="/ui/select-profiles" style="
-            text-decoration: none;
-            color: #7d84a6;
-            font-weight: 600;
-            font-size: 14px;
-        ">
-            ← Back
-        </a>
-    </div>
-
-    <div style="
+    .create-profile-panel {
         background: #ffffff;
         border: 1px solid #e7e9f4;
         border-radius: 28px;
         padding: 34px 34px 30px;
         box-shadow: 0 10px 30px rgba(86, 97, 160, 0.08);
-    ">
+    }
+
+    .create-profile-topbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+    .create-profile-back {
+        width: 42px;
+        height: 42px;
+        border: none;
+        background: #eef0ff;
+        color: #5c63d6;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease;
+        flex-shrink: 0;
+    }
+
+    .create-profile-back:hover {
+        background: #e3e6ff;
+        transform: translateY(-1px);
+    }
+
+    .create-profile-back svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .create-profile-header-copy {
+        min-width: 0;
+    }
+
+    .create-profile-title {
+        margin: 0;
+        font-size: 36px;
+        line-height: 1.1;
+        color: #2f355c;
+        text-align: left;
+    }
+
+    .create-profile-subtitle {
+        margin: 10px 0 0;
+        color: #7d84a6;
+        font-size: 18px;
+        line-height: 1.6;
+    }
+
+    .create-profile-form-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 28px;
+        align-items: start;
+    }
+
+    .create-profile-image-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .create-profile-image-label {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: #eef0ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: pointer;
+        border: 1px solid #dfe3f2;
+    }
+
+    .create-profile-image-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+    }
+
+    .create-profile-image-icon {
+        font-size: 40px;
+        color: #7b82d8;
+    }
+
+    .create-profile-upload-button {
+        margin-top: 14px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        border: 1px solid #dfe3f2;
+        background: #ffffff;
+        color: #5c63d6;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .create-profile-upload-button:hover {
+        background: #f7f8ff;
+    }
+
+    .create-profile-fields {
+        display: grid;
+        gap: 14px;
+    }
+
+    .create-profile-date-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 4px 2px;
+    }
+
+    .create-profile-date-label {
+        color: #2f355c;
+        font-weight: 600;
+        line-height: 1.4;
+        cursor: pointer;
+    }
+
+    .create-profile-date-fields {
+        display: none;
+        gap: 14px;
+    }
+
+    .create-profile-textarea {
+        resize: vertical;
+    }
+
+    .create-profile-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 26px;
+    }
+
+    .create-profile-cancel {
+        width: auto;
+        background: #f3f4f8;
+        color: #6b7280;
+        text-decoration: none;
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .create-profile-submit {
+        width: auto;
+        padding-left: 26px;
+        padding-right: 26px;
+    }
+
+    .create-profile-error {
+        text-align: left;
+        margin-top: 14px;
+    }
+
+    @media (max-width: 720px) {
+        .create-profile-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .create-profile-image-column {
+            align-items: center;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .create-profile-page {
+            padding: 20px 14px 40px;
+        }
+
+        .create-profile-panel {
+            padding: 20px;
+            border-radius: 24px;
+        }
+
+        .create-profile-title {
+            font-size: 28px;
+        }
+
+        .create-profile-subtitle {
+            font-size: 15px;
+        }
+
+        .create-profile-actions {
+            flex-direction: column-reverse;
+        }
+
+        .create-profile-cancel,
+        .create-profile-submit {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-profile-page">
+    <div class="create-profile-panel">
+
+        <div class="create-profile-topbar">
+            <button
+                class="create-profile-back"
+                type="button"
+                aria-label="Go back"
+                onclick="window.history.back()"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6"></path>
+                </svg>
+            </button>
+
+            <div class="create-profile-header-copy">
+                <h1 class="create-profile-title">Create a profile</h1>
+                <p class="create-profile-subtitle">
+                    Who would you like to remember?
+                </p>
+            </div>
+        </div>
+
         <div class="progress-row top-progress" style="justify-content: flex-start; margin-bottom: 22px;">
             <span class="progress-dot active"></span>
             <span class="progress-line"></span>
@@ -30,83 +250,39 @@
             <span class="progress-dot"></span>
         </div>
 
-        <div style="margin-bottom: 24px;">
-            <h1 style="
-                margin: 0 0 8px 0;
-                font-size: 36px;
-                line-height: 1.1;
-                color: #2f355c;
-                text-align: left;
-            ">
-                Create a memorial profile
-            </h1>
-            <p class="muted" style="
-                margin: 0;
-                font-size: 18px;
-                line-height: 1.6;
-            ">
-                Who would you like to remember?
-            </p>
-        </div>
-
         <form id="create-profile-form">
             <input type="hidden" id="profile_image_url" name="profile_image_url">
 
-            <div style="
-                display: grid;
-                grid-template-columns: 180px 1fr;
-                gap: 28px;
-                align-items: start;
-            ">
-                <div>
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                        <label for="profile-image-input" style="
-                            width: 150px;
-                            height: 150px;
-                            border-radius: 50%;
-                            background: #eef0ff;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            overflow: hidden;
-                            cursor: pointer;
-                            border: 1px solid #dfe3f2;
-                        ">
-                            <img id="profile-image-preview"
-                                 src=""
-                                 alt="Profile preview"
-                                 style="width:100%; height:100%; object-fit:cover; display:none;">
-                            <span id="profile-image-icon" style="font-size: 40px; color: #7b82d8;">🖼️</span>
-                        </label>
-
-                        <input
-                            id="profile-image-input"
-                            type="file"
-                            accept="image/*"
-                            style="display:none;"
+            <div class="create-profile-form-grid">
+                <div class="create-profile-image-column">
+                    <label for="profile-image-input" class="create-profile-image-label">
+                        <img
+                            id="profile-image-preview"
+                            class="create-profile-image-preview"
+                            src=""
+                            alt="Profile preview"
                         >
+                        <span id="profile-image-icon" class="create-profile-image-icon">🖼️</span>
+                    </label>
 
-                        <button
-                            type="button"
-                            onclick="document.getElementById('profile-image-input').click()"
-                            style="
-                                margin-top: 14px;
-                                padding: 10px 14px;
-                                border-radius: 14px;
-                                border: 1px solid #dfe3f2;
-                                background: #ffffff;
-                                color: #5c63d6;
-                                cursor: pointer;
-                                font-weight: 600;
-                            "
-                        >
-                            Upload image
-                        </button>
-                    </div>
+                    <input
+                        id="profile-image-input"
+                        type="file"
+                        accept="image/*"
+                        style="display:none;"
+                    >
+
+                    <button
+                        type="button"
+                        class="create-profile-upload-button"
+                        onclick="document.getElementById('profile-image-input').click()"
+                    >
+                        Upload image
+                    </button>
                 </div>
 
                 <div>
-                    <div style="display:grid; gap: 14px;">
+                    <div class="create-profile-fields">
                         <input
                             id="full_name"
                             name="full_name"
@@ -124,19 +300,8 @@
                             placeholder="Your relationship"
                         >
 
-                        <div style="
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            gap: 12px;
-                            padding: 4px 2px;
-                        ">
-                            <label for="show-dates-toggle" style="
-                                color: #2f355c;
-                                font-weight: 600;
-                                line-height: 1.4;
-                                cursor: pointer;
-                            ">
+                        <div class="create-profile-date-toggle">
+                            <label for="show-dates-toggle" class="create-profile-date-label">
                                 Add birth and passing dates
                                 <span class="muted" style="font-weight: 400;">(optional)</span>
                             </label>
@@ -144,7 +309,7 @@
                             <input type="checkbox" id="show-dates-toggle">
                         </div>
 
-                        <div id="dates-fields" style="display:none; gap: 14px;">
+                        <div id="dates-fields" class="create-profile-date-fields">
                             <input id="birth_date" name="birth_date" class="input" type="date">
                             <input id="death_date" name="death_date" class="input" type="date">
                         </div>
@@ -152,46 +317,31 @@
                         <textarea
                             id="short_description"
                             name="short_description"
-                            class="input"
+                            class="input create-profile-textarea"
                             rows="5"
                             placeholder="A short description or a few words about this person"
-                            style="resize: vertical;"
                         ></textarea>
                     </div>
                 </div>
             </div>
 
-            <div style="
-                display: flex;
-                justify-content: flex-end;
-                gap: 12px;
-                margin-top: 26px;
-            ">
-                <a href="/ui/select-profiles" class="btn" style="
-                    width: auto;
-                    background: #f3f4f8;
-                    color: #6b7280;
-                    text-decoration: none;
-                    padding-left: 22px;
-                    padding-right: 22px;
-                ">
+            <div class="create-profile-actions">
+                <a href="/ui/select-profiles" class="btn create-profile-cancel">
                     Cancel
                 </a>
 
-                <button id="submit-btn" class="btn btn-primary" type="submit" style="
-                    width: auto;
-                    padding-left: 26px;
-                    padding-right: 26px;
-                ">
+                <button id="submit-btn" class="btn btn-primary create-profile-submit" type="submit">
                     Continue
                 </button>
             </div>
         </form>
 
-        <p id="profile-error" class="error-text" style="text-align:left; margin-top:14px;"></p>
+        <p id="profile-error" class="error-text create-profile-error"></p>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
     const toggle = document.getElementById("show-dates-toggle");
     const datesFields = document.getElementById("dates-fields");

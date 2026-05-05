@@ -92,7 +92,10 @@ class StoryAIService:
                         },
                         "theme": {
                             "type": "string",
-                            "description": "Main theme, for example family, childhood, humor, values, daily_life.",
+                            "description": (
+                                "Main theme, for example family, childhood, humor, values, "
+                                "daily_life, traditions, hobbies, friendship, achievements or loss."
+                            ),
                         },
                         "emotion_tag": {
                             "type": "string",
@@ -298,6 +301,7 @@ class StoryAIService:
                 "family photos",
                 "home memories",
                 "quiet personal moments",
+                "meaningful traditions",
             ],
             "suggested_music_mood": "warm, calm, gentle",
             "sensitive_content_flags": [],
@@ -428,6 +432,7 @@ Content rules:
 - Birth date and death date are profile context only.
 - Do not output birth_date or death_date as story fields.
 - If birth date or death date are useful, mention them naturally only when provided.
+- If the user mentioned traditions, rituals, holidays, family recipes, celebrations or repeated meaningful family customs, include those details.
 - If information is limited, write a modest summary instead of exaggerating.
 - The summary must be maximum 5 complete sentences.
 - The summary should describe who the person was, what they enjoyed, how they related to others and how the family remembers them.
@@ -602,7 +607,7 @@ Content rules:
 - Birth date and death date are profile context only.
 - Do not output birth_date or death_date as story fields.
 - If birth date or death date are useful, mention them naturally only when provided.
-- If the user mentioned concrete things like gardening, cooking, humor, family traditions, places, habits, sayings or small everyday details, include those details.
+- If the user mentioned concrete things like gardening, cooking, humor, family traditions, rituals, holidays, family recipes, celebrations, places, habits, sayings or small everyday details, include those details.
 - If the information is limited, write a modest and simple summary instead of exaggerating.
 - The result must be one connected life story, not separate stories per chat session.
 - Remove repetition.

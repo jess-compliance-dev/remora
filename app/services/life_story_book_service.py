@@ -149,7 +149,7 @@ class LifeStoryBookService:
         {topics}
 
         Rules:
-        - Return all 10 chapters.
+        - Return all 11 chapters.
         - Use the exact topic ids provided.
         - Do not invent facts, events, quotes, dates, relationships or emotions.
         - Stay grounded in the supplied story text, summary, profile and memory metadata.
@@ -163,6 +163,7 @@ class LifeStoryBookService:
         - If a memory has a topic field and it matches one of the required topics, assign it to that topic.
         - Use each memory_id at most once.
         - If a memory does not clearly fit and has no topic, place it in daily_life.
+        - Traditions should include rituals, holidays, celebrations, family recipes, religious customs and repeated meaningful family practices.
         - Memory assignment can use title, memory_date, topic, memory_type and created_at.
         - Do not rely on original_filename for visible text.
         - Return structured data only through the function tool.
@@ -174,14 +175,14 @@ class LifeStoryBookService:
         return {
             "type": "function",
             "name": "create_life_story_book_chapters",
-            "description": "Create the 10 Remora Life Story Book chapters and assign memories to chapters.",
+            "description": "Create the 11 Remora Life Story Book chapters and assign memories to chapters.",
             "strict": True,
             "parameters": {
                 "type": "object",
                 "properties": {
                     "chapters": {
                         "type": "array",
-                        "description": "Exactly 10 life story chapters matching the required topic ids.",
+                        "description": "Exactly 11 life story chapters matching the required topic ids.",
                         "items": {
                             "type": "object",
                             "properties": {
@@ -424,6 +425,7 @@ class LifeStoryBookService:
         subtitles = {
             "childhood": "Early life, school years and growing up.",
             "daily_life": "Routines, habits and everyday moments.",
+            "traditions": "Rituals, holidays, celebrations and meaningful family customs.",
             "personality": "Character, presence and the way they moved through life.",
             "values": "Beliefs, principles, advice and lessons.",
             "humor": "Laughter, jokes and playful memories.",

@@ -11,6 +11,12 @@ class ChatAIService:
         "daily_life": [
             "daily", "routine", "everyday", "habit", "morning", "evening"
         ],
+        "traditions": [
+            "tradition", "traditions", "ritual", "rituals", "custom", "customs",
+            "holiday", "holidays", "celebration", "celebrations", "birthday",
+            "christmas", "easter", "thanksgiving", "new year", "anniversary",
+            "family tradition", "religious tradition", "recipe", "family recipe"
+        ],
         "personality": [
             "personality", "character", "kind", "strict", "gentle", "quiet", "loud"
         ],
@@ -44,6 +50,7 @@ class ChatAIService:
     TOPIC_LABELS = {
         "childhood": "Childhood",
         "daily_life": "Daily Life",
+        "traditions": "Traditions",
         "personality": "Personality",
         "values": "Values",
         "humor": "Humor",
@@ -276,7 +283,7 @@ class ChatAIService:
 
         Your job:
         - Write a warm, natural chat reply.
-        - Help the user remember concrete moments, habits, places, feelings, quotes and relationships.
+        - Help the user remember concrete moments, habits, traditions, rituals, places, feelings, quotes and relationships.
         - Ask only one follow-up question.
         - Stay grounded in what the user actually said.
         - Do not sound like a therapist.
@@ -311,7 +318,7 @@ class ChatAIService:
 
         Important rules:
         - Do not invent facts.
-        - A meaningful fact can be a concrete memory, action, habit, place, feeling, relationship detail, quote, tradition, repeated behavior, event, or life detail.
+        - A meaningful fact can be a concrete memory, action, habit, place, feeling, relationship detail, quote, tradition, repeated behavior, ritual, celebration, event, or life detail.
         - facts_count should be a small integer.
         - topic_summary must be factual and short.
         - If no topic is clear, use "unknown" as current_topic.

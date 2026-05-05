@@ -8,13 +8,12 @@ from app.utils.media_url import build_public_media_url, is_public_url
 class CreatomateService:
     """
     Service for creating and checking Creatomate renders.
-
     This service maps Remora uploaded media into Creatomate template fields.
 
     Important:
     Creatomate cannot read local files.
 
-    Your current local upload location is:
+    Current local upload location is:
     app/static/uploads/memories/photo/...
     app/static/uploads/memories/video/...
 
